@@ -6,12 +6,12 @@ const sprite = document.getElementById("player");
 
 const WORLD_WIDTH = 1920;
 const WORLD_HEIGHT = 1080;
-const CAMERA_ZOOM = 1.25;
+const CAMERA_ZOOM = 2.3;
 
 const player = {
     x: 960,
     y: 900,
-    speed: 3
+    speed: 2
 };
 
 const keys = new Set();
