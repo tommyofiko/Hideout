@@ -6,6 +6,14 @@ const sprite = document.getElementById("player");
 
 const WORLD_WIDTH = 1920;
 const WORLD_HEIGHT = 1080;
+
+const BOUNDS = {
+    left: 40,
+    right: 1880,
+    top: 40,
+    bottom: 1040
+};
+
 const CAMERA_ZOOM = 2.8;
 
 const player = {
@@ -128,8 +136,10 @@ function update() {
         player.y += dy * player.speed;
     }
 
-    player.x = Math.max(12, Math.min(WORLD_WIDTH - 12, player.x));
-    player.y = Math.max(12, Math.min(WORLD_HEIGHT - 12, player.y));
+    
+    player.x = Math.max(BOUNDS.left, Math.min(BOUNDS.right, player.x));
+    player.y = Math.max(BOUNDS.top, Math.min(BOUNDS.bottom, player.y));
+    
 
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
