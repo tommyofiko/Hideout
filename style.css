@@ -6,9 +6,6 @@
 :root {
     --sky: #171c26;
     --grass: #526747;
-    --grass-dark: #3d5137;
-    --stone: #77766b;
-    --wood: #624630;
     --text: #e4dfd0;
     --muted: #a9aa9a;
 }
@@ -17,7 +14,7 @@ html,
 body {
     margin: 0;
     width: 100%;
-    min-height: 100%;
+    height: 100%;
 }
 
 body {
@@ -52,10 +49,186 @@ body {
     transform-origin: center;
 }
 
-.pixel {
+.pixel,
+#garden,
+#house,
+#tree,
+#player {
     position: absolute;
     image-rendering: pixelated;
 }
+
+/* ZAHRADA */
+
+#garden {
+    inset: 0;
+    background-color: #526747;
+    background-image:
+        radial-gradient(#71845a 2px, transparent 3px),
+        radial-gradient(#40583a 2px, transparent 3px),
+        linear-gradient(45deg, transparent 48%, #5b7048 49%, transparent 52%);
+    background-size: 47px 41px, 63px 57px, 19px 19px;
+}
+
+/* CESTA KE VCHODU */
+
+#garden::after {
+    content: "";
+    position: absolute;
+    left: 415px;
+    top: 285px;
+    width: 130px;
+    height: 355px;
+    background-color: #92866b;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent 0 22px,
+        #786d58 23px 25px
+    );
+    clip-path: polygon(28% 0, 72% 0, 100% 100%, 0 100%);
+    opacity: 0.95;
+}
+
+/* DŮM */
+
+#house {
+    left: 350px;
+    top: 120px;
+    width: 260px;
+    height: 210px;
+    z-index: 5;
+}
+
+/* Přední stěna */
+
+#house::before {
+    content: "";
+    position: absolute;
+    left: 22px;
+    top: 55px;
+    width: 190px;
+    height: 135px;
+    background: #b9a783;
+    border: 5px solid #574a3c;
+    box-shadow: 8px 8px 0 #303b2c;
+}
+
+/* Boční stěna */
+
+#house::after {
+    content: "";
+    position: absolute;
+    left: 212px;
+    top: 55px;
+    width: 40px;
+    height: 135px;
+    background: #796a51;
+    border: 4px solid #574a3c;
+    border-left: 0;
+}
+
+/* STŘECHA */
+
+#roof {
+    position: absolute;
+    z-index: 3;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 115px;
+    background: #654b3d;
+    clip-path: polygon(50% 0, 100% 48%, 82% 64%, 50% 28%, 18% 64%, 0 48%);
+    filter: drop-shadow(4px 5px 0 #30352b);
+}
+
+#roof::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent 0 12px,
+        #795746 13px 16px
+    );
+}
+
+/* DVEŘE */
+
+#door {
+    position: absolute;
+    z-index: 6;
+    left: 105px;
+    top: 125px;
+    width: 44px;
+    height: 65px;
+    background: #49352a;
+    border: 5px solid #35291f;
+    box-shadow: inset -5px 0 #624633;
+}
+
+#door::after {
+    content: "";
+    position: absolute;
+    right: 5px;
+    top: 30px;
+    width: 5px;
+    height: 5px;
+    background: #d4b76b;
+}
+
+/* STARÝ STROM */
+
+#tree {
+    left: 145px;
+    top: 310px;
+    width: 70px;
+    height: 80px;
+    z-index: 8;
+}
+
+#tree::before {
+    content: "";
+    position: absolute;
+    left: 28px;
+    top: 35px;
+    width: 18px;
+    height: 42px;
+    background: #644631;
+    box-shadow: 5px 5px 0 #493729;
+}
+
+#tree::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 0;
+    width: 58px;
+    height: 52px;
+    background: #344b32;
+    box-shadow:
+        8px -8px 0 #405b38,
+        -8px 8px 0 #405b38,
+        8px 8px 0 #60754a,
+        0 16px 0 #405b38;
+}
+
+/* POSTAVIČKA */
+
+#player {
+    z-index: 20;
+    left: 480px;
+    top: 510px;
+    width: 22px;
+    height: 25px;
+    transform: translate(-50%, -50%);
+    background: #c7c9a9;
+    border: 3px solid #292d2b;
+    box-shadow:
+        0 -9px 0 -2px #554237,
+        0 5px 0 #292d2b;
+}
+
+/* ROZHRANÍ */
 
 #hud {
     position: absolute;
@@ -111,6 +284,15 @@ body {
     display: none;
 }
 
+#dialog button {
+    padding: 8px 12px;
+    color: var(--text);
+    background: #343c32;
+    border: 1px solid #899078;
+    font-family: inherit;
+    cursor: pointer;
+}
+
 @media (max-width: 600px) {
     #hud {
         top: 8px;
@@ -118,6 +300,6 @@ body {
     }
 
     #scene {
-        transform: translate(-50%, -50%) scale(0.75);
+        transform: translate(-50%, -50%) scale(0.65);
     }
 }
