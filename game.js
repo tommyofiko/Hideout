@@ -6,7 +6,7 @@ const sprite = document.getElementById("player");
 
 const WORLD_WIDTH = 1920;
 const WORLD_HEIGHT = 1080;
-const CAMERA_ZOOM = 2.3;
+const CAMERA_ZOOM = 2.8;
 
 const player = {
     x: 960,
