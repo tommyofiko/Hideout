@@ -1,16 +1,16 @@
 
 const scene = document.getElementById("scene");
-const status = document.getElementById("status");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
 const sprite = document.getElementById("player");
 
-const WORLD_WIDTH = 960;
-const WORLD_HEIGHT = 540;
+const WORLD_WIDTH = 1920;
+const WORLD_HEIGHT = 1080;
+const CAMERA_ZOOM = 1.25;
 
 const player = {
-    x: 480,
-    y: 450,
+    x: 960,
+    y: 900,
     speed: 3
 };
 
@@ -20,9 +20,9 @@ let nearbyObject = null;
 const objects = [
     {
         name: "Vchod do domu",
-        x: 480,
-        y: 290,
-        radius: 42,
+        x: 960,
+        y: 580,
+        radius: 65,
         action: () => {
             showMessage(
                 "Vítej doma.",
@@ -32,9 +32,9 @@ const objects = [
     },
     {
         name: "Starý strom",
-        x: 180,
-        y: 350,
-        radius: 35,
+        x: 360,
+        y: 700,
+        radius: 55,
         action: () => {
             showMessage(
                 "Pod stromem",
@@ -44,38 +44,40 @@ const objects = [
     }
 ];
 
-function resizeScene() {
-    const scale = Math.max(
-        window.innerWidth / WORLD_WIDTH,
-        window.innerHeight / WORLD_HEIGHT
-    );
-
-    scene.style.setProperty("--scene-scale", scale);
-}
-
-window.addEventListener("resize", resizeScene);
-resizeScene();
-
-function showMessage(title, text) {
+function showMessage(title, message) {
     dialog.hidden = false;
-
     dialog.replaceChildren();
 
     const heading = document.createElement("strong");
     heading.textContent = title;
 
     const paragraph = document.createElement("p");
-    paragraph.textContent = text;
+    paragraph.textContent = message;
 
     const button = document.createElement("button");
-    button.id = "close-dialog";
     button.textContent = "Zavřít [Esc]";
-
     button.addEventListener("click", () => {
         dialog.hidden = true;
     });
 
     dialog.append(heading, paragraph, button);
+}
+
+function updateCamera() {
+    const viewWidth = window.innerWidth;
+    const viewHeight = window.innerHeight;
+
+    const scaledWidth = WORLD_WIDTH * CAMERA_ZOOM;
+    const scaledHeight = WORLD_HEIGHT * CAMERA_ZOOM;
+
+    let cameraX = viewWidth / 2 - player.x * CAMERA_ZOOM;
+    let cameraY = viewHeight / 2 - player.y * CAMERA_ZOOM;
+
+    cameraX = Math.min(0, Math.max(viewWidth - scaledWidth, cameraX));
+    cameraY = Math.min(0, Math.max(viewHeight - scaledHeight, cameraY));
+
+    scene.style.transform =
+        `translate(${cameraX}px, ${cameraY}px) scale(${CAMERA_ZOOM})`;
 }
 
 window.addEventListener("keydown", (event) => {
@@ -111,12 +113,12 @@ function update() {
     let dx = 0;
     let dy = 0;
 
-    if (keys.has("w") || keys.has("arrowup")) dy -= 1;
-    if (keys.has("s") || keys.has("arrowdown")) dy += 1;
-    if (keys.has("a") || keys.has("arrowleft")) dx -= 1;
-    if (keys.has("d") || keys.has("arrowright")) dx += 1;
+    if (keys.has("w") || keys.has("arrowup")) dy--;
+    if (keys.has("s") || keys.has("arrowdown")) dy++;
+    if (keys.has("a") || keys.has("arrowleft")) dx--;
+    if (keys.has("d") || keys.has("arrowright")) dx++;
 
-    if (dx !== 0 && dy !== 0) {
+    if (dx && dy) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
@@ -132,21 +134,19 @@ function update() {
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
-    nearbyObject = objects.find((object) => {
-        const distance = Math.hypot(
-            player.x - object.x,
-            player.y - object.y
-        );
+    updateCamera();
 
-        return distance < object.radius;
-    }) || null;
+    nearbyObject = objects.find((object) =>
+        Math.hypot(player.x - object.x, player.y - object.y)
+        < object.radius
+    ) || null;
 
     if (!dialog.hidden) {
         hint.textContent = "ESC · Zavřít";
     } else if (nearbyObject) {
         hint.textContent = `${nearbyObject.name} · Stiskni E`;
     } else {
-        hint.textContent = "WASD / šipky · Pohyb   |   E · Interakce";
+        hint.textContent = "WASD / šipky · Pohyb | E · Interakce";
     }
 
     requestAnimationFrame(update);
