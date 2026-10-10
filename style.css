@@ -314,3 +314,28 @@ body {
     pointer-events: none;
 }
 
+
+/* Nová mapa Hideoutu */
+#scene {
+    width: min(100vw, 177.7778vh);
+    height: min(100vw * 0.5625, 100vh);
+}
+
+#garden {
+    position: absolute;
+    inset: 0;
+    background: #526747;
+}
+
+#house,
+#tree {
+    display: none;
+}
+
+#house-image {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+}
+
+
