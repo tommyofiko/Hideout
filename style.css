@@ -1,0 +1,123 @@
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --sky: #171c26;
+    --grass: #526747;
+    --grass-dark: #3d5137;
+    --stone: #77766b;
+    --wood: #624630;
+    --text: #e4dfd0;
+    --muted: #a9aa9a;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    overflow: hidden;
+    background: var(--sky);
+    color: var(--text);
+    font-family: Consolas, monospace;
+    image-rendering: pixelated;
+}
+
+#game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--grass);
+}
+
+#world {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+#scene {
+    position: absolute;
+    width: 960px;
+    height: 640px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center;
+}
+
+.pixel {
+    position: absolute;
+    image-rendering: pixelated;
+}
+
+#hud {
+    position: absolute;
+    z-index: 100;
+    top: 18px;
+    left: 18px;
+    padding: 12px 16px;
+    background: rgba(18, 20, 22, 0.88);
+    border: 2px solid #77766b;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+#hud h1 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    letter-spacing: 4px;
+}
+
+#status {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+#hint {
+    position: absolute;
+    z-index: 100;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(100vw - 32px);
+    padding: 10px 14px;
+    background: rgba(18, 20, 22, 0.9);
+    border: 1px solid #77766b;
+    color: var(--text);
+    font-size: 12px;
+    text-align: center;
+}
+
+#dialog {
+    position: absolute;
+    z-index: 200;
+    left: 50%;
+    bottom: 64px;
+    transform: translateX(-50%);
+    width: min(520px, calc(100vw - 32px));
+    padding: 20px;
+    background: #17191c;
+    border: 2px solid #aaa38d;
+    line-height: 1.6;
+}
+
+#dialog[hidden] {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    #hud {
+        top: 8px;
+        left: 8px;
+    }
+
+    #scene {
+        transform: translate(-50%, -50%) scale(0.75);
+    }
+}
