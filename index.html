@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hideout</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #101014;
+            color: #dedee6;
+            font-family: Consolas, monospace;
+        }
+
+        header {
+            padding: 50px 24px 30px;
+            border-bottom: 1px solid #292932;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 38px;
+            letter-spacing: 5px;
+        }
+
+        .subtitle {
+            color: #858593;
+            margin-top: 12px;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px;
+            padding: 20px 0;
+            border-bottom: 1px solid #292932;
+        }
+
+        nav a {
+            color: #a8a8bd;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            color: white;
+        }
+
+        main {
+            padding: 40px 24px;
+        }
+
+        .welcome {
+            padding: 25px;
+            border: 1px solid #292932;
+            background: #17171e;
+        }
+
+        .welcome h2 {
+            margin-top: 0;
+        }
+
+        .muted {
+            color: #858593;
+            line-height: 1.7;
+        }
+
+        footer {
+            padding: 25px;
+            color: #666674;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <h1>HIDEOUT</h1>
+            <div class="subtitle">můj malý kout internetu.</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav>
+            <a href="#home">Domů</a>
+            <a href="#zapisnik">Zápisník</a>
+            <a href="#projekty">Projekty</a>
+            <a href="#galerie">Galerie</a>
+            <a href="#about">O mně</a>
+        </nav>
+
+        <section class="welcome" id="home">
+            <h2>Vítej v Hideoutu.</h2>
+            <p class="muted">
+                Osobní prostor pro myšlenky, tvorbu,
+                projekty a všechno, co stojí za uchování.
+            </p>
+            <p class="muted">
+                Web je právě ve výstavbě.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        HIDEOUT · EST. 2026
+    </footer>
+</body>
+</html>
