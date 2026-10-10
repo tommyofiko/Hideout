@@ -38,15 +38,17 @@ body {
     overflow: hidden;
 }
 
+
 #scene {
     position: absolute;
-    width: 960px;
-    height: 540px;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(var(--scene-scale, 1));
-    transform-origin: center;
+    width: 1920px;
+    height: 1080px;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
+    will-change: transform;
 }
+
 
 #garden {
     position: absolute;
@@ -59,6 +61,7 @@ body {
     display: none;
 }
 
+
 #house-image {
     position: absolute;
     inset: 0;
@@ -66,9 +69,9 @@ body {
     width: 100%;
     height: 100%;
     object-fit: fill;
-    image-rendering: auto;
     pointer-events: none;
 }
+
 
 #house,
 #tree {
