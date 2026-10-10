@@ -1,15 +1,17 @@
 
-const game = document.getElementById("game");
 const scene = document.getElementById("scene");
 const status = document.getElementById("status");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
+const sprite = document.getElementById("player");
+
+const WORLD_WIDTH = 960;
+const WORLD_HEIGHT = 540;
 
 const player = {
     x: 480,
-    y: 510,
-    speed: 3,
-    size: 24
+    y: 450,
+    speed: 3
 };
 
 const keys = new Set();
@@ -21,7 +23,6 @@ const objects = [
         x: 480,
         y: 290,
         radius: 42,
-        message: "Starý dům. Uvnitř je zatím víc otázek než místností.",
         action: () => {
             showMessage(
                 "Vítej doma.",
@@ -34,7 +35,6 @@ const objects = [
         x: 180,
         y: 350,
         radius: 35,
-        message: "Starý strom",
         action: () => {
             showMessage(
                 "Pod stromem",
@@ -44,26 +44,47 @@ const objects = [
     }
 ];
 
+function resizeScene() {
+    const scale = Math.max(
+        window.innerWidth / WORLD_WIDTH,
+        window.innerHeight / WORLD_HEIGHT
+    );
+
+    scene.style.setProperty("--scene-scale", scale);
+}
+
+window.addEventListener("resize", resizeScene);
+resizeScene();
+
 function showMessage(title, text) {
     dialog.hidden = false;
-    dialog.innerHTML = `
-        <strong>${title}</strong>
-        <p>${text}</p>
-        <button id="close-dialog">Zavřít [Esc]</button>
-    `;
 
-    document.getElementById("close-dialog")
-        .addEventListener("click", () => {
-            dialog.hidden = true;
-        });
+    dialog.replaceChildren();
+
+    const heading = document.createElement("strong");
+    heading.textContent = title;
+
+    const paragraph = document.createElement("p");
+    paragraph.textContent = text;
+
+    const button = document.createElement("button");
+    button.id = "close-dialog";
+    button.textContent = "Zavřít [Esc]";
+
+    button.addEventListener("click", () => {
+        dialog.hidden = true;
+    });
+
+    dialog.append(heading, paragraph, button);
 }
 
 window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
 
-    if (["w", "a", "s", "d", "arrowup",
-         "arrowdown", "arrowleft", "arrowright", " "]
-         .includes(key)) {
+    if (
+        ["w", "a", "s", "d", "arrowup", "arrowdown",
+         "arrowleft", "arrowright", " "].includes(key)
+    ) {
         event.preventDefault();
     }
 
@@ -100,18 +121,16 @@ function update() {
         dy *= Math.SQRT1_2;
     }
 
-    player.x += dx * player.speed;
-    player.y += dy * player.speed;
-
-    player.x = Math.max(12, Math.min(948, player.x));
-    player.y = Math.max(12, Math.min(628, player.y));
-
-    const sprite = document.getElementById("player");
-
-    if (sprite) {
-        sprite.style.left = `${player.x}px`;
-        sprite.style.top = `${player.y}px`;
+    if (dialog.hidden) {
+        player.x += dx * player.speed;
+        player.y += dy * player.speed;
     }
+
+    player.x = Math.max(12, Math.min(WORLD_WIDTH - 12, player.x));
+    player.y = Math.max(12, Math.min(WORLD_HEIGHT - 12, player.y));
+
+    sprite.style.left = `${player.x}px`;
+    sprite.style.top = `${player.y}px`;
 
     nearbyObject = objects.find((object) => {
         const distance = Math.hypot(
