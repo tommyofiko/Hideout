@@ -7,12 +7,90 @@ const sprite = document.getElementById("player");
 const WORLD_WIDTH = 1920;
 const WORLD_HEIGHT = 1080;
 
+
 const BOUNDS = {
     left: 40,
     right: 1880,
     top: 40,
     bottom: 1040
 };
+
+// Zakázané oblasti podle house.png.
+// Souřadnice odpovídají mapě 1920 × 1080.
+const BLOCKED_AREAS = [
+    // Hlavní potok, vodopády a skalní sráz napravo
+    [
+        [1730, 0],
+        [1920, 0],
+        [1920, 1080],
+        [1080, 1080],
+        [1190, 1015],
+        [1320, 940],
+        [1420, 850],
+        [1490, 750],
+        [1540, 650],
+        [1580, 550],
+        [1620, 450],
+        [1670, 350],
+        [1710, 250],
+        [1740, 150],
+        [1760, 70]
+    ],
+
+    // Malé jezírko dole na louce
+    [
+        [620, 850],
+        [665, 825],
+        [715, 830],
+        [755, 855],
+        [780, 890],
+        [765, 920],
+        [720, 945],
+        [675, 950],
+        [635, 925],
+        [610, 890]
+    ]
+];
+
+function pointInPolygon(x, y, polygon) {
+    let inside = false;
+
+    for (
+        let i = 0, j = polygon.length - 1;
+        i < polygon.length;
+        j = i++
+    ) {
+        const [xi, yi] = polygon[i];
+        const [xj, yj] = polygon[j];
+
+        const intersects =
+            (yi > y) !== (yj > y) &&
+            x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+
+        if (intersects) inside = !inside;
+    }
+
+    return inside;
+}
+
+function isBlocked(x, y) {
+    // Kontrolujeme i okolí postavičky, nejen její střed.
+    const radius = 12;
+    const checks = [
+        [x, y],
+        [x - radius, y],
+        [x + radius, y],
+        [x, y - radius],
+        [x, y + radius]
+    ];
+
+    return BLOCKED_AREAS.some(polygon =>
+        checks.some(([px, py]) =>
+            pointInPolygon(px, py, polygon)
+        )
+    );
+}
+
 
 const CAMERA_ZOOM = 2.8;
 
@@ -131,10 +209,27 @@ function update() {
         dy *= Math.SQRT1_2;
     }
 
-    if (dialog.hidden) {
-        player.x += dx * player.speed;
-        player.y += dy * player.speed;
+    
+if (dialog.hidden) {
+    const nextX = player.x + dx * player.speed;
+    const nextY = player.y + dy * player.speed;
+
+    // Pohyb oběma směry, pokud je místo volné.
+    if (!isBlocked(nextX, nextY)) {
+        player.x = nextX;
+        player.y = nextY;
+    } else {
+        // Když narazí do břehu, může se pohybovat podél něj.
+        if (!isBlocked(nextX, player.y)) {
+            player.x = nextX;
+        }
+
+        if (!isBlocked(player.x, nextY)) {
+            player.y = nextY;
+        }
     }
+}
+
 
     
     player.x = Math.max(BOUNDS.left, Math.min(BOUNDS.right, player.x));
