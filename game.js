@@ -15,10 +15,32 @@ const BOUNDS = {
     bottom: 1040
 };
 
+function update() {
+    let dx = 0;
+    let dy = 0;
+
+    if (keys.has("w") || keys.has("arrowup")) dy--;
+    if (keys.has("s") || keys.has("arrowdown")) dy++;
+    if (keys.has("a") || keys.has("arrowleft")) dx--;
+    if (keys.has("d") || keys.has("arrowright")) dx++;
+
+    if (dx && dy) {
+        dx *= Math.SQRT1_2;
+        dy *= Math.SQRT1_2;
+    }
+
+    // Další kontrola pohybu se provede přes BLOCKED_AREAS.
+    // Sem patří kontrola kolizí a následná aktualizace
+    // pozice hráče podle tvého stávajícího herního kódu.
+}
+
+// Zakázané oblasti podle house.png.
+// Souřadnice odpovídají mapě 1920 × 1080.
 // Zakázané oblasti podle house.png.
 // Souřadnice odpovídají mapě 1920 × 1080.
 const BLOCKED_AREAS = [
-    // Hlavní potok, vodopády a skalní sráz napravo
+    // Řeka, vodopády a celý skalní sráz na pravé straně.
+    // Hráč se nesmí dostat do vody ani přes okraj útesu.
     [
         [1730, 0],
         [1920, 0],
@@ -37,7 +59,7 @@ const BLOCKED_AREAS = [
         [1760, 70]
     ],
 
-    // Malé jezírko dole na louce
+    // Malé jezírko dole na louce.
     [
         [620, 850],
         [665, 825],
