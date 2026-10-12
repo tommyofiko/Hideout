@@ -6,7 +6,7 @@ const sprite = document.getElementById("player");
 
 const WORLD_WIDTH = 1920;
 const WORLD_HEIGHT = 1080;
-
+const CAMERA_ZOOM = 2.8;
 
 const BOUNDS = {
     left: 40,
@@ -15,32 +15,23 @@ const BOUNDS = {
     bottom: 1040
 };
 
-function update() {
-    let dx = 0;
-    let dy = 0;
+const player = {
+    x: 960,
+    y: 900,
+    speed: 2,
+    radius: 12
+};
 
-    if (keys.has("w") || keys.has("arrowup")) dy--;
-    if (keys.has("s") || keys.has("arrowdown")) dy++;
-    if (keys.has("a") || keys.has("arrowleft")) dx--;
-    if (keys.has("d") || keys.has("arrowright")) dx++;
+const keys = new Set();
+let nearbyObject = null;
 
-    if (dx && dy) {
-        dx *= Math.SQRT1_2;
-        dy *= Math.SQRT1_2;
-    }
+// ======================================
+// ZAKÁZANÉ OBLASTI
+// Souřadnice odpovídají mapě 1920 × 1080
+// ======================================
 
-    // Další kontrola pohybu se provede přes BLOCKED_AREAS.
-    // Sem patří kontrola kolizí a následná aktualizace
-    // pozice hráče podle tvého stávajícího herního kódu.
-}
-
-// Zakázané oblasti podle house.png.
-// Souřadnice odpovídají mapě 1920 × 1080.
-// Zakázané oblasti podle house.png.
-// Souřadnice odpovídají mapě 1920 × 1080.
 const BLOCKED_AREAS = [
-    // Řeka, vodopády a celý skalní sráz na pravé straně.
-    // Hráč se nesmí dostat do vody ani přes okraj útesu.
+    // Řeka, vodopády a skalní sráz napravo.
     [
         [1730, 0],
         [1920, 0],
@@ -59,7 +50,7 @@ const BLOCKED_AREAS = [
         [1760, 70]
     ],
 
-    // Malé jezírko dole na louce.
+    // Malé jezírko na louce.
     [
         [620, 850],
         [665, 825],
@@ -73,6 +64,10 @@ const BLOCKED_AREAS = [
         [610, 890]
     ]
 ];
+
+// ======================================
+// GEOMETRIE KOLIZÍ
+// ======================================
 
 function pointInPolygon(x, y, polygon) {
     let inside = false;
@@ -89,41 +84,75 @@ function pointInPolygon(x, y, polygon) {
             (yi > y) !== (yj > y) &&
             x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
 
-        if (intersects) inside = !inside;
+        if (intersects) {
+            inside = !inside;
+        }
     }
 
     return inside;
 }
 
-function isBlocked(x, y) {
-    // Kontrolujeme i okolí postavičky, nejen její střed.
-    const radius = 12;
-    const checks = [
-        [x, y],
-        [x - radius, y],
-        [x + radius, y],
-        [x, y - radius],
-        [x, y + radius]
-    ];
+function distanceToSegment(px, py, ax, ay, bx, by) {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const lengthSquared = dx * dx + dy * dy;
 
-    return BLOCKED_AREAS.some(polygon =>
-        checks.some(([px, py]) =>
-            pointInPolygon(px, py, polygon)
+    if (lengthSquared === 0) {
+        return Math.hypot(px - ax, py - ay);
+    }
+
+    const t = Math.max(
+        0,
+        Math.min(
+            1,
+            ((px - ax) * dx + (py - ay) * dy) / lengthSquared
         )
+    );
+
+    const closestX = ax + t * dx;
+    const closestY = ay + t * dy;
+
+    return Math.hypot(px - closestX, py - closestY);
+}
+
+function isBlocked(x, y) {
+    const radius = player.radius;
+
+    return BLOCKED_AREAS.some(polygon => {
+        // Hráč nesmí být uvnitř zakázané oblasti.
+        if (pointInPolygon(x, y, polygon)) {
+            return true;
+        }
+
+        // Hráč nesmí zasahovat přes hranu polygonu.
+        for (let i = 0; i < polygon.length; i++) {
+            const [ax, ay] = polygon[i];
+            const [bx, by] = polygon[(i + 1) % polygon.length];
+
+            if (
+                distanceToSegment(x, y, ax, ay, bx, by) < radius
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+}
+
+function canMoveTo(x, y) {
+    return (
+        x >= BOUNDS.left &&
+        x <= BOUNDS.right &&
+        y >= BOUNDS.top &&
+        y <= BOUNDS.bottom &&
+        !isBlocked(x, y)
     );
 }
 
-
-const CAMERA_ZOOM = 2.8;
-
-const player = {
-    x: 960,
-    y: 900,
-    speed: 2
-};
-
-const keys = new Set();
-let nearbyObject = null;
+// ======================================
+// OBJEKTY A INTERAKCE
+// ======================================
 
 const objects = [
     {
@@ -164,12 +193,17 @@ function showMessage(title, message) {
 
     const button = document.createElement("button");
     button.textContent = "Zavřít [Esc]";
+
     button.addEventListener("click", () => {
         dialog.hidden = true;
     });
 
     dialog.append(heading, paragraph, button);
 }
+
+// ======================================
+// KAMERA
+// ======================================
 
 function updateCamera() {
     const viewWidth = window.innerWidth;
@@ -181,19 +215,33 @@ function updateCamera() {
     let cameraX = viewWidth / 2 - player.x * CAMERA_ZOOM;
     let cameraY = viewHeight / 2 - player.y * CAMERA_ZOOM;
 
-    cameraX = Math.min(0, Math.max(viewWidth - scaledWidth, cameraX));
-    cameraY = Math.min(0, Math.max(viewHeight - scaledHeight, cameraY));
+    cameraX = Math.min(
+        0,
+        Math.max(viewWidth - scaledWidth, cameraX)
+    );
+
+    cameraY = Math.min(
+        0,
+        Math.max(viewHeight - scaledHeight, cameraY)
+    );
 
     scene.style.transform =
         `translate(${cameraX}px, ${cameraY}px) scale(${CAMERA_ZOOM})`;
 }
 
-window.addEventListener("keydown", (event) => {
+// ======================================
+// OVLÁDÁNÍ
+// ======================================
+
+window.addEventListener("keydown", event => {
     const key = event.key.toLowerCase();
 
     if (
-        ["w", "a", "s", "d", "arrowup", "arrowdown",
-         "arrowleft", "arrowright", " "].includes(key)
+        [
+            "w", "a", "s", "d",
+            "arrowup", "arrowdown",
+            "arrowleft", "arrowright", " "
+        ].includes(key)
     ) {
         event.preventDefault();
     }
@@ -209,13 +257,17 @@ window.addEventListener("keydown", (event) => {
     }
 });
 
-window.addEventListener("keyup", (event) => {
+window.addEventListener("keyup", event => {
     keys.delete(event.key.toLowerCase());
 });
 
 window.addEventListener("blur", () => {
     keys.clear();
 });
+
+// ======================================
+// HLAVNÍ UPDATE
+// ======================================
 
 function update() {
     let dx = 0;
@@ -226,46 +278,43 @@ function update() {
     if (keys.has("a") || keys.has("arrowleft")) dx--;
     if (keys.has("d") || keys.has("arrowright")) dx++;
 
-    if (dx && dy) {
+    // Stejná rychlost diagonálně i rovně.
+    if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
 
-    
-if (dialog.hidden) {
-    const nextX = player.x + dx * player.speed;
-    const nextY = player.y + dy * player.speed;
+    if (dialog.hidden) {
+        const nextX = player.x + dx * player.speed;
+        const nextY = player.y + dy * player.speed;
 
-    // Pohyb oběma směry, pokud je místo volné.
-    if (!isBlocked(nextX, nextY)) {
-        player.x = nextX;
-        player.y = nextY;
-    } else {
-        // Když narazí do břehu, může se pohybovat podél něj.
-        if (!isBlocked(nextX, player.y)) {
+        // Nejdříve zkusíme pohyb v obou osách.
+        if (canMoveTo(nextX, nextY)) {
             player.x = nextX;
-        }
-
-        if (!isBlocked(player.x, nextY)) {
             player.y = nextY;
+        } else {
+            // Pokud je cesta zablokovaná, umožníme
+            // samostatný pohyb podél překážky.
+            if (dx !== 0 && canMoveTo(nextX, player.y)) {
+                player.x = nextX;
+            }
+
+            if (dy !== 0 && canMoveTo(player.x, nextY)) {
+                player.y = nextY;
+            }
         }
     }
-}
-
-
-    
-    player.x = Math.max(BOUNDS.left, Math.min(BOUNDS.right, player.x));
-    player.y = Math.max(BOUNDS.top, Math.min(BOUNDS.bottom, player.y));
-    
 
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
     updateCamera();
 
-    nearbyObject = objects.find((object) =>
-        Math.hypot(player.x - object.x, player.y - object.y)
-        < object.radius
+    nearbyObject = objects.find(object =>
+        Math.hypot(
+            player.x - object.x,
+            player.y - object.y
+        ) < object.radius
     ) || null;
 
     if (!dialog.hidden) {
