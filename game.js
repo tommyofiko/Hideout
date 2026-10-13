@@ -1,3 +1,6 @@
+// ======================================
+// HIDEOUT - GAME.JS
+// ======================================
 
 const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
@@ -9,6 +12,10 @@ const logElement = document.getElementById("log");
 
 const healthFill = document.getElementById("health-fill");
 const healthText = document.getElementById("health-text");
+
+const waterFill = document.getElementById("water-fill");
+const waterText = document.getElementById("water-text");
+
 const deathScreen = document.getElementById("death-screen");
 const restartButton = document.getElementById("restart-button");
 
@@ -46,6 +53,94 @@ function takeDamage(amount) {
 function healPlayer(amount) {
     if (isDead) return;
     setHealth(health + amount);
+}
+
+// ======================================
+// H2O SYSTEM
+// ======================================
+
+const MAX_WATER = 100;
+
+// Za 10 reálných minut klesne H2O na 0
+const WATER_DURATION = 10 * 60 * 1000;
+
+// Damage při nedostatku vody
+const DEHYDRATION_DAMAGE = 5;
+const DEHYDRATION_INTERVAL = 3000;
+
+let water = MAX_WATER;
+
+let lastWaterUpdate = performance.now();
+let lastDehydrationDamage = null;
+
+function setWater(value) {
+    water = Math.max(0, Math.min(MAX_WATER, value));
+
+    if (waterFill) {
+        waterFill.style.width =
+            `${(water / MAX_WATER) * 100}%`;
+    }
+
+    if (waterText) {
+        waterText.textContent =
+            `${Math.ceil(water)} / ${MAX_WATER}`;
+    }
+}
+
+function drinkWater(amount) {
+    if (isDead) return;
+
+    setWater(water + amount);
+
+    if (water > 0) {
+        lastDehydrationDamage = null;
+    }
+}
+
+function loseWater(amount) {
+    if (isDead) return;
+    setWater(water - amount);
+}
+
+function updateWater() {
+    const now = performance.now();
+
+    const deltaTime = Math.max(0, now - lastWaterUpdate);
+    lastWaterUpdate = now;
+
+    if (isDead) return;
+
+    if (water > 0) {
+        const waterLoss =
+            (MAX_WATER / WATER_DURATION) * deltaTime;
+
+        loseWater(waterLoss);
+
+        if (water > 0) {
+            lastDehydrationDamage = null;
+        }
+    }
+
+    if (water <= 0) {
+        if (lastDehydrationDamage === null) {
+            lastDehydrationDamage = now;
+        }
+
+        if (
+            now - lastDehydrationDamage >=
+            DEHYDRATION_INTERVAL
+        ) {
+            takeDamage(DEHYDRATION_DAMAGE);
+
+            if (isDead) {
+                playMyJingle();
+            } else {
+                playDamageSound();
+            }
+
+            lastDehydrationDamage = now;
+        }
+    }
 }
 
 // ======================================
@@ -93,7 +188,8 @@ const WELL = {
 };
 
 function getWellCollision() {
-    const rx = WELL.width * WELL.collisionWidthRatio;
+    const rx =
+        WELL.width * WELL.collisionWidthRatio;
 
     const oldRY =
         WELL.width * WELL.collisionHeightRatio;
@@ -103,7 +199,6 @@ function getWellCollision() {
         WELL.width * WELL.baseOffsetRatio -
         15;
 
-    // Rozšíření kolize směrem nahoru
     const extraTop = 22;
 
     return {
@@ -143,23 +238,14 @@ function isTouchingWell(x, y) {
 }
 
 // ======================================
-// KLÁDA - SAMOSTATNÝ OBJEKT
+// KLÁDA
 // ======================================
-
-// Pozice odpovídá přibližně původní kládě
-// nad dřevěným přístřeškem.
-//
-// x, y = střed obrázku log.png.
-//
-// Kolize má tvar šikmé kapsle:
-// úsečka mezi dvěma body + poloměr.
 
 const LOG = {
     x: 265,
     y: 620,
     width: 100,
 
-    // Konce kolizní úsečky
     ax: 232,
     ay: 635,
 
@@ -180,7 +266,6 @@ function updateLogPosition() {
 function isTouchingLog(x, y) {
     if (!logElement) return false;
 
-    // Kolize se počítá u nohou hráče
     const footX = x;
     const footY = y + 8;
     const footRadius = 5;
@@ -196,13 +281,12 @@ function isTouchingLog(x, y) {
 }
 
 // ======================================
-// VRSTVENÍ OBJEKTŮ A HRÁČE
+// VRSTVENÍ OBJEKTŮ
 // ======================================
 
 function updateDepthSorting() {
     const playerFeetY = player.y + 8;
 
-    // STUDNA
     if (wellElement) {
         const collision = getWellCollision();
 
@@ -214,12 +298,9 @@ function updateDepthSorting() {
         sprite.style.zIndex = "20";
     }
 
-    // KLÁDA
     if (logElement) {
         logElement.style.zIndex = "10";
 
-        // Hráč za kládou se vykreslí pod ní.
-        // Hráč před kládou se vykreslí nad ní.
         const logDepthY =
             (LOG.ay + LOG.by) / 2;
 
@@ -247,6 +328,7 @@ let lastFireDamage = -Infinity;
 
 function isTouchingFire() {
     const fireElement = document.getElementById("fire");
+
     if (!fireElement) return false;
 
     const style = window.getComputedStyle(fireElement);
@@ -403,7 +485,7 @@ function playDamageSound() {
 }
 
 // ======================================
-// RETRO DEATH SOUND - GRRR
+// RETRO DEATH SOUND
 // ======================================
 
 function playDeathSound() {
@@ -537,7 +619,13 @@ function restartGame() {
     dialog.hidden = true;
     deathScreen.hidden = true;
 
+    // Obnovení životů
     setHealth(MAX_HEALTH);
+
+    // Obnovení vody
+    setWater(MAX_WATER);
+    lastWaterUpdate = performance.now();
+    lastDehydrationDamage = null;
 
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
@@ -662,12 +750,10 @@ function isBlocked(x, y) {
         }
     }
 
-    // Kolize studny
     if (isTouchingWell(x, y)) {
         return true;
     }
 
-    // Kolize klády
     if (isTouchingLog(x, y)) {
         return true;
     }
@@ -966,5 +1052,12 @@ function update() {
 
 updateWellPosition();
 updateLogPosition();
+
 setHealth(MAX_HEALTH);
+setWater(MAX_WATER);
+
+// H2O se aktualizuje každých 100 ms
+lastWaterUpdate = performance.now();
+setInterval(updateWater, 100);
+
 update();
