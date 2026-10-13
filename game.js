@@ -1,4 +1,3 @@
-
 const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
@@ -16,8 +15,9 @@ const BOUNDS = {
 };
 
 const player = {
-    x: 960,
-    y: 900,
+    // Spawn uvnitř červeně vyznačené oblasti
+    x: 800,
+    y: 800,
     speed: 2,
     radius: 12
 };
@@ -25,44 +25,45 @@ const player = {
 const keys = new Set();
 let nearbyObject = null;
 
+
 // ======================================
 // PRŮCHOZÍ OBLAST
 // Souřadnice odpovídají mapě 1920 × 1080
 //
-// Uvnitř polygonu = hráč může chodit
-// Mimo polygon = blokováno
+// UVNITŘ = hráč může chodit
+// MIMO = blokováno
 // ======================================
 
 const WALKABLE_AREA = [
-    [1310, 591],
-    [1249, 542],
-    [1203, 565],
-    [986, 423],
-    [1084, 310],
-    [1006, 265],
-    [918, 334],
-    [963, 359],
-    [935, 418],
-    [901, 390],
-    [805, 451],
-    [753, 441],
-    [621, 505],
-    [513, 439],
-    [356, 414],
-    [92, 562],
-    [238, 695],
-    [324, 643],
-    [360, 651],
-    [379, 677],
-    [328, 702],
-    [311, 759],
-    [338, 794],
-    [328, 822],
-    [541, 994],
-    [630, 1034],
-    [745, 1033],
-    [852, 989],
-    [1125, 717]
+    [1320, 597],
+    [1259, 528],
+    [1203, 550],
+    [1007, 418],
+    [1096, 301],
+    [1017, 238],
+    [983, 254],
+    [971, 215],
+    [918, 249],
+    [946, 250],
+    [946, 289],
+    [898, 319],
+    [950, 363],
+    [926, 397],
+    [894, 380],
+    [624, 494],
+    [516, 429],
+    [332, 404],
+    [207, 488],
+    [82, 559],
+    [92, 595],
+    [231, 706],
+    [355, 661],
+    [302, 751],
+    [312, 824],
+    [535, 1003],
+    [657, 1045],
+    [860, 997],
+    [1130, 726]
 ];
 
 
@@ -93,6 +94,7 @@ function pointInPolygon(x, y, polygon) {
     return inside;
 }
 
+
 function distanceToSegment(px, py, ax, ay, bx, by) {
     const dx = bx - ax;
     const dy = by - ay;
@@ -116,6 +118,11 @@ function distanceToSegment(px, py, ax, ay, bx, by) {
     return Math.hypot(px - closestX, py - closestY);
 }
 
+
+// ======================================
+// KOLIZE
+// ======================================
+
 function isBlocked(x, y) {
     const radius = player.radius;
 
@@ -125,7 +132,7 @@ function isBlocked(x, y) {
     }
 
     // Držíme hráče kousek od hranice,
-    // aby část postavy nepřesahovala ven.
+    // aby jeho sprite nepřesahoval ven.
     for (let i = 0; i < WALKABLE_AREA.length; i++) {
         const [ax, ay] = WALKABLE_AREA[i];
         const [bx, by] =
@@ -148,6 +155,18 @@ function isBlocked(x, y) {
     return false;
 }
 
+
+function canMoveTo(x, y) {
+    return (
+        x >= BOUNDS.left &&
+        x <= BOUNDS.right &&
+        y >= BOUNDS.top &&
+        y <= BOUNDS.bottom &&
+        !isBlocked(x, y)
+    );
+}
+
+
 // ======================================
 // OBJEKTY A INTERAKCE
 // ======================================
@@ -165,6 +184,7 @@ const objects = [
             );
         }
     },
+
     {
         name: "Starý strom",
         x: 360,
@@ -178,6 +198,7 @@ const objects = [
         }
     }
 ];
+
 
 function showMessage(title, message) {
     dialog.hidden = false;
@@ -196,8 +217,13 @@ function showMessage(title, message) {
         dialog.hidden = true;
     });
 
-    dialog.append(heading, paragraph, button);
+    dialog.append(
+        heading,
+        paragraph,
+        button
+    );
 }
+
 
 // ======================================
 // KAMERA
@@ -207,25 +233,40 @@ function updateCamera() {
     const viewWidth = window.innerWidth;
     const viewHeight = window.innerHeight;
 
-    const scaledWidth = WORLD_WIDTH * CAMERA_ZOOM;
-    const scaledHeight = WORLD_HEIGHT * CAMERA_ZOOM;
+    const scaledWidth =
+        WORLD_WIDTH * CAMERA_ZOOM;
 
-    let cameraX = viewWidth / 2 - player.x * CAMERA_ZOOM;
-    let cameraY = viewHeight / 2 - player.y * CAMERA_ZOOM;
+    const scaledHeight =
+        WORLD_HEIGHT * CAMERA_ZOOM;
+
+    let cameraX =
+        viewWidth / 2 -
+        player.x * CAMERA_ZOOM;
+
+    let cameraY =
+        viewHeight / 2 -
+        player.y * CAMERA_ZOOM;
 
     cameraX = Math.min(
         0,
-        Math.max(viewWidth - scaledWidth, cameraX)
+        Math.max(
+            viewWidth - scaledWidth,
+            cameraX
+        )
     );
 
     cameraY = Math.min(
         0,
-        Math.max(viewHeight - scaledHeight, cameraY)
+        Math.max(
+            viewHeight - scaledHeight,
+            cameraY
+        )
     );
 
     scene.style.transform =
         `translate(${cameraX}px, ${cameraY}px) scale(${CAMERA_ZOOM})`;
 }
+
 
 // ======================================
 // OVLÁDÁNÍ
@@ -236,9 +277,15 @@ window.addEventListener("keydown", event => {
 
     if (
         [
-            "w", "a", "s", "d",
-            "arrowup", "arrowdown",
-            "arrowleft", "arrowright", " "
+            "w",
+            "a",
+            "s",
+            "d",
+            "arrowup",
+            "arrowdown",
+            "arrowleft",
+            "arrowright",
+            " "
         ].includes(key)
     ) {
         event.preventDefault();
@@ -250,18 +297,27 @@ window.addEventListener("keydown", event => {
         dialog.hidden = true;
     }
 
-    if (key === "e" && nearbyObject && dialog.hidden) {
+    if (
+        key === "e" &&
+        nearbyObject &&
+        dialog.hidden
+    ) {
         nearbyObject.action();
     }
 });
 
+
 window.addEventListener("keyup", event => {
-    keys.delete(event.key.toLowerCase());
+    keys.delete(
+        event.key.toLowerCase()
+    );
 });
+
 
 window.addEventListener("blur", () => {
     keys.clear();
 });
+
 
 // ======================================
 // HLAVNÍ UPDATE
@@ -271,10 +327,34 @@ function update() {
     let dx = 0;
     let dy = 0;
 
-    if (keys.has("w") || keys.has("arrowup")) dy--;
-    if (keys.has("s") || keys.has("arrowdown")) dy++;
-    if (keys.has("a") || keys.has("arrowleft")) dx--;
-    if (keys.has("d") || keys.has("arrowright")) dx++;
+    if (
+        keys.has("w") ||
+        keys.has("arrowup")
+    ) {
+        dy--;
+    }
+
+    if (
+        keys.has("s") ||
+        keys.has("arrowdown")
+    ) {
+        dy++;
+    }
+
+    if (
+        keys.has("a") ||
+        keys.has("arrowleft")
+    ) {
+        dx--;
+    }
+
+    if (
+        keys.has("d") ||
+        keys.has("arrowright")
+    ) {
+        dx++;
+    }
+
 
     // Stejná rychlost diagonálně i rovně.
     if (dx !== 0 && dy !== 0) {
@@ -282,48 +362,111 @@ function update() {
         dy *= Math.SQRT1_2;
     }
 
+
     if (dialog.hidden) {
-        const nextX = player.x + dx * player.speed;
-        const nextY = player.y + dy * player.speed;
+
+        const nextX =
+            player.x +
+            dx * player.speed;
+
+        const nextY =
+            player.y +
+            dy * player.speed;
+
 
         // Nejdříve zkusíme pohyb v obou osách.
-        if (canMoveTo(nextX, nextY)) {
+        if (
+            canMoveTo(
+                nextX,
+                nextY
+            )
+        ) {
             player.x = nextX;
             player.y = nextY;
-        } else {
-            // Pokud je cesta zablokovaná, umožníme
-            // samostatný pohyb podél překážky.
-            if (dx !== 0 && canMoveTo(nextX, player.y)) {
+        }
+
+        else {
+
+            // Pohyb vodorovně podél překážky.
+            if (
+                dx !== 0 &&
+                canMoveTo(
+                    nextX,
+                    player.y
+                )
+            ) {
                 player.x = nextX;
             }
 
-            if (dy !== 0 && canMoveTo(player.x, nextY)) {
+
+            // Pohyb svisle podél překážky.
+            if (
+                dy !== 0 &&
+                canMoveTo(
+                    player.x,
+                    nextY
+                )
+            ) {
                 player.y = nextY;
             }
         }
     }
 
-    sprite.style.left = `${player.x}px`;
-    sprite.style.top = `${player.y}px`;
+
+    // ==================================
+    // PLAYER
+    // ==================================
+
+    sprite.style.left =
+        `${player.x}px`;
+
+    sprite.style.top =
+        `${player.y}px`;
+
+
+    // ==================================
+    // CAMERA
+    // ==================================
 
     updateCamera();
 
-    nearbyObject = objects.find(object =>
-        Math.hypot(
-            player.x - object.x,
-            player.y - object.y
-        ) < object.radius
-    ) || null;
+
+    // ==================================
+    // INTERAKCE
+    // ==================================
+
+    nearbyObject =
+        objects.find(object =>
+            Math.hypot(
+                player.x - object.x,
+                player.y - object.y
+            ) < object.radius
+        ) || null;
+
+
+    // ==================================
+    // HUD
+    // ==================================
 
     if (!dialog.hidden) {
-        hint.textContent = "ESC · Zavřít";
+
+        hint.textContent =
+            "ESC · Zavřít";
+
     } else if (nearbyObject) {
-        hint.textContent = `${nearbyObject.name} · Stiskni E`;
+
+        hint.textContent =
+            `${nearbyObject.name} · Stiskni E`;
+
     } else {
-        hint.textContent = "WASD / šipky · Pohyb | E · Interakce";
+
+        hint.textContent =
+            "WASD / šipky · Pohyb | E · Interakce";
     }
+
 
     requestAnimationFrame(update);
 }
+
 
 update();
