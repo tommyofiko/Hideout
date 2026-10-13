@@ -38,6 +38,9 @@ body {
     overflow: hidden;
 }
 
+/* ======================================
+   SCÉNA
+====================================== */
 
 #scene {
     position: absolute;
@@ -48,7 +51,6 @@ body {
     transform-origin: 0 0;
     will-change: transform;
 }
-
 
 #garden {
     position: absolute;
@@ -61,7 +63,6 @@ body {
     display: none;
 }
 
-
 #house-image {
     position: absolute;
     inset: 0;
@@ -72,13 +73,14 @@ body {
     pointer-events: none;
 }
 
-
 #house,
 #tree {
     display: none;
 }
 
-/* POSTAVIČKA */
+/* ======================================
+   POSTAVIČKA
+====================================== */
 
 #player {
     position: absolute;
@@ -88,15 +90,20 @@ body {
     width: 22px;
     height: 25px;
     transform: translate(-50%, -50%);
+
     background: #c7c9a9;
     border: 3px solid #292d2b;
+
     box-shadow:
         0 -9px 0 -2px #554237,
         0 5px 0 #292d2b;
+
     image-rendering: pixelated;
 }
 
-/* ROZHRANÍ */
+/* ======================================
+   HUD
+====================================== */
 
 #hud {
     position: absolute;
@@ -104,6 +111,7 @@ body {
     top: 18px;
     left: 18px;
     padding: 12px 16px;
+
     background: rgba(18, 20, 22, 0.88);
     border: 2px solid #77766b;
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
@@ -120,20 +128,31 @@ body {
     font-size: 11px;
 }
 
+/* ======================================
+   NÁPOVĚDA
+====================================== */
+
 #hint {
     position: absolute;
     z-index: 100;
     bottom: 18px;
     left: 50%;
     transform: translateX(-50%);
+
     max-width: calc(100vw - 32px);
     padding: 10px 14px;
+
     background: rgba(18, 20, 22, 0.9);
     border: 1px solid #77766b;
+
     color: var(--text);
     font-size: 12px;
     text-align: center;
 }
+
+/* ======================================
+   DIALOG
+====================================== */
 
 #dialog {
     position: absolute;
@@ -141,8 +160,10 @@ body {
     left: 50%;
     bottom: 64px;
     transform: translateX(-50%);
+
     width: min(520px, calc(100vw - 32px));
     padding: 20px;
+
     background: #17191c;
     border: 2px solid #aaa38d;
     line-height: 1.6;
@@ -161,19 +182,9 @@ body {
     cursor: pointer;
 }
 
-@media (max-width: 600px) {
-    #hud {
-        top: 8px;
-        left: 8px;
-    }
-
-    #hint {
-        bottom: 10px;
-        font-size: 11px;
-    }
-}
-
-/* HEALTH BAR */
+/* ======================================
+   HEALTH BAR
+====================================== */
 
 #health-bar {
     position: absolute;
@@ -182,9 +193,13 @@ body {
     bottom: 12px;
     width: 400px;
     padding: 8px 9px;
+
     background: rgba(18, 20, 22, 0.9);
     border: 1px solid #77766b;
-    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);
+
+    box-shadow:
+        3px 3px 0 rgba(0, 0, 0, 0.25);
+
     pointer-events: none;
 }
 
@@ -193,6 +208,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 6px;
+
     color: var(--text);
     font-size: 10px;
     font-weight: bold;
@@ -202,6 +218,7 @@ body {
     width: 100%;
     height: 24px;
     overflow: hidden;
+
     background: #493333;
     border: 1px solid #292323;
 }
@@ -213,14 +230,6 @@ body {
     transition: width 0.2s ease;
 }
 
-@media (max-width: 600px) {
-    #health-bar {
-        left: 8px;
-        bottom: 8px;
-        width: 175px;
-    }
-}
-
 /* ======================================
    DEATH SCREEN
 ====================================== */
@@ -229,9 +238,11 @@ body {
     position: absolute;
     inset: 0;
     z-index: 1000;
+
     display: flex;
     justify-content: center;
     align-items: center;
+
     background: rgba(0, 0, 0, 0.85);
 }
 
@@ -260,9 +271,12 @@ body {
 
 #restart-button {
     padding: 14px 35px;
+
     background: #241a1a;
     color: #e4dfd0;
+
     border: 2px solid #9c3030;
+
     font-family: Consolas, monospace;
     font-size: 16px;
     letter-spacing: 3px;
@@ -274,9 +288,13 @@ body {
     color: white;
 }
 
+/* ======================================
+   ANIMOVANÝ PIXEL ART OHEŇ
+====================================== */
 
 #fire {
     position: absolute;
+
     left: 225px;
     top: 550px;
 
@@ -284,37 +302,88 @@ body {
     height: 96px;
 
     transform: translate(-50%, -75%);
-    image-rendering: pixelated;
 
+    image-rendering: pixelated;
     pointer-events: none;
+
     z-index: 2;
 }
 
-
-/* KAMENNÉ OHNIŠTĚ */
+/* ======================================
+   KAMENNÉ OHNIŠTĚ - PIXEL ART
+====================================== */
 
 #fireplace {
     position: absolute;
+
     left: 225px;
     top: 550px;
 
-    width: 56px;
-    height: 24px;
+    width: 46px;
+    height: 16px;
 
-    transform: translate(-50%, -35%);
+    transform: translate(-50%, 0);
 
-    background: #392d25;
-    border: 6px dashed #79786b;
-    border-radius: 48%;
+    /* Tmavá zemina a popel */
+    background: #302c25;
 
-    box-shadow:
-        2px 2px 0 #343631,
-        inset 2px 2px 0 #4d4b42;
+    /* Ostřejší pixel-art tvar */
+    border-radius: 4px;
+
+    z-index: 1;
+    pointer-events: none;
 
     image-rendering: pixelated;
-    pointer-events: none;
-    z-index: 1;
+
+    /* Jednotlivé kameny kolem ohně */
+    box-shadow:
+        /* Zadní levý kámen */
+        -18px -7px 0 -3px #77796b,
+
+        /* Zadní střed */
+        -5px -11px 0 -3px #64695f,
+
+        /* Zadní pravý */
+        12px -9px 0 -3px #838477,
+
+        /* Pravý okraj */
+        22px -3px 0 -4px #555b52,
+
+        /* Přední pravý */
+        16px 10px 0 -3px #737467,
+
+        /* Přední střed */
+        0 12px 0 -3px #858475,
+
+        /* Přední levý */
+        -16px 9px 0 -3px #62665c,
+
+        /* Levý okraj */
+        -23px 0 0 -4px #77786b,
+
+        /* Stín */
+        2px 5px 0 2px #24231f;
 }
 
+/* ======================================
+   MOBILNÍ ZOBRAZENÍ
+====================================== */
 
+@media (max-width: 600px) {
 
+    #hud {
+        top: 8px;
+        left: 8px;
+    }
+
+    #hint {
+        bottom: 10px;
+        font-size: 11px;
+    }
+
+    #health-bar {
+        left: 8px;
+        bottom: 8px;
+        width: 175px;
+    }
+}
