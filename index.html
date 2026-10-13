@@ -61,4 +61,160 @@
 
             <!-- HUNGER -->
 
-            <
+            <div id="hunger-info">
+                <span>HUNGER</span>
+                <span id="hunger-text">100 / 100</span>
+            </div>
+
+            <div id="hunger-track">
+                <div id="hunger-fill"></div>
+            </div>
+
+        </div>
+
+
+        <!-- ======================================
+             HERNÍ SVĚT
+        ======================================= -->
+
+        <div id="world">
+
+            <div id="scene">
+
+                <!-- MAPA - POZADÍ -->
+
+                <div id="garden">
+
+                    <img
+                        id="house-image"
+                        src="house.png"
+                        alt="Dům a zahrada"
+                        draggable="false"
+                    >
+
+                </div>
+
+
+                <!-- DŮM -->
+
+                <div id="house">
+                    <div id="roof"></div>
+                    <div id="door"></div>
+                </div>
+
+
+                <!-- STROM -->
+
+                <div
+                    id="tree"
+                    class="object"
+                ></div>
+
+
+                <!-- ======================================
+                     STUDNA
+                ======================================= -->
+
+                <img
+                    id="well"
+                    src="studna.png"
+                    alt="Kamenná studna"
+                    draggable="false"
+                >
+
+
+                <!-- ======================================
+                     KLÁDA
+                ======================================= -->
+
+                <img
+                    id="log"
+                    src="log.png"
+                    alt="Dřevěná kláda"
+                    draggable="false"
+                >
+
+
+                <!-- ======================================
+                     KAMENNÉ OHNIŠTĚ
+                ======================================= -->
+
+                <div id="fireplace"></div>
+
+
+                <!-- ======================================
+                     ANIMOVANÝ OHEŇ
+                ======================================= -->
+
+                <img
+                    id="fire"
+                    src="fire.gif"
+                    alt="Animovaný oheň"
+                    draggable="false"
+                >
+
+
+                <!-- ======================================
+                     HRÁČ
+                ======================================= -->
+
+                <div
+                    id="player"
+                    aria-label="Postavička"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ======================================
+             OVLÁDÁNÍ
+        ======================================= -->
+
+        <div id="hint">
+            WASD / šipky · Pohyb
+        </div>
+
+
+        <!-- ======================================
+             DIALOG
+        ======================================= -->
+
+        <div id="dialog" hidden></div>
+
+
+        <!-- ======================================
+             DEATH SCREEN
+        ======================================= -->
+
+        <div id="death-screen" hidden>
+
+            <div id="death-content">
+
+                <h1>YOU DIED</h1>
+
+                <p>Po smrti tady nic neni?</p>
+
+                <button
+                    id="restart-button"
+                    type="button"
+                >
+                    RESTART
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================
+         JAVASCRIPT
+    ======================================= -->
+
+    <script src="game.js"></script>
+
+</body>
+</html>
