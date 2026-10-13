@@ -1,3 +1,4 @@
+
 const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
@@ -19,6 +20,53 @@ function setHealth(value) {
 
     healthFill.style.background = "#e84949";
 }
+
+function takeDamage(amount) {
+    setHealth(health - amount);
+}
+
+function healPlayer(amount) {
+    setHealth(health + amount);
+}
+
+setHealth(MAX_HEALTH);
+
+
+// ======================================
+// OHEŇ - DAMAGE KOLIZE
+// ======================================
+
+const FIRE = {
+    x: 225,
+    y: 550,
+    radius: 30,
+    damage: 10,
+    cooldown: 1000
+};
+
+let lastFireDamage = -Infinity;
+
+function checkFireDamage() {
+    const distance = Math.hypot(
+        player.x - FIRE.x,
+        player.y - FIRE.y
+    );
+
+    const now = performance.now();
+
+    if (
+        distance < FIRE.radius + player.radius &&
+        now - lastFireDamage >= FIRE.cooldown
+    ) {
+        takeDamage(FIRE.damage);
+        lastFireDamage = now;
+    }
+}
+
+
+// ======================================
+// NASTAVENÍ SVĚTA
+// ======================================
 
 const WORLD_WIDTH = 1920;
 const WORLD_HEIGHT = 1080;
@@ -428,6 +476,13 @@ function update() {
             }
         }
     }
+
+
+    // ==================================
+    // OHEŇ - KONTROLA POŠKOZENÍ
+    // ==================================
+
+    checkFireDamage();
 
 
     // ==================================
