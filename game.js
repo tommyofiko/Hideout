@@ -95,17 +95,23 @@ const WELL = {
 
 // Automaticky vypočítané rozměry
 
-
 function getWellCollision() {
+    const rx = WELL.width * WELL.collisionWidthRatio;
+
+    // Původní spodní hranice kolize
+    const oldRY = WELL.width * WELL.collisionHeightRatio;
+    const oldY = WELL.y - WELL.width * WELL.baseOffsetRatio - 15;
+
+    // Rozšíření směrem nahoru
+    const extraTop = 22;
+
     return {
         x: WELL.x + 15,
-        y: WELL.y - WELL.width * WELL.baseOffsetRatio - 15,
-
-        rx: WELL.width * WELL.collisionWidthRatio,
-        ry: WELL.width * WELL.collisionHeightRatio
+        y: oldY - extraTop / 2,
+        rx: rx,
+        ry: oldRY + extraTop / 2
     };
 }
-
 
 
 // Pozice obrázku
