@@ -1,12 +1,4 @@
 
-// ======================================
-// HIDEOUT - GAME.JS
-// ======================================
-
-// ======================================
-// HTML ELEMENTY
-// ======================================
-
 const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
@@ -14,13 +6,12 @@ const sprite = document.getElementById("player");
 
 const wellElement = document.getElementById("well");
 const logElement = document.getElementById("log");
+const fireElement = document.getElementById("fire");
 
 const healthFill = document.getElementById("health-fill");
 const healthText = document.getElementById("health-text");
-
 const waterFill = document.getElementById("water-fill");
 const waterText = document.getElementById("water-text");
-
 const hungerFill = document.getElementById("hunger-fill");
 const hungerText = document.getElementById("hunger-text");
 
@@ -28,74 +19,77 @@ const deathScreen = document.getElementById("death-screen");
 const restartButton = document.getElementById("restart-button");
 
 // ======================================
-// HEALTH SYSTEM
+// NASTAVENÍ SVĚTA
+// ======================================
+
+const WORLD_WIDTH = 1920;
+const WORLD_HEIGHT = 1080;
+const CAMERA_ZOOM = 2.8;
+
+const BOUNDS = {
+    left: 40,
+    right: 1880,
+    top: 40,
+    bottom: 1040
+};
+
+const PLAYER_START = { x: 800, y: 800 };
+
+const player = {
+    x: PLAYER_START.x,
+    y: PLAYER_START.y,
+    speed: 2,
+    radius: 12
+};
+
+const keys = new Set();
+let nearbyObject = null;
+
+// ======================================
+// HEALTH
 // ======================================
 
 const MAX_HEALTH = 100;
-
 let health = MAX_HEALTH;
 let isDead = false;
 
 function setHealth(value) {
     if (isDead) return;
 
-    health = Math.max(
-        0,
-        Math.min(MAX_HEALTH, value)
-    );
+    health = Math.max(0, Math.min(MAX_HEALTH, value));
 
-    healthFill.style.width =
-        `${(health / MAX_HEALTH) * 100}%`;
+    healthFill.style.width = `${health}%`;
+    healthText.textContent = `${health} / ${MAX_HEALTH}`;
 
-    healthText.textContent =
-        `${health} / ${MAX_HEALTH}`;
-
-    healthFill.style.background = "#e84949";
-
-    if (health <= 0) {
-        die();
-    }
+    if (health <= 0) die();
 }
 
 function takeDamage(amount) {
-    if (isDead) return;
-
-    setHealth(health - amount);
+    if (!isDead) setHealth(health - amount);
 }
 
 function healPlayer(amount) {
-    if (isDead) return;
-
-    setHealth(health + amount);
+    if (!isDead) setHealth(health + amount);
 }
 
 // ======================================
-// H2O SYSTEM
+// H2O - 20 MINUT
 // ======================================
 
 const MAX_WATER = 100;
-
-// Voda dojde za 20 reálných minut
 const WATER_DURATION = 20 * 60 * 1000;
-
-// Damage při dehydrataci
 const DEHYDRATION_DAMAGE = 5;
 const DEHYDRATION_INTERVAL = 3000;
 
 let water = MAX_WATER;
-
 let lastWaterUpdate = performance.now();
 let lastDehydrationDamage = null;
 
 function setWater(value) {
-    water = Math.max(
-        0,
-        Math.min(MAX_WATER, value)
-    );
+    water = Math.max(0, Math.min(MAX_WATER, value));
 
     if (waterFill) {
-        waterFill.style.width =
-            `${(water / MAX_WATER) * 100}%`;
+        waterFill.style.width = `${water}%`;
     }
 
     if (waterText) {
@@ -104,7 +98,6 @@ function setWater(value) {
     }
 }
 
-// Později použijeme pro pití ze studny
 function drinkWater(amount) {
     if (isDead) return;
 
@@ -116,35 +109,25 @@ function drinkWater(amount) {
 }
 
 function loseWater(amount) {
-    if (isDead) return;
-
-    setWater(water - amount);
+    if (!isDead) setWater(water - amount);
 }
 
 function updateWater() {
     const now = performance.now();
-
-    const deltaTime = Math.max(
-        0,
-        now - lastWaterUpdate
-    );
+    const deltaTime = Math.max(0, now - lastWaterUpdate);
 
     lastWaterUpdate = now;
 
     if (isDead) return;
 
     if (water > 0) {
-        const waterLoss =
-            (MAX_WATER / WATER_DURATION) * deltaTime;
-
-        loseWater(waterLoss);
+        loseWater((MAX_WATER / WATER_DURATION) * deltaTime);
 
         if (water > 0) {
             lastDehydrationDamage = null;
         }
     }
 
-    // Damage při 0 H2O
     if (water <= 0) {
         if (lastDehydrationDamage === null) {
             lastDehydrationDamage = now;
@@ -168,32 +151,23 @@ function updateWater() {
 }
 
 // ======================================
-// HUNGER SYSTEM
+// HUNGER - 30 MINUT
 // ======================================
 
 const MAX_HUNGER = 100;
-
-// Hlad dojde za 30 reálných minut
 const HUNGER_DURATION = 30 * 60 * 1000;
-
-// Damage při hladovění
 const STARVATION_DAMAGE = 5;
 const STARVATION_INTERVAL = 3000;
 
 let hunger = MAX_HUNGER;
-
 let lastHungerUpdate = performance.now();
 let lastStarvationDamage = null;
 
 function setHunger(value) {
-    hunger = Math.max(
-        0,
-        Math.min(MAX_HUNGER, value)
-    );
+    hunger = Math.max(0, Math.min(MAX_HUNGER, value));
 
     if (hungerFill) {
-        hungerFill.style.width =
-            `${(hunger / MAX_HUNGER) * 100}%`;
+        hungerFill.style.width = `${hunger}%`;
     }
 
     if (hungerText) {
@@ -202,7 +176,6 @@ function setHunger(value) {
     }
 }
 
-// Později použijeme pro jídlo z inventáře
 function eatFood(amount) {
     if (isDead) return;
 
@@ -214,35 +187,27 @@ function eatFood(amount) {
 }
 
 function loseHunger(amount) {
-    if (isDead) return;
-
-    setHunger(hunger - amount);
+    if (!isDead) setHunger(hunger - amount);
 }
 
 function updateHunger() {
     const now = performance.now();
-
-    const deltaTime = Math.max(
-        0,
-        now - lastHungerUpdate
-    );
+    const deltaTime = Math.max(0, now - lastHungerUpdate);
 
     lastHungerUpdate = now;
 
     if (isDead) return;
 
     if (hunger > 0) {
-        const hungerLoss =
-            (MAX_HUNGER / HUNGER_DURATION) * deltaTime;
-
-        loseHunger(hungerLoss);
+        loseHunger(
+            (MAX_HUNGER / HUNGER_DURATION) * deltaTime
+        );
 
         if (hunger > 0) {
             lastStarvationDamage = null;
         }
     }
 
-    // Damage při 0 HUNGER
     if (hunger <= 0) {
         if (lastStarvationDamage === null) {
             lastStarvationDamage = now;
@@ -266,38 +231,6 @@ function updateHunger() {
 }
 
 // ======================================
-// NASTAVENÍ SVĚTA
-// ======================================
-
-const WORLD_WIDTH = 1920;
-const WORLD_HEIGHT = 1080;
-
-const CAMERA_ZOOM = 2.8;
-
-const BOUNDS = {
-    left: 40,
-    right: 1880,
-    top: 40,
-    bottom: 1040
-};
-
-const PLAYER_START = {
-    x: 800,
-    y: 800
-};
-
-const player = {
-    x: PLAYER_START.x,
-    y: PLAYER_START.y,
-    speed: 2,
-    radius: 12
-};
-
-const keys = new Set();
-
-let nearbyObject = null;
-
-// ======================================
 // STUDNA
 // ======================================
 
@@ -305,18 +238,14 @@ const WELL = {
     x: 1080,
     y: 665,
     width: 165,
-
     collisionWidthRatio: 34 / 165,
     collisionHeightRatio: 15 / 165,
     baseOffsetRatio: 20 / 165
 };
 
 function getWellCollision() {
-    const rx =
-        WELL.width * WELL.collisionWidthRatio;
-
-    const oldRY =
-        WELL.width * WELL.collisionHeightRatio;
+    const rx = WELL.width * WELL.collisionWidthRatio;
+    const oldRY = WELL.width * WELL.collisionHeightRatio;
 
     const oldY =
         WELL.y -
@@ -328,7 +257,7 @@ function getWellCollision() {
     return {
         x: WELL.x + 15,
         y: oldY - extraTop / 2,
-        rx: rx,
+        rx,
         ry: oldRY + extraTop / 2
     };
 }
@@ -345,17 +274,14 @@ function isTouchingWell(x, y) {
     if (!wellElement) return false;
 
     const collision = getWellCollision();
-
-    const footX = x;
-    const footY = y + 8;
     const footRadius = 5;
 
     const dx =
-        (footX - collision.x) /
+        (x - collision.x) /
         (collision.rx + footRadius);
 
     const dy =
-        (footY - collision.y) /
+        (y + 8 - collision.y) /
         (collision.ry + footRadius);
 
     return dx * dx + dy * dy < 1;
@@ -369,13 +295,10 @@ const LOG = {
     x: 265,
     y: 620,
     width: 100,
-
     ax: 232,
     ay: 635,
-
     bx: 298,
     by: 605,
-
     radius: 11
 };
 
@@ -390,18 +313,14 @@ function updateLogPosition() {
 function isTouchingLog(x, y) {
     if (!logElement) return false;
 
-    const footX = x;
-    const footY = y + 8;
-    const footRadius = 5;
-
     return distanceToSegment(
-        footX,
-        footY,
+        x,
+        y + 8,
         LOG.ax,
         LOG.ay,
         LOG.bx,
         LOG.by
-    ) < LOG.radius + footRadius;
+    ) < LOG.radius + 5;
 }
 
 // ======================================
@@ -409,422 +328,41 @@ function isTouchingLog(x, y) {
 // ======================================
 
 function updateDepthSorting() {
-    const playerFeetY = player.y + 8;
+    const feetY = player.y + 8;
+
+    let behindObject = false;
 
     if (wellElement) {
-        const collision = getWellCollision();
-
         wellElement.style.zIndex = "10";
 
-        sprite.style.zIndex =
-            playerFeetY < collision.y ? "9" : "20";
-    } else {
-        sprite.style.zIndex = "20";
+        const collision = getWellCollision();
+
+        const nearWell =
+            Math.abs(player.x - WELL.x) < WELL.width;
+
+        if (nearWell && feetY < collision.y) {
+            behindObject = true;
+        }
     }
 
     if (logElement) {
         logElement.style.zIndex = "10";
 
-        const logDepthY =
-            (LOG.ay + LOG.by) / 2;
+        const nearLog =
+            Math.abs(player.x - LOG.x) < LOG.width;
 
-        if (playerFeetY < logDepthY) {
-            sprite.style.zIndex = "9";
-        } else if (
-            !wellElement ||
-            playerFeetY >= getWellCollision().y
-        ) {
-            sprite.style.zIndex = "20";
+        const logDepthY = (LOG.ay + LOG.by) / 2;
+
+        if (nearLog && feetY < logDepthY) {
+            behindObject = true;
         }
     }
+
+    sprite.style.zIndex = behindObject ? "9" : "20";
 }
 
 // ======================================
-// OHEŇ - DAMAGE
-// ======================================
-
-const FIRE = {
-    damage: 12,
-    cooldown: 500
-};
-
-let lastFireDamage = -Infinity;
-
-function isTouchingFire() {
-    const fireElement =
-        document.getElementById("fire");
-
-    if (!fireElement) return false;
-
-    const style =
-        window.getComputedStyle(fireElement);
-
-    if (
-        style.display === "none" ||
-        style.visibility === "hidden"
-    ) {
-        return false;
-    }
-
-    const width = fireElement.offsetWidth;
-    const height = fireElement.offsetHeight;
-
-    const left =
-        fireElement.offsetLeft - width * 0.5;
-
-    const top =
-        fireElement.offsetTop - height * 0.75;
-
-    const footX = player.x;
-    const footY = player.y + 8;
-    const footRadius = 4;
-
-    const zones = [
-        [0.50, 0.81, 0.33, 0.16],
-        [0.50, 0.61, 0.26, 0.19],
-        [0.50, 0.41, 0.18, 0.16],
-        [0.53, 0.25, 0.10, 0.10]
-    ];
-
-    return zones.some(([cx, cy, rx, ry]) => {
-        const centerX = left + cx * width;
-        const centerY = top + cy * height;
-
-        const radiusX =
-            rx * width + footRadius;
-
-        const radiusY =
-            ry * height + footRadius;
-
-        const dx =
-            (footX - centerX) / radiusX;
-
-        const dy =
-            (footY - centerY) / radiusY;
-
-        return dx * dx + dy * dy <= 1;
-    });
-}
-
-function checkFireDamage() {
-    if (isDead || !isTouchingFire()) return;
-
-    const now = performance.now();
-
-    if (now - lastFireDamage < FIRE.cooldown) {
-        return;
-    }
-
-    lastFireDamage = now;
-
-    takeDamage(FIRE.damage);
-
-    if (isDead) {
-        playMyJingle();
-    } else {
-        playDamageSound();
-    }
-}
-
-// ======================================
-// RETRO 8-BIT SOUND SYSTEM
-// ======================================
-
-const AudioContextClass =
-    window.AudioContext ||
-    window.webkitAudioContext;
-
-const audioContext = AudioContextClass
-    ? new AudioContextClass()
-    : null;
-
-let lastFootstep = 0;
-
-const FOOTSTEP_INTERVAL = 280;
-
-function resumeAudio() {
-    if (!audioContext) return;
-
-    if (audioContext.state === "suspended") {
-        audioContext.resume().catch(() => {});
-    }
-}
-
-// ======================================
-// ZVUK KROKŮ
-// ======================================
-
-function playFootstep() {
-    if (!audioContext) return;
-
-    resumeAudio();
-
-    const oscillator =
-        audioContext.createOscillator();
-
-    const gain =
-        audioContext.createGain();
-
-    const now = audioContext.currentTime;
-
-    oscillator.type = "square";
-
-    oscillator.frequency.setValueAtTime(
-        140,
-        now
-    );
-
-    oscillator.frequency.exponentialRampToValueAtTime(
-        65,
-        now + 0.055
-    );
-
-    gain.gain.setValueAtTime(
-        0.035,
-        now
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        now + 0.065
-    );
-
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-
-    oscillator.start(now);
-    oscillator.stop(now + 0.07);
-}
-
-// ======================================
-// ZVUK DAMAGE
-// ======================================
-
-function playDamageSound() {
-    if (!audioContext) return;
-
-    resumeAudio();
-
-    const oscillator =
-        audioContext.createOscillator();
-
-    const gain =
-        audioContext.createGain();
-
-    const now = audioContext.currentTime;
-
-    oscillator.type = "sawtooth";
-
-    oscillator.frequency.setValueAtTime(
-        420,
-        now
-    );
-
-    oscillator.frequency.exponentialRampToValueAtTime(
-        85,
-        now + 0.18
-    );
-
-    gain.gain.setValueAtTime(
-        0.09,
-        now
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        now + 0.2
-    );
-
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-
-    oscillator.start(now);
-    oscillator.stop(now + 0.2);
-}
-
-// ======================================
-// RETRO DEATH SOUND
-// ======================================
-
-function playDeathSound() {
-    if (!audioContext) return;
-
-    resumeAudio();
-
-    const now = audioContext.currentTime;
-
-    const oscillator =
-        audioContext.createOscillator();
-
-    const gain =
-        audioContext.createGain();
-
-    oscillator.type = "sawtooth";
-
-    oscillator.frequency.setValueAtTime(
-        190,
-        now
-    );
-
-    oscillator.frequency.exponentialRampToValueAtTime(
-        45,
-        now + 0.65
-    );
-
-    gain.gain.setValueAtTime(
-        0.13,
-        now
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        now + 0.75
-    );
-
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-
-    oscillator.start(now);
-    oscillator.stop(now + 0.75);
-}
-
-// ======================================
-// TVOJE 8-BIT ZNĚLKA PŘI SMRTI
-// ======================================
-
-function playMyJingle() {
-    if (!audioContext) return;
-
-    resumeAudio();
-
-    const notes = [
-        { freq: 344, duration: 0.13 },
-        { freq: 243, duration: 0.17 },
-        { freq: 204, duration: 0.13 },
-        { freq: 172, duration: 0.68 }
-    ];
-
-    let time = audioContext.currentTime;
-
-    notes.forEach(note => {
-        const oscillator =
-            audioContext.createOscillator();
-
-        const gain =
-            audioContext.createGain();
-
-        oscillator.type = "square";
-
-        oscillator.frequency.setValueAtTime(
-            note.freq,
-            time
-        );
-
-        gain.gain.setValueAtTime(
-            0.10,
-            time
-        );
-
-        gain.gain.setValueAtTime(
-            0.10,
-            time + note.duration - 0.01
-        );
-
-        gain.gain.linearRampToValueAtTime(
-            0,
-            time + note.duration
-        );
-
-        oscillator.connect(gain);
-        gain.connect(audioContext.destination);
-
-        oscillator.start(time);
-        oscillator.stop(time + note.duration);
-
-        time += note.duration;
-    });
-}
-
-// ======================================
-// UPDATE KROKŮ
-// ======================================
-
-function updateFootsteps(isMoving) {
-    if (!isMoving || isDead) return;
-
-    const now = performance.now();
-
-    if (
-        now - lastFootstep >=
-        FOOTSTEP_INTERVAL
-    ) {
-        playFootstep();
-        lastFootstep = now;
-    }
-}
-
-// ======================================
-// SMRT HRÁČE
-// ======================================
-
-function die() {
-    if (isDead) return;
-
-    isDead = true;
-
-    keys.clear();
-    nearbyObject = null;
-
-    dialog.hidden = true;
-    deathScreen.hidden = false;
-}
-
-// ======================================
-// RESTART HRY
-// ======================================
-
-function restartGame() {
-    isDead = false;
-
-    player.x = PLAYER_START.x;
-    player.y = PLAYER_START.y;
-
-    lastFireDamage = -Infinity;
-    lastFootstep = 0;
-
-    keys.clear();
-    nearbyObject = null;
-
-    dialog.hidden = true;
-    deathScreen.hidden = true;
-
-    // HEALTH
-    setHealth(MAX_HEALTH);
-
-    // H2O
-    setWater(MAX_WATER);
-    lastWaterUpdate = performance.now();
-    lastDehydrationDamage = null;
-
-    // HUNGER
-    setHunger(MAX_HUNGER);
-    lastHungerUpdate = performance.now();
-    lastStarvationDamage = null;
-
-    sprite.style.left = `${player.x}px`;
-    sprite.style.top = `${player.y}px`;
-
-    updateDepthSorting();
-    updateCamera();
-}
-
-restartButton.addEventListener(
-    "click",
-    restartGame
-);
-
-// ======================================
-// PRŮCHOZÍ OBLAST OSTROVA
+// GEOMETRIE
 // ======================================
 
 const WALKABLE_AREA = [
@@ -859,10 +397,6 @@ const WALKABLE_AREA = [
     [1130, 726]
 ];
 
-// ======================================
-// GEOMETRIE KOLIZÍ
-// ======================================
-
 function pointInPolygon(x, y, polygon) {
     let inside = false;
 
@@ -871,52 +405,37 @@ function pointInPolygon(x, y, polygon) {
         i < polygon.length;
         j = i++
     ) {
-        const [xi, yi] = polygon[i];
-        const [xj, yj] = polygon[j];
+        const xi = polygon[i][0];
+        const yi = polygon[i][1];
+        const xj = polygon[j][0];
+        const yj = polygon[j][1];
 
         const intersects =
             (yi > y) !== (yj > y) &&
-            x <
-                ((xj - xi) * (y - yi)) /
-                (yj - yi) + xi;
+            x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
 
-        if (intersects) {
-            inside = !inside;
-        }
+        if (intersects) inside = !inside;
     }
 
     return inside;
 }
 
-function distanceToSegment(
-    px,
-    py,
-    ax,
-    ay,
-    bx,
-    by
-) {
+function distanceToSegment(px, py, ax, ay, bx, by) {
     const dx = bx - ax;
     const dy = by - ay;
 
-    const lengthSquared =
-        dx * dx + dy * dy;
+    const lengthSquared = dx * dx + dy * dy;
 
     if (lengthSquared === 0) {
-        return Math.hypot(
-            px - ax,
-            py - ay
-        );
+        return Math.hypot(px - ax, py - ay);
     }
 
     const t = Math.max(
         0,
         Math.min(
             1,
-            (
-                (px - ax) * dx +
-                (py - ay) * dy
-            ) / lengthSquared
+            ((px - ax) * dx + (py - ay) * dy) /
+            lengthSquared
         )
     );
 
@@ -929,52 +448,30 @@ function distanceToSegment(
     );
 }
 
-// ======================================
-// KOLIZE OSTROVA + STUDNY + KLÁDY
-// ======================================
-
 function isBlocked(x, y) {
-    const radius = player.radius;
-
     if (!pointInPolygon(x, y, WALKABLE_AREA)) {
         return true;
     }
 
-    for (
-        let i = 0;
-        i < WALKABLE_AREA.length;
-        i++
-    ) {
+    for (let i = 0; i < WALKABLE_AREA.length; i++) {
         const [ax, ay] = WALKABLE_AREA[i];
 
         const [bx, by] =
-            WALKABLE_AREA[
-                (i + 1) % WALKABLE_AREA.length
-            ];
+            WALKABLE_AREA[(i + 1) % WALKABLE_AREA.length];
 
         if (
             distanceToSegment(
-                x,
-                y,
-                ax,
-                ay,
-                bx,
-                by
-            ) < radius
+                x, y, ax, ay, bx, by
+            ) < player.radius
         ) {
             return true;
         }
     }
 
-    if (isTouchingWell(x, y)) {
-        return true;
-    }
-
-    if (isTouchingLog(x, y)) {
-        return true;
-    }
-
-    return false;
+    return (
+        isTouchingWell(x, y) ||
+        isTouchingLog(x, y)
+    );
 }
 
 function canMoveTo(x, y) {
@@ -988,7 +485,150 @@ function canMoveTo(x, y) {
 }
 
 // ======================================
-// OBJEKTY A INTERAKCE
+// OHEŇ
+// ======================================
+
+const FIRE = {
+    damage: 12,
+    cooldown: 500
+};
+
+let lastFireDamage = -Infinity;
+
+function isTouchingFire() {
+    if (!fireElement) return false;
+
+    const fireX = 225;
+    const fireY = 550;
+
+    const footX = player.x;
+    const footY = player.y + 8;
+
+    const dx = (footX - fireX) / 29;
+    const dy = (footY - fireY) / 24;
+
+    return dx * dx + dy * dy < 1;
+}
+
+function checkFireDamage() {
+    if (isDead || !isTouchingFire()) return;
+
+    const now = performance.now();
+
+    if (now - lastFireDamage < FIRE.cooldown) return;
+
+    lastFireDamage = now;
+    takeDamage(FIRE.damage);
+
+    if (isDead) {
+        playMyJingle();
+    } else {
+        playDamageSound();
+    }
+}
+
+// ======================================
+// ZVUKY
+// ======================================
+
+const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
+
+const audioContext = AudioContextClass
+    ? new AudioContextClass()
+    : null;
+
+function resumeAudio() {
+    if (audioContext?.state === "suspended") {
+        audioContext.resume().catch(() => {});
+    }
+}
+
+function playTone(frequency, duration, volume, type = "square") {
+    if (!audioContext || audioContext.state !== "running") {
+        return;
+    }
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    const now = audioContext.currentTime;
+
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, now);
+
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + duration
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+}
+
+function playFootstep() {
+    playTone(95, 0.055, 0.025, "triangle");
+}
+
+function playDamageSound() {
+    playTone(150, 0.18, 0.08, "sawtooth");
+}
+
+function playDeathSound() {
+    playTone(85, 0.45, 0.09, "sawtooth");
+}
+
+function playMyJingle() {
+    if (!audioContext || audioContext.state !== "running") {
+        return;
+    }
+
+    const notes = [344, 243, 204, 172];
+
+    notes.forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        const start =
+            audioContext.currentTime + index * 0.22;
+
+        oscillator.type = "triangle";
+        oscillator.frequency.value = frequency;
+
+        gain.gain.setValueAtTime(0.06, start);
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            start + 0.25
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start(start);
+        oscillator.stop(start + 0.25);
+    });
+}
+
+let lastFootstep = 0;
+const FOOTSTEP_INTERVAL = 280;
+
+function updateFootsteps(isMoving) {
+    if (!isMoving) return;
+
+    const now = performance.now();
+
+    if (now - lastFootstep >= FOOTSTEP_INTERVAL) {
+        playFootstep();
+        lastFootstep = now;
+    }
+}
+
+// ======================================
+// INTERAKCE
 // ======================================
 
 const objects = [
@@ -997,7 +637,6 @@ const objects = [
         x: 960,
         y: 580,
         radius: 65,
-
         action: () => {
             showMessage(
                 "Vítej doma.",
@@ -1005,13 +644,11 @@ const objects = [
             );
         }
     },
-
     {
         name: "Starý strom",
         x: 360,
         y: 700,
         radius: 55,
-
         action: () => {
             showMessage(
                 "Pod stromem",
@@ -1025,30 +662,154 @@ function showMessage(title, message) {
     dialog.hidden = false;
     dialog.replaceChildren();
 
-    const heading =
-        document.createElement("strong");
-
+    const heading = document.createElement("strong");
     heading.textContent = title;
 
-    const paragraph =
-        document.createElement("p");
-
+    const paragraph = document.createElement("p");
     paragraph.textContent = message;
 
-    const button =
-        document.createElement("button");
-
+    const button = document.createElement("button");
     button.textContent = "Zavřít [Esc]";
 
     button.addEventListener("click", () => {
         dialog.hidden = true;
     });
 
-    dialog.append(
-        heading,
-        paragraph,
-        button
+    dialog.append(heading, paragraph, button);
+}
+
+// ======================================
+// INVENTÁŘ - 5 SLOTŮ
+// ======================================
+
+const INVENTORY_SIZE = 5;
+
+const inventoryItems =
+    Array(INVENTORY_SIZE).fill(null);
+
+let selectedInventorySlot = 0;
+
+let inventoryElement =
+    document.getElementById("inventory");
+
+if (!inventoryElement) {
+    inventoryElement = document.createElement("div");
+    inventoryElement.id = "inventory";
+
+    document.getElementById("game")
+        .appendChild(inventoryElement);
+}
+
+function renderInventory() {
+    inventoryElement.replaceChildren();
+
+    inventoryItems.forEach((item, index) => {
+        const slot = document.createElement("button");
+
+        slot.type = "button";
+
+        slot.className =
+            "inventory-slot" +
+            (index === selectedInventorySlot
+                ? " selected"
+                : "");
+
+        slot.title = item
+            ? item.name
+            : `Prázdný slot ${index + 1}`;
+
+        const number = document.createElement("span");
+        number.className = "slot-number";
+        number.textContent = String(index + 1);
+
+        const icon = document.createElement("span");
+        icon.className = "slot-item";
+
+        icon.textContent =
+            item ? (item.icon || "📦") : "";
+
+        slot.append(number, icon);
+
+        slot.addEventListener("click", () => {
+            if (isDead) return;
+
+            resumeAudio();
+
+            if (
+                selectedInventorySlot === index &&
+                item &&
+                typeof item.use === "function"
+            ) {
+                item.use();
+            } else {
+                selectInventorySlot(index);
+            }
+        });
+
+        inventoryElement.appendChild(slot);
+    });
+}
+
+function selectInventorySlot(index) {
+    if (
+        isDead ||
+        index < 0 ||
+        index >= INVENTORY_SIZE
+    ) {
+        return;
+    }
+
+    selectedInventorySlot = index;
+    renderInventory();
+}
+
+function addInventoryItem(item) {
+    if (isDead || !item || !item.id) {
+        return false;
+    }
+
+    const emptyIndex = inventoryItems.findIndex(
+        slot => slot === null
     );
+
+    if (emptyIndex === -1) return false;
+
+    inventoryItems[emptyIndex] = { ...item };
+
+    renderInventory();
+    return true;
+}
+
+function removeInventoryItem(
+    index = selectedInventorySlot
+) {
+    if (
+        index < 0 ||
+        index >= INVENTORY_SIZE
+    ) {
+        return null;
+    }
+
+    const item = inventoryItems[index];
+
+    inventoryItems[index] = null;
+    renderInventory();
+
+    return item;
+}
+
+function getSelectedInventoryItem() {
+    return inventoryItems[selectedInventorySlot];
+}
+
+function useSelectedInventoryItem() {
+    if (isDead || !dialog.hidden) return;
+
+    const item = getSelectedInventoryItem();
+
+    if (item && typeof item.use === "function") {
+        item.use();
+    }
 }
 
 // ======================================
@@ -1056,38 +817,35 @@ function showMessage(title, message) {
 // ======================================
 
 function updateCamera() {
-    const viewWidth = window.innerWidth;
-    const viewHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
-    const scaledWidth =
-        WORLD_WIDTH * CAMERA_ZOOM;
-
-    const scaledHeight =
-        WORLD_HEIGHT * CAMERA_ZOOM;
+    const scaledWidth = WORLD_WIDTH * CAMERA_ZOOM;
+    const scaledHeight = WORLD_HEIGHT * CAMERA_ZOOM;
 
     let cameraX =
-        viewWidth / 2 -
-        player.x * CAMERA_ZOOM;
+        viewportWidth / 2 - player.x * CAMERA_ZOOM;
 
     let cameraY =
-        viewHeight / 2 -
-        player.y * CAMERA_ZOOM;
+        viewportHeight / 2 - player.y * CAMERA_ZOOM;
 
-    cameraX = Math.min(
-        0,
-        Math.max(
-            viewWidth - scaledWidth,
-            cameraX
-        )
-    );
+    if (scaledWidth > viewportWidth) {
+        cameraX = Math.min(
+            0,
+            Math.max(viewportWidth - scaledWidth, cameraX)
+        );
+    } else {
+        cameraX = (viewportWidth - scaledWidth) / 2;
+    }
 
-    cameraY = Math.min(
-        0,
-        Math.max(
-            viewHeight - scaledHeight,
-            cameraY
-        )
-    );
+    if (scaledHeight > viewportHeight) {
+        cameraY = Math.min(
+            0,
+            Math.max(viewportHeight - scaledHeight, cameraY)
+        );
+    } else {
+        cameraY = (viewportHeight - scaledHeight) / 2;
+    }
 
     scene.style.transform =
         `translate(${cameraX}px, ${cameraY}px) scale(${CAMERA_ZOOM})`;
@@ -1115,6 +873,18 @@ window.addEventListener("keydown", event => {
 
     resumeAudio();
 
+    // INVENTÁŘ 1-5
+    if (
+        /^[1-5]$/.test(event.key) &&
+        !event.repeat &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey
+    ) {
+        selectInventorySlot(Number(event.key) - 1);
+        return;
+    }
+
     keys.add(key);
 
     if (key === "escape") {
@@ -1139,7 +909,66 @@ window.addEventListener("blur", () => {
 });
 
 // ======================================
-// HLAVNÍ UPDATE
+// SMRT
+// ======================================
+
+function die() {
+    if (isDead) return;
+
+    isDead = true;
+
+    keys.clear();
+    nearbyObject = null;
+
+    dialog.hidden = true;
+    deathScreen.hidden = false;
+}
+
+// ======================================
+// RESTART
+// ======================================
+
+function restartGame() {
+    isDead = false;
+
+    player.x = PLAYER_START.x;
+    player.y = PLAYER_START.y;
+
+    keys.clear();
+    nearbyObject = null;
+
+    lastFireDamage = -Infinity;
+    lastFootstep = 0;
+
+    dialog.hidden = true;
+    deathScreen.hidden = true;
+
+    setHealth(MAX_HEALTH);
+
+    setWater(MAX_WATER);
+    lastWaterUpdate = performance.now();
+    lastDehydrationDamage = null;
+
+    setHunger(MAX_HUNGER);
+    lastHungerUpdate = performance.now();
+    lastStarvationDamage = null;
+
+    // RESET INVENTÁŘE
+    inventoryItems.fill(null);
+    selectedInventorySlot = 0;
+    renderInventory();
+
+    sprite.style.left = `${player.x}px`;
+    sprite.style.top = `${player.y}px`;
+
+    updateDepthSorting();
+    updateCamera();
+}
+
+restartButton.addEventListener("click", restartGame);
+
+// ======================================
+// HLAVNÍ HERNÍ SMYČKA
 // ======================================
 
 function update() {
@@ -1149,87 +978,49 @@ function update() {
     let dx = 0;
     let dy = 0;
 
-    // POHYB NAHORU
-    if (
-        keys.has("w") ||
-        keys.has("arrowup")
-    ) {
+    if (keys.has("w") || keys.has("arrowup")) {
         dy--;
     }
 
-    // POHYB DOLŮ
-    if (
-        keys.has("s") ||
-        keys.has("arrowdown")
-    ) {
+    if (keys.has("s") || keys.has("arrowdown")) {
         dy++;
     }
 
-    // POHYB DOLEVA
-    if (
-        keys.has("a") ||
-        keys.has("arrowleft")
-    ) {
+    if (keys.has("a") || keys.has("arrowleft")) {
         dx--;
     }
 
-    // POHYB DOPRAVA
-    if (
-        keys.has("d") ||
-        keys.has("arrowright")
-    ) {
+    if (keys.has("d") || keys.has("arrowright")) {
         dx++;
     }
 
-    // NORMALIZACE DIAGONÁLNÍHO POHYBU
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
 
-    // ======================================
-    // POHYB + KOLIZE
-    // ======================================
-
+    // POHYB A KOLIZE
     if (dialog.hidden && !isDead) {
-        const nextX =
-            player.x + dx * player.speed;
-
-        const nextY =
-            player.y + dy * player.speed;
+        const nextX = player.x + dx * player.speed;
+        const nextY = player.y + dy * player.speed;
 
         if (canMoveTo(nextX, nextY)) {
             player.x = nextX;
             player.y = nextY;
         } else {
-            // KLOUZÁNÍ PODÉL PŘEKÁŽEK
-            if (
-                dx !== 0 &&
-                canMoveTo(nextX, player.y)
-            ) {
+            if (dx !== 0 && canMoveTo(nextX, player.y)) {
                 player.x = nextX;
             }
 
-            if (
-                dy !== 0 &&
-                canMoveTo(player.x, nextY)
-            ) {
+            if (dy !== 0 && canMoveTo(player.x, nextY)) {
                 player.y = nextY;
             }
         }
     }
 
-    // ======================================
-    // OHEŇ
-    // ======================================
-
     if (!isDead) {
         checkFireDamage();
     }
-
-    // ======================================
-    // ZVUK KROKŮ
-    // ======================================
 
     const isMoving =
         !isDead &&
@@ -1241,41 +1032,22 @@ function update() {
 
     updateFootsteps(isMoving);
 
-    // ======================================
-    // POZICE HRÁČE
-    // ======================================
-
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
-    // ======================================
-    // VRSTVENÍ OBJEKTŮ
-    // ======================================
-
     updateDepthSorting();
-
-    // ======================================
-    // KAMERA
-    // ======================================
-
     updateCamera();
 
-    // ======================================
-    // INTERAKCE
-    // ======================================
-
+    // HLEDÁNÍ INTERAKCE
     nearbyObject =
-        objects.find(object =>
-            Math.hypot(
+        objects.find(object => {
+            return Math.hypot(
                 player.x - object.x,
                 player.y - object.y
-            ) < object.radius
-        ) || null;
+            ) < object.radius;
+        }) || null;
 
-    // ======================================
-    // HUD
-    // ======================================
-
+    // NÁPOVĚDA
     if (isDead) {
         hint.textContent = "YOU DIED";
     } else if (!dialog.hidden) {
@@ -1285,7 +1057,7 @@ function update() {
             `${nearbyObject.name} · Stiskni E`;
     } else {
         hint.textContent =
-            "WASD / šipky · Pohyb | E · Interakce";
+            "WASD / šipky · Pohyb | E · Interakce | 1–5 · Inventář";
     }
 
     requestAnimationFrame(update);
@@ -1295,26 +1067,19 @@ function update() {
 // START HRY
 // ======================================
 
-// UMÍSTĚNÍ OBJEKTŮ
 updateWellPosition();
 updateLogPosition();
 
-// VÝCHOZÍ HEALTH
 setHealth(MAX_HEALTH);
-
-// VÝCHOZÍ H2O
 setWater(MAX_WATER);
-
-// VÝCHOZÍ HUNGER
 setHunger(MAX_HUNGER);
 
-// START ČASOVAČŮ
+renderInventory();
+
 lastWaterUpdate = performance.now();
 lastHungerUpdate = performance.now();
 
-// AKTUALIZACE KAŽDÝCH 100 MS
 setInterval(updateWater, 100);
 setInterval(updateHunger, 100);
 
-// SPUŠTĚNÍ HRY
 update();
