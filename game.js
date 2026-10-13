@@ -1,5 +1,10 @@
+
 // ======================================
 // HIDEOUT - GAME.JS
+// ======================================
+
+// ======================================
+// HTML ELEMENTY
 // ======================================
 
 const scene = document.getElementById("scene");
@@ -16,6 +21,9 @@ const healthText = document.getElementById("health-text");
 const waterFill = document.getElementById("water-fill");
 const waterText = document.getElementById("water-text");
 
+const hungerFill = document.getElementById("hunger-fill");
+const hungerText = document.getElementById("hunger-text");
+
 const deathScreen = document.getElementById("death-screen");
 const restartButton = document.getElementById("restart-button");
 
@@ -24,13 +32,17 @@ const restartButton = document.getElementById("restart-button");
 // ======================================
 
 const MAX_HEALTH = 100;
+
 let health = MAX_HEALTH;
 let isDead = false;
 
 function setHealth(value) {
     if (isDead) return;
 
-    health = Math.max(0, Math.min(MAX_HEALTH, value));
+    health = Math.max(
+        0,
+        Math.min(MAX_HEALTH, value)
+    );
 
     healthFill.style.width =
         `${(health / MAX_HEALTH) * 100}%`;
@@ -47,11 +59,13 @@ function setHealth(value) {
 
 function takeDamage(amount) {
     if (isDead) return;
+
     setHealth(health - amount);
 }
 
 function healPlayer(amount) {
     if (isDead) return;
+
     setHealth(health + amount);
 }
 
@@ -61,10 +75,10 @@ function healPlayer(amount) {
 
 const MAX_WATER = 100;
 
-// Za 10 reálných minut klesne H2O na 0
-const WATER_DURATION = 10 * 60 * 1000;
+// Voda dojde za 20 reálných minut
+const WATER_DURATION = 20 * 60 * 1000;
 
-// Damage při nedostatku vody
+// Damage při dehydrataci
 const DEHYDRATION_DAMAGE = 5;
 const DEHYDRATION_INTERVAL = 3000;
 
@@ -74,7 +88,10 @@ let lastWaterUpdate = performance.now();
 let lastDehydrationDamage = null;
 
 function setWater(value) {
-    water = Math.max(0, Math.min(MAX_WATER, value));
+    water = Math.max(
+        0,
+        Math.min(MAX_WATER, value)
+    );
 
     if (waterFill) {
         waterFill.style.width =
@@ -87,6 +104,7 @@ function setWater(value) {
     }
 }
 
+// Později použijeme pro pití ze studny
 function drinkWater(amount) {
     if (isDead) return;
 
@@ -99,13 +117,18 @@ function drinkWater(amount) {
 
 function loseWater(amount) {
     if (isDead) return;
+
     setWater(water - amount);
 }
 
 function updateWater() {
     const now = performance.now();
 
-    const deltaTime = Math.max(0, now - lastWaterUpdate);
+    const deltaTime = Math.max(
+        0,
+        now - lastWaterUpdate
+    );
+
     lastWaterUpdate = now;
 
     if (isDead) return;
@@ -121,6 +144,7 @@ function updateWater() {
         }
     }
 
+    // Damage při 0 H2O
     if (water <= 0) {
         if (lastDehydrationDamage === null) {
             lastDehydrationDamage = now;
@@ -144,11 +168,110 @@ function updateWater() {
 }
 
 // ======================================
+// HUNGER SYSTEM
+// ======================================
+
+const MAX_HUNGER = 100;
+
+// Hlad dojde za 30 reálných minut
+const HUNGER_DURATION = 30 * 60 * 1000;
+
+// Damage při hladovění
+const STARVATION_DAMAGE = 5;
+const STARVATION_INTERVAL = 3000;
+
+let hunger = MAX_HUNGER;
+
+let lastHungerUpdate = performance.now();
+let lastStarvationDamage = null;
+
+function setHunger(value) {
+    hunger = Math.max(
+        0,
+        Math.min(MAX_HUNGER, value)
+    );
+
+    if (hungerFill) {
+        hungerFill.style.width =
+            `${(hunger / MAX_HUNGER) * 100}%`;
+    }
+
+    if (hungerText) {
+        hungerText.textContent =
+            `${Math.ceil(hunger)} / ${MAX_HUNGER}`;
+    }
+}
+
+// Později použijeme pro jídlo z inventáře
+function eatFood(amount) {
+    if (isDead) return;
+
+    setHunger(hunger + amount);
+
+    if (hunger > 0) {
+        lastStarvationDamage = null;
+    }
+}
+
+function loseHunger(amount) {
+    if (isDead) return;
+
+    setHunger(hunger - amount);
+}
+
+function updateHunger() {
+    const now = performance.now();
+
+    const deltaTime = Math.max(
+        0,
+        now - lastHungerUpdate
+    );
+
+    lastHungerUpdate = now;
+
+    if (isDead) return;
+
+    if (hunger > 0) {
+        const hungerLoss =
+            (MAX_HUNGER / HUNGER_DURATION) * deltaTime;
+
+        loseHunger(hungerLoss);
+
+        if (hunger > 0) {
+            lastStarvationDamage = null;
+        }
+    }
+
+    // Damage při 0 HUNGER
+    if (hunger <= 0) {
+        if (lastStarvationDamage === null) {
+            lastStarvationDamage = now;
+        }
+
+        if (
+            now - lastStarvationDamage >=
+            STARVATION_INTERVAL
+        ) {
+            takeDamage(STARVATION_DAMAGE);
+
+            if (isDead) {
+                playMyJingle();
+            } else {
+                playDamageSound();
+            }
+
+            lastStarvationDamage = now;
+        }
+    }
+}
+
+// ======================================
 // NASTAVENÍ SVĚTA
 // ======================================
 
 const WORLD_WIDTH = 1920;
 const WORLD_HEIGHT = 1080;
+
 const CAMERA_ZOOM = 2.8;
 
 const BOUNDS = {
@@ -171,6 +294,7 @@ const player = {
 };
 
 const keys = new Set();
+
 let nearbyObject = null;
 
 // ======================================
@@ -327,11 +451,13 @@ const FIRE = {
 let lastFireDamage = -Infinity;
 
 function isTouchingFire() {
-    const fireElement = document.getElementById("fire");
+    const fireElement =
+        document.getElementById("fire");
 
     if (!fireElement) return false;
 
-    const style = window.getComputedStyle(fireElement);
+    const style =
+        window.getComputedStyle(fireElement);
 
     if (
         style.display === "none" ||
@@ -364,11 +490,17 @@ function isTouchingFire() {
         const centerX = left + cx * width;
         const centerY = top + cy * height;
 
-        const radiusX = rx * width + footRadius;
-        const radiusY = ry * height + footRadius;
+        const radiusX =
+            rx * width + footRadius;
 
-        const dx = (footX - centerX) / radiusX;
-        const dy = (footY - centerY) / radiusY;
+        const radiusY =
+            ry * height + footRadius;
+
+        const dx =
+            (footX - centerX) / radiusX;
+
+        const dy =
+            (footY - centerY) / radiusY;
 
         return dx * dx + dy * dy <= 1;
     });
@@ -384,6 +516,7 @@ function checkFireDamage() {
     }
 
     lastFireDamage = now;
+
     takeDamage(FIRE.damage);
 
     if (isDead) {
@@ -406,6 +539,7 @@ const audioContext = AudioContextClass
     : null;
 
 let lastFootstep = 0;
+
 const FOOTSTEP_INTERVAL = 280;
 
 function resumeAudio() {
@@ -425,19 +559,31 @@ function playFootstep() {
 
     resumeAudio();
 
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
     const now = audioContext.currentTime;
 
     oscillator.type = "square";
 
-    oscillator.frequency.setValueAtTime(140, now);
+    oscillator.frequency.setValueAtTime(
+        140,
+        now
+    );
+
     oscillator.frequency.exponentialRampToValueAtTime(
         65,
         now + 0.055
     );
 
-    gain.gain.setValueAtTime(0.035, now);
+    gain.gain.setValueAtTime(
+        0.035,
+        now
+    );
+
     gain.gain.exponentialRampToValueAtTime(
         0.001,
         now + 0.065
@@ -459,19 +605,31 @@ function playDamageSound() {
 
     resumeAudio();
 
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
     const now = audioContext.currentTime;
 
     oscillator.type = "sawtooth";
 
-    oscillator.frequency.setValueAtTime(420, now);
+    oscillator.frequency.setValueAtTime(
+        420,
+        now
+    );
+
     oscillator.frequency.exponentialRampToValueAtTime(
         85,
         now + 0.18
     );
 
-    gain.gain.setValueAtTime(0.09, now);
+    gain.gain.setValueAtTime(
+        0.09,
+        now
+    );
+
     gain.gain.exponentialRampToValueAtTime(
         0.001,
         now + 0.2
@@ -494,18 +652,30 @@ function playDeathSound() {
     resumeAudio();
 
     const now = audioContext.currentTime;
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
 
     oscillator.type = "sawtooth";
 
-    oscillator.frequency.setValueAtTime(190, now);
+    oscillator.frequency.setValueAtTime(
+        190,
+        now
+    );
+
     oscillator.frequency.exponentialRampToValueAtTime(
         45,
         now + 0.65
     );
 
-    gain.gain.setValueAtTime(0.13, now);
+    gain.gain.setValueAtTime(
+        0.13,
+        now
+    );
+
     gain.gain.exponentialRampToValueAtTime(
         0.001,
         now + 0.75
@@ -537,8 +707,11 @@ function playMyJingle() {
     let time = audioContext.currentTime;
 
     notes.forEach(note => {
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
+        const oscillator =
+            audioContext.createOscillator();
+
+        const gain =
+            audioContext.createGain();
 
         oscillator.type = "square";
 
@@ -547,7 +720,10 @@ function playMyJingle() {
             time
         );
 
-        gain.gain.setValueAtTime(0.10, time);
+        gain.gain.setValueAtTime(
+            0.10,
+            time
+        );
 
         gain.gain.setValueAtTime(
             0.10,
@@ -578,7 +754,10 @@ function updateFootsteps(isMoving) {
 
     const now = performance.now();
 
-    if (now - lastFootstep >= FOOTSTEP_INTERVAL) {
+    if (
+        now - lastFootstep >=
+        FOOTSTEP_INTERVAL
+    ) {
         playFootstep();
         lastFootstep = now;
     }
@@ -619,13 +798,18 @@ function restartGame() {
     dialog.hidden = true;
     deathScreen.hidden = true;
 
-    // Obnovení životů
+    // HEALTH
     setHealth(MAX_HEALTH);
 
-    // Obnovení vody
+    // H2O
     setWater(MAX_WATER);
     lastWaterUpdate = performance.now();
     lastDehydrationDamage = null;
+
+    // HUNGER
+    setHunger(MAX_HUNGER);
+    lastHungerUpdate = performance.now();
+    lastStarvationDamage = null;
 
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
@@ -634,7 +818,10 @@ function restartGame() {
     updateCamera();
 }
 
-restartButton.addEventListener("click", restartGame);
+restartButton.addEventListener(
+    "click",
+    restartGame
+);
 
 // ======================================
 // PRŮCHOZÍ OBLAST OSTROVA
@@ -689,7 +876,9 @@ function pointInPolygon(x, y, polygon) {
 
         const intersects =
             (yi > y) !== (yj > y) &&
-            x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+            x <
+                ((xj - xi) * (y - yi)) /
+                (yj - yi) + xi;
 
         if (intersects) {
             inside = !inside;
@@ -699,20 +888,35 @@ function pointInPolygon(x, y, polygon) {
     return inside;
 }
 
-function distanceToSegment(px, py, ax, ay, bx, by) {
+function distanceToSegment(
+    px,
+    py,
+    ax,
+    ay,
+    bx,
+    by
+) {
     const dx = bx - ax;
     const dy = by - ay;
-    const lengthSquared = dx * dx + dy * dy;
+
+    const lengthSquared =
+        dx * dx + dy * dy;
 
     if (lengthSquared === 0) {
-        return Math.hypot(px - ax, py - ay);
+        return Math.hypot(
+            px - ax,
+            py - ay
+        );
     }
 
     const t = Math.max(
         0,
         Math.min(
             1,
-            ((px - ax) * dx + (py - ay) * dy) / lengthSquared
+            (
+                (px - ax) * dx +
+                (py - ay) * dy
+            ) / lengthSquared
         )
     );
 
@@ -736,14 +940,26 @@ function isBlocked(x, y) {
         return true;
     }
 
-    for (let i = 0; i < WALKABLE_AREA.length; i++) {
+    for (
+        let i = 0;
+        i < WALKABLE_AREA.length;
+        i++
+    ) {
         const [ax, ay] = WALKABLE_AREA[i];
+
         const [bx, by] =
-            WALKABLE_AREA[(i + 1) % WALKABLE_AREA.length];
+            WALKABLE_AREA[
+                (i + 1) % WALKABLE_AREA.length
+            ];
 
         if (
             distanceToSegment(
-                x, y, ax, ay, bx, by
+                x,
+                y,
+                ax,
+                ay,
+                bx,
+                by
             ) < radius
         ) {
             return true;
@@ -789,6 +1005,7 @@ const objects = [
             );
         }
     },
+
     {
         name: "Starý strom",
         x: 360,
@@ -808,13 +1025,19 @@ function showMessage(title, message) {
     dialog.hidden = false;
     dialog.replaceChildren();
 
-    const heading = document.createElement("strong");
+    const heading =
+        document.createElement("strong");
+
     heading.textContent = title;
 
-    const paragraph = document.createElement("p");
+    const paragraph =
+        document.createElement("p");
+
     paragraph.textContent = message;
 
-    const button = document.createElement("button");
+    const button =
+        document.createElement("button");
+
     button.textContent = "Zavřít [Esc]";
 
     button.addEventListener("click", () => {
@@ -926,6 +1149,7 @@ function update() {
     let dx = 0;
     let dy = 0;
 
+    // POHYB NAHORU
     if (
         keys.has("w") ||
         keys.has("arrowup")
@@ -933,6 +1157,7 @@ function update() {
         dy--;
     }
 
+    // POHYB DOLŮ
     if (
         keys.has("s") ||
         keys.has("arrowdown")
@@ -940,6 +1165,7 @@ function update() {
         dy++;
     }
 
+    // POHYB DOLEVA
     if (
         keys.has("a") ||
         keys.has("arrowleft")
@@ -947,6 +1173,7 @@ function update() {
         dx--;
     }
 
+    // POHYB DOPRAVA
     if (
         keys.has("d") ||
         keys.has("arrowright")
@@ -954,12 +1181,15 @@ function update() {
         dx++;
     }
 
+    // NORMALIZACE DIAGONÁLNÍHO POHYBU
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
 
+    // ======================================
     // POHYB + KOLIZE
+    // ======================================
 
     if (dialog.hidden && !isDead) {
         const nextX =
@@ -972,6 +1202,7 @@ function update() {
             player.x = nextX;
             player.y = nextY;
         } else {
+            // KLOUZÁNÍ PODÉL PŘEKÁŽEK
             if (
                 dx !== 0 &&
                 canMoveTo(nextX, player.y)
@@ -988,13 +1219,17 @@ function update() {
         }
     }
 
+    // ======================================
     // OHEŇ
+    // ======================================
 
     if (!isDead) {
         checkFireDamage();
     }
 
+    // ======================================
     // ZVUK KROKŮ
+    // ======================================
 
     const isMoving =
         !isDead &&
@@ -1006,20 +1241,28 @@ function update() {
 
     updateFootsteps(isMoving);
 
+    // ======================================
     // POZICE HRÁČE
+    // ======================================
 
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
+    // ======================================
     // VRSTVENÍ OBJEKTŮ
+    // ======================================
 
     updateDepthSorting();
 
+    // ======================================
     // KAMERA
+    // ======================================
 
     updateCamera();
 
+    // ======================================
     // INTERAKCE
+    // ======================================
 
     nearbyObject =
         objects.find(object =>
@@ -1029,7 +1272,9 @@ function update() {
             ) < object.radius
         ) || null;
 
+    // ======================================
     // HUD
+    // ======================================
 
     if (isDead) {
         hint.textContent = "YOU DIED";
@@ -1050,14 +1295,26 @@ function update() {
 // START HRY
 // ======================================
 
+// UMÍSTĚNÍ OBJEKTŮ
 updateWellPosition();
 updateLogPosition();
 
+// VÝCHOZÍ HEALTH
 setHealth(MAX_HEALTH);
+
+// VÝCHOZÍ H2O
 setWater(MAX_WATER);
 
-// H2O se aktualizuje každých 100 ms
-lastWaterUpdate = performance.now();
-setInterval(updateWater, 100);
+// VÝCHOZÍ HUNGER
+setHunger(MAX_HUNGER);
 
+// START ČASOVAČŮ
+lastWaterUpdate = performance.now();
+lastHungerUpdate = performance.now();
+
+// AKTUALIZACE KAŽDÝCH 100 MS
+setInterval(updateWater, 100);
+setInterval(updateHunger, 100);
+
+// SPUŠTĚNÍ HRY
 update();
