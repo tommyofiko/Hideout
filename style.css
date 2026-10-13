@@ -1,6 +1,4 @@
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 :root {
     --sky: #171c26;
@@ -9,476 +7,161 @@
     --muted: #a9aa9a;
 }
 
-html,
-body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-}
+html, body { margin: 0; width: 100%; height: 100%; }
+body { overflow: hidden; background: var(--sky); color: var(--text); font-family: Consolas, monospace; }
+#game { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--grass); }
+#world { position: absolute; inset: 0; overflow: hidden; }
 
-body {
-    overflow: hidden;
-    background: var(--sky);
-    color: var(--text);
-    font-family: Consolas, monospace;
-}
-
-#game {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: var(--grass);
-}
-
-#world {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-}
-
-/* ======================================
-   SCÉNA
-====================================== */
-
+/* SCÉNA */
 #scene {
-    position: absolute;
-    width: 1920px;
-    height: 1080px;
-    left: 0;
-    top: 0;
-    transform-origin: 0 0;
-    will-change: transform;
+    position: absolute; width: 1920px; height: 1080px; left: 0; top: 0;
+    transform-origin: 0 0; will-change: transform;
 }
-
-#garden {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    background: var(--grass);
-}
-
-#garden::after {
-    display: none;
-}
-
+#garden { position: absolute; inset: 0; overflow: hidden; background: var(--grass); }
+#garden::after { display: none; }
 #house-image {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    pointer-events: none;
+    position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+    object-fit: fill; pointer-events: none;
 }
+#house, #tree { display: none; }
 
-#house,
-#tree {
-    display: none;
-}
-
-/* ======================================
-   POSTAVIČKA
-====================================== */
-
+/* POSTAVIČKA */
 #player {
-    position: absolute;
-    z-index: 20;
-    left: 480px;
-    top: 450px;
-    width: 22px;
-    height: 25px;
-    transform: translate(-50%, -50%);
-
-    background: #c7c9a9;
-    border: 3px solid #292d2b;
-
-    box-shadow:
-        0 -9px 0 -2px #554237,
-        0 5px 0 #292d2b;
-
+    position: absolute; z-index: 20; left: 480px; top: 450px;
+    width: 22px; height: 25px; transform: translate(-50%, -50%);
+    background: #c7c9a9; border: 3px solid #292d2b;
+    box-shadow: 0 -9px 0 -2px #554237, 0 5px 0 #292d2b;
     image-rendering: pixelated;
 }
 
-/* ======================================
-   HUD
-====================================== */
-
+/* HUD */
 #hud {
-    position: absolute;
-    z-index: 100;
-    top: 18px;
-    left: 18px;
-    padding: 12px 16px;
-
-    background: rgba(18, 20, 22, 0.88);
-    border: 2px solid #77766b;
+    position: absolute; z-index: 100; top: 18px; left: 18px; padding: 12px 16px;
+    background: rgba(18, 20, 22, 0.88); border: 2px solid #77766b;
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
 }
+#hud h1 { margin: 0 0 6px; font-size: 18px; letter-spacing: 4px; }
+#status { color: var(--muted); font-size: 11px; }
 
-#hud h1 {
-    margin: 0 0 6px;
-    font-size: 18px;
-    letter-spacing: 4px;
-}
-
-#status {
-    color: var(--muted);
-    font-size: 11px;
-}
-
-/* ======================================
-   NÁPOVĚDA
-====================================== */
-
+/* NÁPOVĚDA */
 #hint {
-    position: absolute;
-    z-index: 100;
-    bottom: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-
-    max-width: calc(100vw - 32px);
-    padding: 10px 14px;
-
-    background: rgba(18, 20, 22, 0.9);
-    border: 1px solid #77766b;
-
-    color: var(--text);
-    font-size: 12px;
-    text-align: center;
+    position: absolute; z-index: 100; bottom: 18px; left: 50%;
+    transform: translateX(-50%); max-width: calc(100vw - 32px);
+    padding: 10px 14px; background: rgba(18, 20, 22, 0.9);
+    border: 1px solid #77766b; color: var(--text);
+    font-size: 12px; text-align: center;
 }
 
-/* ======================================
-   DIALOG
-====================================== */
-
+/* DIALOG */
 #dialog {
-    position: absolute;
-    z-index: 200;
-    left: 50%;
-    bottom: 64px;
-    transform: translateX(-50%);
-
-    width: min(520px, calc(100vw - 32px));
-    padding: 20px;
-
-    background: #17191c;
-    border: 2px solid #aaa38d;
-    line-height: 1.6;
+    position: absolute; z-index: 200; left: 50%; bottom: 64px;
+    transform: translateX(-50%); width: min(520px, calc(100vw - 32px));
+    padding: 20px; background: #17191c; border: 2px solid #aaa38d; line-height: 1.6;
 }
-
-#dialog[hidden] {
-    display: none;
-}
-
+#dialog[hidden] { display: none; }
 #dialog button {
-    padding: 8px 12px;
-    color: var(--text);
-    background: #343c32;
-    border: 1px solid #899078;
-    font-family: inherit;
-    cursor: pointer;
+    padding: 8px 12px; color: var(--text); background: #343c32;
+    border: 1px solid #899078; font-family: inherit; cursor: pointer;
 }
 
-/* ======================================
-   HEALTH BAR
-====================================== */
-
+/* HEALTH + H2O: SPOLEČNÝ PANEL */
 #health-bar {
-    position: absolute;
-    z-index: 110;
-    left: 12px;
-    bottom: 12px;
-    width: 400px;
-    padding: 8px 9px;
-
-    background: rgba(18, 20, 22, 0.9);
-    border: 1px solid #77766b;
-
-    box-shadow:
-        3px 3px 0 rgba(0, 0, 0, 0.25);
-
+    position: absolute; z-index: 110; left: 12px; bottom: 12px;
+    width: 400px; padding: 8px 9px;
+    background: rgba(18, 20, 22, 0.9); border: 1px solid #77766b;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);
     pointer-events: none;
 }
-
-#health-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-
-    color: var(--text);
-    font-size: 10px;
+#health-info, #water-info {
+    display: flex; justify-content: space-between; align-items: center;
     font-weight: bold;
 }
-
+#health-info { margin-bottom: 6px; color: var(--text); font-size: 10px; }
 #health-track {
-    width: 100%;
-    height: 24px;
-    overflow: hidden;
-
-    background: #493333;
-    border: 1px solid #292323;
+    width: 100%; height: 24px; overflow: hidden;
+    background: #493333; border: 1px solid #292323;
 }
-
 #health-fill {
-    width: 100%;
-    height: 100%;
-    background: #e84949;
+    width: 100%; height: 100%; background: #e84949;
+    transition: width 0.2s ease;
+}
+#water-info {
+    margin-top: 9px;
+    margin-bottom: 1px;
+    color: #9ddcff;
+    font-size: 9px;
+}
+#water-track {
+    width: 100%; height: 11px; overflow: hidden;
+    background: #203b51; border: 1px solid #182c3b;
+}
+#water-fill {
+    width: 100%; height: 100%; background: #269cfa;
     transition: width 0.2s ease;
 }
 
-/* ======================================
-   DEATH SCREEN
-====================================== */
-
+/* DEATH SCREEN */
 #death-screen {
-    position: absolute;
-    inset: 0;
-    z-index: 1000;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
+    position: absolute; inset: 0; z-index: 1000;
+    display: flex; justify-content: center; align-items: center;
     background: rgba(0, 0, 0, 0.85);
 }
-
-#death-screen[hidden] {
-    display: none;
-}
-
-#death-content {
-    text-align: center;
-    font-family: Consolas, monospace;
-}
-
+#death-screen[hidden] { display: none; }
+#death-content { text-align: center; font-family: Consolas, monospace; }
 #death-content h1 {
-    color: #b52b2b;
-    font-size: clamp(36px, 7vw, 72px);
-    letter-spacing: 8px;
-    margin-bottom: 15px;
-    text-shadow: 4px 4px 0 #290909;
+    color: #b52b2b; font-size: clamp(36px, 7vw, 72px);
+    letter-spacing: 8px; margin-bottom: 15px; text-shadow: 4px 4px 0 #290909;
 }
-
-#death-content p {
-    color: #a9aa9a;
-    font-size: 14px;
-    margin-bottom: 35px;
-}
-
+#death-content p { color: #a9aa9a; font-size: 14px; margin-bottom: 35px; }
 #restart-button {
-    padding: 14px 35px;
-
-    background: #241a1a;
-    color: #e4dfd0;
-
-    border: 2px solid #9c3030;
-
-    font-family: Consolas, monospace;
-    font-size: 16px;
-    letter-spacing: 3px;
-    cursor: pointer;
+    padding: 14px 35px; background: #241a1a; color: #e4dfd0;
+    border: 2px solid #9c3030; font-family: Consolas, monospace;
+    font-size: 16px; letter-spacing: 3px; cursor: pointer;
 }
+#restart-button:hover { background: #9c3030; color: white; }
 
-#restart-button:hover {
-    background: #9c3030;
-    color: white;
-}
-
-/* ======================================
-   ANIMOVANÝ PIXEL ART OHEŇ
-====================================== */
-
+/* ANIMOVANÝ OHEŇ */
 #fire {
-    position: absolute;
-
-    left: 225px;
-    top: 550px;
-
-    width: 48px;
-    height: 96px;
-
-    transform: translate(-50%, -75%);
-
-    image-rendering: pixelated;
-    pointer-events: none;
-
-    z-index: 2;
+    position: absolute; left: 225px; top: 550px; width: 48px; height: 96px;
+    transform: translate(-50%, -75%); image-rendering: pixelated;
+    pointer-events: none; z-index: 2;
 }
 
-/* ======================================
-   KAMENNÉ OHNIŠTĚ - PIXEL ART
-====================================== */
-
+/* KAMENNÉ OHNIŠTĚ */
 #fireplace {
-    position: absolute;
-
-    left: 225px;
-    top: 550px;
-
-    width: 46px;
-    height: 16px;
-
-    transform: translate(-50%, 0);
-
-    /* Tmavá zemina a popel */
-    background: #302c25;
-
-    /* Ostřejší pixel-art tvar */
-    border-radius: 4px;
-
-    z-index: 1;
-    pointer-events: none;
-
-    image-rendering: pixelated;
-
-    /* Jednotlivé kameny kolem ohně */
+    position: absolute; left: 225px; top: 550px;
+    width: 46px; height: 16px; transform: translate(-50%, 0);
+    background: #302c25; border-radius: 4px;
+    z-index: 1; pointer-events: none; image-rendering: pixelated;
     box-shadow:
-        /* Zadní levý kámen */
         -18px -7px 0 -3px #77796b,
-
-        /* Zadní střed */
         -5px -11px 0 -3px #64695f,
-
-        /* Zadní pravý */
         12px -9px 0 -3px #838477,
-
-        /* Pravý okraj */
         22px -3px 0 -4px #555b52,
-
-        /* Přední pravý */
         16px 10px 0 -3px #737467,
-
-        /* Přední střed */
         0 12px 0 -3px #858475,
-
-        /* Přední levý */
         -16px 9px 0 -3px #62665c,
-
-        /* Levý okraj */
         -23px 0 0 -4px #77786b,
-
-        /* Stín */
         2px 5px 0 2px #24231f;
 }
 
-/* ======================================
-   MOBILNÍ ZOBRAZENÍ
-====================================== */
-
-@media (max-width: 600px) {
-
-    #hud {
-        top: 8px;
-        left: 8px;
-    }
-
-    #hint {
-        bottom: 10px;
-        font-size: 11px;
-    }
-
-    #health-bar {
-        left: 8px;
-        bottom: 8px;
-        width: 175px;
-    }
-}
-
-
-/* ======================================
-   STUDNA - SAMOSTATNÝ PIXEL ART OBJEKT
-====================================== */
-
+/* STUDNA */
 #well {
-    position: absolute;
-
-    /* Výchozí pozice studny */
-    left: 690px;
-    top: 690px;
-
-    /* Velikost obrázku */
-    width: 118px;
-    height: auto;
-
-    /* Spodní střed obrázku = pozice studny */
-    transform: translate(-50%, -100%);
-
-    /* Zachování ostrých pixelů */
-    image-rendering: pixelated;
-
-    /* Obrázek neblokuje ovládání myší */
-    pointer-events: none;
-
-    /* Výchozí vrstva, JS ji bude měnit */
-    z-index: 10;
+    position: absolute; left: 690px; top: 690px; width: 118px; height: auto;
+    transform: translate(-50%, -100%); image-rendering: pixelated;
+    pointer-events: none; z-index: 10;
 }
 
-/* ======================================
-   KLÁDA - SAMOSTATNÝ PIXEL ART OBJEKT
-====================================== */
-
+/* KLÁDA */
 #log {
-    position: absolute;
-
-    /* Pozice klády na mapě 1920 × 1080 */
-    left: 265px;
-    top: 620px;
-
-    /* Velikost klády */
-    width: 100px;
-    height: auto;
-
-    /* Zarovnání na střed */
-    transform: translate(-50%, -50%);
-
-    /* Ostré pixely */
-    image-rendering: pixelated;
-
-    /* Neovlivňuje ovládání myší */
-    pointer-events: none;
-
-    /* Vrstvení objektů */
-    z-index: 10;
+    position: absolute; left: 265px; top: 620px; width: 100px; height: auto;
+    transform: translate(-50%, -50%); image-rendering: pixelated;
+    pointer-events: none; z-index: 10;
 }
 
-/* HEALTH BAR - NAHOŘE */
-#health-bar {
-    bottom: 48px;
-}
-
-/* H2O BAR - TENČÍ, DOLE */
-#water-bar {
-    left: 12px;
-    bottom: 12px;
-    width: 400px;
-    padding: 5px 9px;
-}
-
-#water-info {
-    margin-bottom: 3px;
-    font-size: 9px;
-}
-
-#water-track {
-    height: 10px;
-}
-
-#water-fill {
-    background: #269cfa;
-}
-
+/* MOBILNÍ ZOBRAZENÍ */
 @media (max-width: 600px) {
-    #health-bar {
-        bottom: 44px;
-    }
-
-    #water-bar {
-        left: 8px;
-        bottom: 8px;
-        width: 175px;
-    }
+    #hud { top: 8px; left: 8px; }
+    #hint { bottom: 10px; font-size: 11px; }
+    #health-bar { left: 8px; bottom: 8px; width: 175px; }
 }
-      
