@@ -118,8 +118,11 @@ function checkFireDamage() {
         distance < FIRE.radius + player.radius &&
         now - lastFireDamage >= FIRE.cooldown
     ) {
-        takeDamage(FIRE.damage);
-        lastFireDamage = now;
+        
+takeDamage(FIRE.damage);
+playDamageSound();
+lastFireDamage = now;
+
     }
 }
 
@@ -161,6 +164,42 @@ let lastFootstep = 0;
 const FOOTSTEP_INTERVAL = 280;
 
 function playFootstep() {
+    
+// ======================================
+// RETRO FIRE DAMAGE SOUND
+// ======================================
+
+function playDamageSound() {
+    if (audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+
+    const now = audioContext.currentTime;
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sawtooth";
+
+    oscillator.frequency.setValueAtTime(420, now);
+    oscillator.frequency.exponentialRampToValueAtTime(
+        85,
+        now + 0.18
+    );
+
+    gain.gain.setValueAtTime(0.09, now);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + 0.2
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.2);
+}
+
     if (audioContext.state === "suspended") {
         audioContext.resume();
     }
