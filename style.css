@@ -1,4 +1,3 @@
-
 * {
     box-sizing: border-box;
 }
@@ -310,7 +309,7 @@ body {
 }
 
 /* ======================================
-   PŘÍRODNÍ KAMENNÉ OHNIŠTĚ
+   KAMENNÉ OHNIŠTĚ - PIXEL ART
 ====================================== */
 
 #fireplace {
@@ -319,48 +318,50 @@ body {
     left: 225px;
     top: 550px;
 
-    width: 54px;
-    height: 20px;
+    width: 46px;
+    height: 16px;
 
-    transform: translate(-50%, -20%);
+    transform: translate(-50%, 0);
 
     /* Tmavá zemina a popel */
-    background: #292820;
-    border-radius: 35%;
+    background: #302c25;
 
-    pointer-events: none;
+    /* Ostřejší pixel-art tvar */
+    border-radius: 4px;
+
     z-index: 1;
+    pointer-events: none;
 
     image-rendering: pixelated;
 
-    /* Kameny v přírodních odstínech */
+    /* Jednotlivé kameny kolem ohně */
     box-shadow:
-        -22px -7px 0 -5px #8d8576,
-        -16px -12px 0 -5px #b0a08b,
-        -4px -14px 0 -5px #756e65,
-        10px -13px 0 -5px #a49783,
-        22px -8px 0 -5px #807b71,
-        27px 0 0 -6px #a59b87,
-        21px 10px 0 -5px #686a64,
-        9px 15px 0 -5px #b1a18a,
-        -6px 15px 0 -5px #84796c,
-        -21px 10px 0 -5px #a79a87,
-        -28px 1px 0 -6px #6d716c,
-        2px 7px 0 3px #1d1b18;
-}
+        /* Zadní levý kámen */
+        -18px -7px 0 -3px #77796b,
 
-/* Světlejší hrany jednotlivých kamenů */
-#fireplace::before {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    border-radius: 35%;
+        /* Zadní střed */
+        -5px -11px 0 -3px #64695f,
 
-    box-shadow:
-        -18px -11px 0 -7px #d1bca0,
-        10px -12px 0 -7px #c3b49a,
-        23px -3px 0 -7px #b7a88f,
-        -8px 14px 0 -7px #c0ad95;
+        /* Zadní pravý */
+        12px -9px 0 -3px #838477,
+
+        /* Pravý okraj */
+        22px -3px 0 -4px #555b52,
+
+        /* Přední pravý */
+        16px 10px 0 -3px #737467,
+
+        /* Přední střed */
+        0 12px 0 -3px #858475,
+
+        /* Přední levý */
+        -16px 9px 0 -3px #62665c,
+
+        /* Levý okraj */
+        -23px 0 0 -4px #77786b,
+
+        /* Stín */
+        2px 5px 0 2px #24231f;
 }
 
 /* ======================================
@@ -385,3 +386,4 @@ body {
         width: 175px;
     }
 }
+      
