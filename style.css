@@ -417,25 +417,31 @@ body {
 }
 
 /* ======================================
-   KLÁDA - PIXEL ART
+   KLÁDA - SAMOSTATNÝ PIXEL ART OBJEKT
 ====================================== */
 
 #log {
     position: absolute;
 
-    /* Pozice na mapě 1920x1080 */
+    /* Pozice klády na mapě 1920 × 1080 */
     left: 265px;
     top: 620px;
 
+    /* Velikost klády */
     width: 100px;
     height: auto;
 
+    /* Zarovnání na střed */
     transform: translate(-50%, -50%);
 
+    /* Ostré pixely */
     image-rendering: pixelated;
+
+    /* Neovlivňuje ovládání myší */
     pointer-events: none;
 
-    z-index: 5;
+    /* Vrstvení objektů */
+    z-index: 10;
 }
 
       
