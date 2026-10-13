@@ -3,6 +3,8 @@ const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
 const sprite = document.getElementById("player");
+const wellElement = document.getElementById("well");
+
 const healthFill = document.getElementById("health-fill");
 const healthText = document.getElementById("health-text");
 const deathScreen = document.getElementById("death-screen");
@@ -44,7 +46,6 @@ function healPlayer(amount) {
     setHealth(health + amount);
 }
 
-
 // ======================================
 // NASTAVENÍ SVĚTA
 // ======================================
@@ -60,9 +61,14 @@ const BOUNDS = {
     bottom: 1040
 };
 
-const player = {
+const PLAYER_START = {
     x: 800,
-    y: 800,
+    y: 800
+};
+
+const player = {
+    x: PLAYER_START.x,
+    y: PLAYER_START.y,
     speed: 2,
     radius: 12
 };
@@ -70,6 +76,76 @@ const player = {
 const keys = new Set();
 let nearbyObject = null;
 
+// ======================================
+// STUDNA - POZICE A KOLIZE
+// ======================================
+
+// x, y = spodní střed obrázku studny.
+// collisionRX / collisionRY = poloměry
+// kolize kamenné základny.
+//
+// Pozice je orientační, doladíme ji
+// podle screenshotu z nové mapy.
+
+const WELL = {
+    x: 690,
+    y: 690,
+
+    width: 118,
+
+    collisionRX: 34,
+    collisionRY: 17,
+
+    // Posunutí středu kolize od spodku obrázku
+    baseOffsetY: 20
+};
+
+function updateWellPosition() {
+    if (!wellElement) return;
+
+    wellElement.style.left = `${WELL.x}px`;
+    wellElement.style.top = `${WELL.y}px`;
+    wellElement.style.width = `${WELL.width}px`;
+}
+
+function isTouchingWell(x, y) {
+    if (!wellElement) return false;
+
+    // Střed kamenné základny
+    const centerX = WELL.x;
+    const centerY = WELL.y - WELL.baseOffsetY;
+
+    // Hráče bereme jako kruh u nohou.
+    const footX = x;
+    const footY = y + 8;
+    const footRadius = 5;
+
+    const rx = WELL.collisionRX + footRadius;
+    const ry = WELL.collisionRY + footRadius;
+
+    const dx = (footX - centerX) / rx;
+    const dy = (footY - centerY) / ry;
+
+    return dx * dx + dy * dy < 1;
+}
+
+// ======================================
+// VRSTVENÍ STUDNY A HRÁČE
+// ======================================
+
+function updateDepthSorting() {
+    if (!wellElement) return;
+
+    // Hráč za studnou = studna je před ním.
+    // Hráč před studnou = hráč je vpředu.
+    const wellBaseY = WELL.y - WELL.baseOffsetY;
+    const playerFeetY = player.y + 8;
+
+    wellElement.style.zIndex = "10";
+
+    sprite.style.zIndex =
+        playerFeetY < wellBaseY ? "9" : "20";
+}
 
 // ======================================
 // OHEŇ - DAMAGE KOLIZE
@@ -82,33 +158,40 @@ const FIRE = {
 
 let lastFireDamage = -Infinity;
 
-// Kolize podle skutečné polohy a velikosti fire.gif.
-// Každá elipsa pokrývá jednu část plamene.
+// Kolize podle skutečné polohy fire.gif
 function isTouchingFire() {
     const fireElement = document.getElementById("fire");
     if (!fireElement) return false;
 
     const style = window.getComputedStyle(fireElement);
-    if (style.display === "none") return false;
 
-    // CSS transform: translate(-50%, -75%)
+    if (
+        style.display === "none" ||
+        style.visibility === "hidden"
+    ) {
+        return false;
+    }
+
     const width = fireElement.offsetWidth;
     const height = fireElement.offsetHeight;
-    const left = fireElement.offsetLeft - width * 0.5;
-    const top = fireElement.offsetTop - height * 0.75;
 
-    // Kontakt u nohou hráče
+    // Odpovídá CSS translate(-50%, -75%)
+    const left =
+        fireElement.offsetLeft - width * 0.5;
+
+    const top =
+        fireElement.offsetTop - height * 0.75;
+
     const footX = player.x;
     const footY = player.y + 8;
     const footRadius = 4;
 
-    // Tvarované oblasti plamene
+    // Elipsy kopírující tvar plamene
     const zones = [
-        // x, y, vodorovný a svislý poloměr
-        [0.50, 0.81, 0.33, 0.16], // základna
-        [0.50, 0.61, 0.26, 0.19], // střed
-        [0.50, 0.41, 0.18, 0.16], // horní plamen
-        [0.53, 0.25, 0.10, 0.10]  // špička
+        [0.50, 0.81, 0.33, 0.16],
+        [0.50, 0.61, 0.26, 0.19],
+        [0.50, 0.41, 0.18, 0.16],
+        [0.53, 0.25, 0.10, 0.10]
     ];
 
     return zones.some(([cx, cy, rx, ry]) => {
@@ -130,9 +213,12 @@ function checkFireDamage() {
 
     const now = performance.now();
 
-    if (now - lastFireDamage < FIRE.cooldown) return;
+    if (now - lastFireDamage < FIRE.cooldown) {
+        return;
+    }
 
     lastFireDamage = now;
+
     takeDamage(FIRE.damage);
 
     if (isDead) {
@@ -141,7 +227,6 @@ function checkFireDamage() {
         playDamageSound();
     }
 }
-
 
 // ======================================
 // RETRO 8-BIT SOUND SYSTEM
@@ -158,6 +243,13 @@ const audioContext = AudioContextClass
 let lastFootstep = 0;
 const FOOTSTEP_INTERVAL = 280;
 
+function resumeAudio() {
+    if (!audioContext) return;
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+    }
+}
 
 // ======================================
 // ZVUK KROKŮ
@@ -166,9 +258,7 @@ const FOOTSTEP_INTERVAL = 280;
 function playFootstep() {
     if (!audioContext) return;
 
-    if (audioContext.state === "suspended") {
-        audioContext.resume().catch(() => {});
-    }
+    resumeAudio();
 
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
@@ -178,12 +268,14 @@ function playFootstep() {
 
     oscillator.frequency.setValueAtTime(140, now);
     oscillator.frequency.exponentialRampToValueAtTime(
-        65, now + 0.055
+        65,
+        now + 0.055
     );
 
     gain.gain.setValueAtTime(0.035, now);
     gain.gain.exponentialRampToValueAtTime(
-        0.001, now + 0.065
+        0.001,
+        now + 0.065
     );
 
     oscillator.connect(gain);
@@ -193,17 +285,14 @@ function playFootstep() {
     oscillator.stop(now + 0.07);
 }
 
-
 // ======================================
-// ZVUK POŠKOZENÍ OD OHNĚ
+// ZVUK DAMAGE
 // ======================================
 
 function playDamageSound() {
     if (!audioContext) return;
 
-    if (audioContext.state === "suspended") {
-        audioContext.resume().catch(() => {});
-    }
+    resumeAudio();
 
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
@@ -213,12 +302,14 @@ function playDamageSound() {
 
     oscillator.frequency.setValueAtTime(420, now);
     oscillator.frequency.exponentialRampToValueAtTime(
-        85, now + 0.18
+        85,
+        now + 0.18
     );
 
     gain.gain.setValueAtTime(0.09, now);
     gain.gain.exponentialRampToValueAtTime(
-        0.001, now + 0.2
+        0.001,
+        now + 0.2
     );
 
     oscillator.connect(gain);
@@ -228,7 +319,6 @@ function playDamageSound() {
     oscillator.stop(now + 0.2);
 }
 
-
 // ======================================
 // RETRO DEATH SOUND - GRRR
 // ======================================
@@ -236,9 +326,7 @@ function playDamageSound() {
 function playDeathSound() {
     if (!audioContext) return;
 
-    if (audioContext.state === "suspended") {
-        audioContext.resume().catch(() => {});
-    }
+    resumeAudio();
 
     const now = audioContext.currentTime;
     const oscillator = audioContext.createOscillator();
@@ -248,12 +336,14 @@ function playDeathSound() {
 
     oscillator.frequency.setValueAtTime(190, now);
     oscillator.frequency.exponentialRampToValueAtTime(
-        45, now + 0.65
+        45,
+        now + 0.65
     );
 
     gain.gain.setValueAtTime(0.13, now);
     gain.gain.exponentialRampToValueAtTime(
-        0.001, now + 0.75
+        0.001,
+        now + 0.75
     );
 
     oscillator.connect(gain);
@@ -263,17 +353,14 @@ function playDeathSound() {
     oscillator.stop(now + 0.75);
 }
 
-
 // ======================================
-// TVOJE 8-BIT ZNĚLKA
+// TVOJE 8-BIT ZNĚLKA PŘI SMRTI
 // ======================================
 
 function playMyJingle() {
     if (!audioContext) return;
 
-    if (audioContext.state === "suspended") {
-        audioContext.resume().catch(() => {});
-    }
+    resumeAudio();
 
     const notes = [
         { freq: 344, duration: 0.13 },
@@ -291,7 +378,8 @@ function playMyJingle() {
         oscillator.type = "square";
 
         oscillator.frequency.setValueAtTime(
-            note.freq, time
+            note.freq,
+            time
         );
 
         gain.gain.setValueAtTime(0.10, time);
@@ -316,7 +404,6 @@ function playMyJingle() {
     });
 }
 
-
 // ======================================
 // UPDATE KROKŮ
 // ======================================
@@ -332,7 +419,6 @@ function updateFootsteps(isMoving) {
     }
 }
 
-
 // ======================================
 // SMRT HRÁČE
 // ======================================
@@ -344,11 +430,10 @@ function die() {
 
     keys.clear();
     nearbyObject = null;
-    dialog.hidden = true;
 
+    dialog.hidden = true;
     deathScreen.hidden = false;
 }
-
 
 // ======================================
 // RESTART HRY
@@ -357,8 +442,8 @@ function die() {
 function restartGame() {
     isDead = false;
 
-    player.x = 800;
-    player.y = 800;
+    player.x = PLAYER_START.x;
+    player.y = PLAYER_START.y;
 
     lastFireDamage = -Infinity;
     lastFootstep = 0;
@@ -374,14 +459,14 @@ function restartGame() {
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
+    updateDepthSorting();
     updateCamera();
 }
 
 restartButton.addEventListener("click", restartGame);
 
-
 // ======================================
-// PRŮCHOZÍ OBLAST
+// PRŮCHOZÍ OBLAST OSTROVA
 // ======================================
 
 const WALKABLE_AREA = [
@@ -415,7 +500,6 @@ const WALKABLE_AREA = [
     [860, 997],
     [1130, 726]
 ];
-
 
 // ======================================
 // GEOMETRIE KOLIZÍ
@@ -464,12 +548,14 @@ function distanceToSegment(px, py, ax, ay, bx, by) {
     const closestX = ax + t * dx;
     const closestY = ay + t * dy;
 
-    return Math.hypot(px - closestX, py - closestY);
+    return Math.hypot(
+        px - closestX,
+        py - closestY
+    );
 }
 
-
 // ======================================
-// KOLIZE
+// KOLIZE OSTROVA + STUDNY
 // ======================================
 
 function isBlocked(x, y) {
@@ -479,6 +565,7 @@ function isBlocked(x, y) {
         return true;
     }
 
+    // Hranice ostrova
     for (let i = 0; i < WALKABLE_AREA.length; i++) {
         const [ax, ay] = WALKABLE_AREA[i];
         const [bx, by] =
@@ -491,6 +578,11 @@ function isBlocked(x, y) {
         ) {
             return true;
         }
+    }
+
+    // Nová kolize studny
+    if (isTouchingWell(x, y)) {
+        return true;
     }
 
     return false;
@@ -506,7 +598,6 @@ function canMoveTo(x, y) {
     );
 }
 
-
 // ======================================
 // OBJEKTY A INTERAKCE
 // ======================================
@@ -517,6 +608,7 @@ const objects = [
         x: 960,
         y: 580,
         radius: 65,
+
         action: () => {
             showMessage(
                 "Vítej doma.",
@@ -529,6 +621,7 @@ const objects = [
         x: 360,
         y: 700,
         radius: 55,
+
         action: () => {
             showMessage(
                 "Pod stromem",
@@ -555,9 +648,12 @@ function showMessage(title, message) {
         dialog.hidden = true;
     });
 
-    dialog.append(heading, paragraph, button);
+    dialog.append(
+        heading,
+        paragraph,
+        button
+    );
 }
-
 
 // ======================================
 // KAMERA
@@ -567,29 +663,39 @@ function updateCamera() {
     const viewWidth = window.innerWidth;
     const viewHeight = window.innerHeight;
 
-    const scaledWidth = WORLD_WIDTH * CAMERA_ZOOM;
-    const scaledHeight = WORLD_HEIGHT * CAMERA_ZOOM;
+    const scaledWidth =
+        WORLD_WIDTH * CAMERA_ZOOM;
+
+    const scaledHeight =
+        WORLD_HEIGHT * CAMERA_ZOOM;
 
     let cameraX =
-        viewWidth / 2 - player.x * CAMERA_ZOOM;
+        viewWidth / 2 -
+        player.x * CAMERA_ZOOM;
 
     let cameraY =
-        viewHeight / 2 - player.y * CAMERA_ZOOM;
+        viewHeight / 2 -
+        player.y * CAMERA_ZOOM;
 
     cameraX = Math.min(
         0,
-        Math.max(viewWidth - scaledWidth, cameraX)
+        Math.max(
+            viewWidth - scaledWidth,
+            cameraX
+        )
     );
 
     cameraY = Math.min(
         0,
-        Math.max(viewHeight - scaledHeight, cameraY)
+        Math.max(
+            viewHeight - scaledHeight,
+            cameraY
+        )
     );
 
     scene.style.transform =
         `translate(${cameraX}px, ${cameraY}px) scale(${CAMERA_ZOOM})`;
 }
-
 
 // ======================================
 // OVLÁDÁNÍ
@@ -610,6 +716,9 @@ window.addEventListener("keydown", event => {
     }
 
     if (isDead) return;
+
+    // Aktivuje zvuk po stisku klávesy
+    resumeAudio();
 
     keys.add(key);
 
@@ -633,7 +742,6 @@ window.addEventListener("keyup", event => {
 window.addEventListener("blur", () => {
     keys.clear();
 });
-
 
 // ======================================
 // HLAVNÍ UPDATE
@@ -674,19 +782,28 @@ function update() {
         dx++;
     }
 
+    // Normalizace diagonálního pohybu
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
 
+    // ==================================
+    // POHYB + KOLIZE
+    // ==================================
+
     if (dialog.hidden && !isDead) {
-        const nextX = player.x + dx * player.speed;
-        const nextY = player.y + dy * player.speed;
+        const nextX =
+            player.x + dx * player.speed;
+
+        const nextY =
+            player.y + dy * player.speed;
 
         if (canMoveTo(nextX, nextY)) {
             player.x = nextX;
             player.y = nextY;
         } else {
+            // Klouzání podél překážek
             if (
                 dx !== 0 &&
                 canMoveTo(nextX, player.y)
@@ -703,12 +820,18 @@ function update() {
         }
     }
 
+    // ==================================
     // OHEŇ
+    // ==================================
+
     if (!isDead) {
         checkFireDamage();
     }
 
-    // KROKY
+    // ==================================
+    // ZVUK KROKŮ
+    // ==================================
+
     const isMoving =
         !isDead &&
         dialog.hidden &&
@@ -719,14 +842,29 @@ function update() {
 
     updateFootsteps(isMoving);
 
-    // HRÁČ
+    // ==================================
+    // POZICE HRÁČE
+    // ==================================
+
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
+    // ==================================
+    // STUDNA - VRSTVENÍ
+    // ==================================
+
+    updateDepthSorting();
+
+    // ==================================
     // KAMERA
+    // ==================================
+
     updateCamera();
 
+    // ==================================
     // INTERAKCE
+    // ==================================
+
     nearbyObject =
         objects.find(object =>
             Math.hypot(
@@ -735,7 +873,10 @@ function update() {
             ) < object.radius
         ) || null;
 
+    // ==================================
     // HUD
+    // ==================================
+
     if (isDead) {
         hint.textContent = "YOU DIED";
     } else if (!dialog.hidden) {
@@ -751,10 +892,10 @@ function update() {
     requestAnimationFrame(update);
 }
 
-
 // ======================================
 // START HRY
 // ======================================
 
+updateWellPosition();
 setHealth(MAX_HEALTH);
 update();
