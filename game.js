@@ -94,19 +94,17 @@ const WELL = {
 };
 
 // Automaticky vypočítané rozměry
+
 function getWellCollision() {
     return {
-        x: WELL.x,
-        y: WELL.y -
-            WELL.width * WELL.baseOffsetRatio,
+        x: WELL.x + 15,
+        y: WELL.y - WELL.width * WELL.baseOffsetRatio - 15,
 
-        rx: WELL.width *
-            WELL.collisionWidthRatio,
-
-        ry: WELL.width *
-            WELL.collisionHeightRatio
+        rx: WELL.width * WELL.collisionWidthRatio,
+        ry: WELL.width * WELL.collisionHeightRatio
     };
 }
+
 
 // Pozice obrázku
 function updateWellPosition() {
