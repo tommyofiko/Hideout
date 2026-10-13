@@ -95,6 +95,7 @@ const WELL = {
 
 // Automaticky vypočítané rozměry
 
+
 function getWellCollision() {
     return {
         x: WELL.x + 15,
@@ -104,6 +105,7 @@ function getWellCollision() {
         ry: WELL.width * WELL.collisionHeightRatio
     };
 }
+
 
 
 // Pozice obrázku
