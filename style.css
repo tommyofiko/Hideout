@@ -221,4 +221,57 @@ body {
     }
 }
 
+/* ======================================
+   DEATH SCREEN
+====================================== */
+
+#death-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+#death-screen[hidden] {
+    display: none;
+}
+
+#death-content {
+    text-align: center;
+    font-family: Consolas, monospace;
+}
+
+#death-content h1 {
+    color: #b52b2b;
+    font-size: clamp(36px, 7vw, 72px);
+    letter-spacing: 8px;
+    margin-bottom: 15px;
+    text-shadow: 4px 4px 0 #290909;
+}
+
+#death-content p {
+    color: #a9aa9a;
+    font-size: 14px;
+    margin-bottom: 35px;
+}
+
+#restart-button {
+    padding: 14px 35px;
+    background: #241a1a;
+    color: #e4dfd0;
+    border: 2px solid #9c3030;
+    font-family: Consolas, monospace;
+    font-size: 16px;
+    letter-spacing: 3px;
+    cursor: pointer;
+}
+
+#restart-button:hover {
+    background: #9c3030;
+    color: white;
+}
+
 
