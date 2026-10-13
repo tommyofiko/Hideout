@@ -80,15 +80,11 @@ let nearbyObject = null;
 // STUDNA - POZICE A KOLIZE
 // ======================================
 
-// x, y = spodní střed obrázku studny.
-// collisionRX / collisionRY = poloměry
-// kolize kamenné základny.
-//
-// Pozice je orientační, doladíme ji
-// podle screenshotu z nové mapy.
+// x, y = spodní střed obrázku.
+// Pozice podle červeného označení na mapě.
 
 const WELL = {
-    x: 690,
+    x: 1110,
     y: 690,
 
     width: 118,
@@ -96,7 +92,6 @@ const WELL = {
     collisionRX: 34,
     collisionRY: 17,
 
-    // Posunutí středu kolize od spodku obrázku
     baseOffsetY: 20
 };
 
@@ -111,11 +106,9 @@ function updateWellPosition() {
 function isTouchingWell(x, y) {
     if (!wellElement) return false;
 
-    // Střed kamenné základny
     const centerX = WELL.x;
     const centerY = WELL.y - WELL.baseOffsetY;
 
-    // Hráče bereme jako kruh u nohou.
     const footX = x;
     const footY = y + 8;
     const footRadius = 5;
@@ -136,8 +129,6 @@ function isTouchingWell(x, y) {
 function updateDepthSorting() {
     if (!wellElement) return;
 
-    // Hráč za studnou = studna je před ním.
-    // Hráč před studnou = hráč je vpředu.
     const wellBaseY = WELL.y - WELL.baseOffsetY;
     const playerFeetY = player.y + 8;
 
@@ -148,7 +139,7 @@ function updateDepthSorting() {
 }
 
 // ======================================
-// OHEŇ - DAMAGE KOLIZE
+// OHEŇ - DAMAGE
 // ======================================
 
 const FIRE = {
@@ -158,7 +149,6 @@ const FIRE = {
 
 let lastFireDamage = -Infinity;
 
-// Kolize podle skutečné polohy fire.gif
 function isTouchingFire() {
     const fireElement = document.getElementById("fire");
     if (!fireElement) return false;
@@ -175,7 +165,6 @@ function isTouchingFire() {
     const width = fireElement.offsetWidth;
     const height = fireElement.offsetHeight;
 
-    // Odpovídá CSS translate(-50%, -75%)
     const left =
         fireElement.offsetLeft - width * 0.5;
 
@@ -186,7 +175,6 @@ function isTouchingFire() {
     const footY = player.y + 8;
     const footRadius = 4;
 
-    // Elipsy kopírující tvar plamene
     const zones = [
         [0.50, 0.81, 0.33, 0.16],
         [0.50, 0.61, 0.26, 0.19],
@@ -565,7 +553,6 @@ function isBlocked(x, y) {
         return true;
     }
 
-    // Hranice ostrova
     for (let i = 0; i < WALKABLE_AREA.length; i++) {
         const [ax, ay] = WALKABLE_AREA[i];
         const [bx, by] =
@@ -580,7 +567,6 @@ function isBlocked(x, y) {
         }
     }
 
-    // Nová kolize studny
     if (isTouchingWell(x, y)) {
         return true;
     }
@@ -717,7 +703,6 @@ window.addEventListener("keydown", event => {
 
     if (isDead) return;
 
-    // Aktivuje zvuk po stisku klávesy
     resumeAudio();
 
     keys.add(key);
@@ -782,15 +767,12 @@ function update() {
         dx++;
     }
 
-    // Normalizace diagonálního pohybu
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
 
-    // ==================================
     // POHYB + KOLIZE
-    // ==================================
 
     if (dialog.hidden && !isDead) {
         const nextX =
@@ -803,7 +785,6 @@ function update() {
             player.x = nextX;
             player.y = nextY;
         } else {
-            // Klouzání podél překážek
             if (
                 dx !== 0 &&
                 canMoveTo(nextX, player.y)
@@ -820,17 +801,13 @@ function update() {
         }
     }
 
-    // ==================================
     // OHEŇ
-    // ==================================
 
     if (!isDead) {
         checkFireDamage();
     }
 
-    // ==================================
     // ZVUK KROKŮ
-    // ==================================
 
     const isMoving =
         !isDead &&
@@ -842,28 +819,20 @@ function update() {
 
     updateFootsteps(isMoving);
 
-    // ==================================
     // POZICE HRÁČE
-    // ==================================
 
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
-    // ==================================
     // STUDNA - VRSTVENÍ
-    // ==================================
 
     updateDepthSorting();
 
-    // ==================================
     // KAMERA
-    // ==================================
 
     updateCamera();
 
-    // ==================================
     // INTERAKCE
-    // ==================================
 
     nearbyObject =
         objects.find(object =>
@@ -873,9 +842,7 @@ function update() {
             ) < object.radius
         ) || null;
 
-    // ==================================
     // HUD
-    // ==================================
 
     if (isDead) {
         hint.textContent = "YOU DIED";
