@@ -1,3 +1,4 @@
+
 const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
@@ -8,15 +9,15 @@ const WORLD_HEIGHT = 1080;
 const CAMERA_ZOOM = 2.8;
 
 const BOUNDS = {
-    left: 0,
-    right: WORLD_WIDTH,
-    top: 0,
-    bottom: WORLD_HEIGHT
+    left: 40,
+    right: 1880,
+    top: 40,
+    bottom: 1040
 };
 
 const player = {
-    x: 900,
-    y: 600,
+    x: 960,
+    y: 900,
     speed: 2,
     radius: 12
 };
@@ -24,55 +25,49 @@ const player = {
 const keys = new Set();
 let nearbyObject = null;
 
-// ========================================
-// HRANICE OSTROVA
-// Polygon vymezuje travnatou horní plochu.
-// Souřadnice odpovídají obrázku 1920 × 1080.
-// ========================================
+// ======================================
+// ZAKÁZANÉ OBLASTI
+// Souřadnice odpovídají mapě 1920 × 1080
+// ======================================
 
-const ISLAND_BOUNDARY = [
-    [0, 510],
-    [55, 470],
-    [135, 410],
-    [225, 375],
-    [330, 340],
-    [420, 310],
-    [510, 280],
-    [600, 245],
-    [700, 205],
-    [800, 175],
-    [900, 175],
-    [1000, 200],
-    [1090, 245],
-    [1170, 295],
-    [1240, 350],
-    [1300, 405],
-    [1370, 435],
-    [1360, 485],
-    [1325, 535],
-    [1290, 590],
-    [1250, 645],
-    [1210, 700],
-    [1160, 750],
-    [1100, 790],
-    [1020, 825],
-    [930, 855],
-    [830, 885],
-    [730, 910],
-    [630, 920],
-    [530, 905],
-    [430, 880],
-    [330, 845],
-    [240, 805],
-    [160, 760],
-    [90, 705],
-    [35, 640],
-    [0, 590]
+const BLOCKED_AREAS = [
+    // Řeka, vodopády a skalní sráz napravo.
+    [
+        [1730, 0],
+        [1920, 0],
+        [1920, 1080],
+        [1080, 1080],
+        [1190, 1015],
+        [1320, 940],
+        [1420, 850],
+        [1490, 750],
+        [1540, 650],
+        [1580, 550],
+        [1620, 450],
+        [1670, 350],
+        [1710, 250],
+        [1740, 150],
+        [1760, 70]
+    ],
+
+    // Malé jezírko na louce.
+    [
+        [620, 850],
+        [665, 825],
+        [715, 830],
+        [755, 855],
+        [780, 890],
+        [765, 920],
+        [720, 945],
+        [675, 950],
+        [635, 925],
+        [610, 890]
+    ]
 ];
 
-// ========================================
-// GEOMETRIE
-// ========================================
+// ======================================
+// GEOMETRIE KOLIZÍ
+// ======================================
 
 function pointInPolygon(x, y, polygon) {
     let inside = false;
@@ -117,56 +112,32 @@ function distanceToSegment(px, py, ax, ay, bx, by) {
     const closestX = ax + t * dx;
     const closestY = ay + t * dy;
 
-    return Math.hypot(
-        px - closestX,
-        py - closestY
-    );
+    return Math.hypot(px - closestX, py - closestY);
 }
-
-function distanceToPolygonEdge(x, y, polygon) {
-    let minimumDistance = Infinity;
-
-    for (let i = 0; i < polygon.length; i++) {
-        const [ax, ay] = polygon[i];
-        const [bx, by] = polygon[(i + 1) % polygon.length];
-
-        const distance = distanceToSegment(
-            x, y, ax, ay, bx, by
-        );
-
-        minimumDistance = Math.min(
-            minimumDistance,
-            distance
-        );
-    }
-
-    return minimumDistance;
-}
-
-// ========================================
-// KOLIZE S OSTROVEM
-// ========================================
 
 function isBlocked(x, y) {
     const radius = player.radius;
 
-    // Hráč musí být uvnitř travnatého ostrova.
-    if (!pointInPolygon(x, y, ISLAND_BOUNDARY)) {
-        return true;
-    }
+    return BLOCKED_AREAS.some(polygon => {
+        // Hráč nesmí být uvnitř zakázané oblasti.
+        if (pointInPolygon(x, y, polygon)) {
+            return true;
+        }
 
-    // Hráč se nesmí přiblížit příliš blízko
-    // k hraně útesu, aby nespadl do řeky.
-    if (
-        distanceToPolygonEdge(
-            x, y, ISLAND_BOUNDARY
-        ) < radius
-    ) {
-        return true;
-    }
+        // Hráč nesmí zasahovat přes hranu polygonu.
+        for (let i = 0; i < polygon.length; i++) {
+            const [ax, ay] = polygon[i];
+            const [bx, by] = polygon[(i + 1) % polygon.length];
 
-    // Jezírko záměrně nemá kolizi.
-    return false;
+            if (
+                distanceToSegment(x, y, ax, ay, bx, by) < radius
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    });
 }
 
 function canMoveTo(x, y) {
@@ -179,9 +150,9 @@ function canMoveTo(x, y) {
     );
 }
 
-// ========================================
+// ======================================
 // OBJEKTY A INTERAKCE
-// ========================================
+// ======================================
 
 const objects = [
     {
@@ -230,9 +201,9 @@ function showMessage(title, message) {
     dialog.append(heading, paragraph, button);
 }
 
-// ========================================
+// ======================================
 // KAMERA
-// ========================================
+// ======================================
 
 function updateCamera() {
     const viewWidth = window.innerWidth;
@@ -241,11 +212,8 @@ function updateCamera() {
     const scaledWidth = WORLD_WIDTH * CAMERA_ZOOM;
     const scaledHeight = WORLD_HEIGHT * CAMERA_ZOOM;
 
-    let cameraX =
-        viewWidth / 2 - player.x * CAMERA_ZOOM;
-
-    let cameraY =
-        viewHeight / 2 - player.y * CAMERA_ZOOM;
+    let cameraX = viewWidth / 2 - player.x * CAMERA_ZOOM;
+    let cameraY = viewHeight / 2 - player.y * CAMERA_ZOOM;
 
     cameraX = Math.min(
         0,
@@ -261,9 +229,9 @@ function updateCamera() {
         `translate(${cameraX}px, ${cameraY}px) scale(${CAMERA_ZOOM})`;
 }
 
-// ========================================
+// ======================================
 // OVLÁDÁNÍ
-// ========================================
+// ======================================
 
 window.addEventListener("keydown", event => {
     const key = event.key.toLowerCase();
@@ -297,9 +265,9 @@ window.addEventListener("blur", () => {
     keys.clear();
 });
 
-// ========================================
+// ======================================
 // HLAVNÍ UPDATE
-// ========================================
+// ======================================
 
 function update() {
     let dx = 0;
@@ -310,7 +278,7 @@ function update() {
     if (keys.has("a") || keys.has("arrowleft")) dx--;
     if (keys.has("d") || keys.has("arrowright")) dx++;
 
-    // Normalizace diagonálního pohybu.
+    // Stejná rychlost diagonálně i rovně.
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
@@ -320,12 +288,13 @@ function update() {
         const nextX = player.x + dx * player.speed;
         const nextY = player.y + dy * player.speed;
 
-        // Zkusíme pohyb v obou směrech.
+        // Nejdříve zkusíme pohyb v obou osách.
         if (canMoveTo(nextX, nextY)) {
             player.x = nextX;
             player.y = nextY;
         } else {
-            // Umožníme klouzání podél hranice ostrova.
+            // Pokud je cesta zablokovaná, umožníme
+            // samostatný pohyb podél překážky.
             if (dx !== 0 && canMoveTo(nextX, player.y)) {
                 player.x = nextX;
             }
@@ -351,15 +320,12 @@ function update() {
     if (!dialog.hidden) {
         hint.textContent = "ESC · Zavřít";
     } else if (nearbyObject) {
-        hint.textContent =
-            `${nearbyObject.name} · Stiskni E`;
+        hint.textContent = `${nearbyObject.name} · Stiskni E`;
     } else {
-        hint.textContent =
-            "WASD / šipky · Pohyb | E · Interakce";
+        hint.textContent = "WASD / šipky · Pohyb | E · Interakce";
     }
 
     requestAnimationFrame(update);
 }
 
 update();
- takto by to melo byt
