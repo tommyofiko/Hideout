@@ -148,6 +148,60 @@ const player = {
 };
 
 const keys = new Set();
+
+// ======================================
+// RETRO 8-BIT FOOTSTEPS
+// ======================================
+
+const audioContext = new (
+    window.AudioContext || window.webkitAudioContext
+)();
+
+let lastFootstep = 0;
+const FOOTSTEP_INTERVAL = 280;
+
+function playFootstep() {
+    if (audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "square";
+
+    const now = audioContext.currentTime;
+
+    oscillator.frequency.setValueAtTime(140, now);
+    oscillator.frequency.exponentialRampToValueAtTime(
+        65,
+        now + 0.055
+    );
+
+    gain.gain.setValueAtTime(0.035, now);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + 0.065
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.07);
+}
+
+function updateFootsteps(isMoving) {
+    if (!isMoving || isDead) return;
+
+    const now = performance.now();
+
+    if (now - lastFootstep >= FOOTSTEP_INTERVAL) {
+        playFootstep();
+        lastFootstep = now;
+    }
+}
+
 let nearbyObject = null;
 
 
@@ -449,6 +503,8 @@ window.addEventListener("blur", () => {
 // ======================================
 
 function update() {
+    const previousX = player.x;
+const previousY = player.y;
     let dx = 0;
     let dy = 0;
 
@@ -546,6 +602,16 @@ function update() {
     checkFireDamage();
 }
 
+
+const isMoving =
+    !isDead &&
+    dialog.hidden &&
+    (
+        player.x !== previousX ||
+        player.y !== previousY
+    );
+
+updateFootsteps(isMoving);
 
     // ==================================
     // PLAYER
