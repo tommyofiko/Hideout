@@ -386,4 +386,34 @@ body {
         width: 175px;
     }
 }
+
+
+/* ======================================
+   STUDNA - SAMOSTATNÝ PIXEL ART OBJEKT
+====================================== */
+
+#well {
+    position: absolute;
+
+    /* Výchozí pozice studny */
+    left: 690px;
+    top: 690px;
+
+    /* Velikost obrázku */
+    width: 118px;
+    height: auto;
+
+    /* Spodní střed obrázku = pozice studny */
+    transform: translate(-50%, -100%);
+
+    /* Zachování ostrých pixelů */
+    image-rendering: pixelated;
+
+    /* Obrázek neblokuje ovládání myší */
+    pointer-events: none;
+
+    /* Výchozí vrstva, JS ji bude měnit */
+    z-index: 10;
+}
+
       
