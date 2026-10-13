@@ -160,4 +160,312 @@ body {
     bottom: 64px;
     transform: translateX(-50%);
 
-    width: min
+    width: min(520px, calc(100vw - 32px));
+    padding: 20px;
+
+    background: #17191c;
+    border: 2px solid #aaa38d;
+    line-height: 1.6;
+}
+
+#dialog[hidden] {
+    display: none;
+}
+
+#dialog button {
+    padding: 8px 12px;
+    color: var(--text);
+    background: #343c32;
+    border: 1px solid #899078;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* ======================================
+   HEALTH + H2O + HUNGER
+   SPOLEČNÝ PANEL
+====================================== */
+
+#health-bar {
+    position: absolute;
+    z-index: 110;
+    left: 12px;
+    bottom: 12px;
+    width: 400px;
+    padding: 8px 9px;
+
+    background: rgba(18, 20, 22, 0.9);
+    border: 1px solid #77766b;
+
+    box-shadow:
+        3px 3px 0 rgba(0, 0, 0, 0.25);
+
+    pointer-events: none;
+}
+
+/* ======================================
+   HEALTH
+====================================== */
+
+#health-info,
+#water-info,
+#hunger-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+#health-info {
+    margin-bottom: 6px;
+    color: var(--text);
+    font-size: 10px;
+}
+
+#health-track {
+    width: 100%;
+    height: 24px;
+    overflow: hidden;
+
+    background: #493333;
+    border: 1px solid #292323;
+}
+
+#health-fill {
+    width: 100%;
+    height: 100%;
+    background: #e84949;
+    transition: width 0.2s ease;
+}
+
+/* ======================================
+   H2O
+====================================== */
+
+#water-info {
+    margin-top: 9px;
+    margin-bottom: 1px;
+
+    color: #9ddcff;
+    font-size: 9px;
+}
+
+#water-track {
+    width: 100%;
+    height: 11px;
+    overflow: hidden;
+
+    background: #203b51;
+    border: 1px solid #182c3b;
+}
+
+#water-fill {
+    width: 100%;
+    height: 100%;
+
+    background: #269cfa;
+    transition: width 0.2s ease;
+}
+
+/* ======================================
+   HUNGER
+====================================== */
+
+#hunger-info {
+    margin-top: 9px;
+    margin-bottom: 1px;
+
+    color: #f5c98a;
+    font-size: 9px;
+}
+
+#hunger-track {
+    width: 100%;
+    height: 11px;
+    overflow: hidden;
+
+    background: #493522;
+    border: 1px solid #302318;
+}
+
+#hunger-fill {
+    width: 100%;
+    height: 100%;
+
+    background: #e5a044;
+    transition: width 0.2s ease;
+}
+
+/* ======================================
+   DEATH SCREEN
+====================================== */
+
+#death-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(0, 0, 0, 0.85);
+}
+
+#death-screen[hidden] {
+    display: none;
+}
+
+#death-content {
+    text-align: center;
+    font-family: Consolas, monospace;
+}
+
+#death-content h1 {
+    color: #b52b2b;
+    font-size: clamp(36px, 7vw, 72px);
+    letter-spacing: 8px;
+    margin-bottom: 15px;
+    text-shadow: 4px 4px 0 #290909;
+}
+
+#death-content p {
+    color: #a9aa9a;
+    font-size: 14px;
+    margin-bottom: 35px;
+}
+
+#restart-button {
+    padding: 14px 35px;
+
+    background: #241a1a;
+    color: #e4dfd0;
+
+    border: 2px solid #9c3030;
+
+    font-family: Consolas, monospace;
+    font-size: 16px;
+    letter-spacing: 3px;
+    cursor: pointer;
+}
+
+#restart-button:hover {
+    background: #9c3030;
+    color: white;
+}
+
+/* ======================================
+   ANIMOVANÝ OHEŇ
+====================================== */
+
+#fire {
+    position: absolute;
+    left: 225px;
+    top: 550px;
+
+    width: 48px;
+    height: 96px;
+
+    transform: translate(-50%, -75%);
+    image-rendering: pixelated;
+
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* ======================================
+   KAMENNÉ OHNIŠTĚ
+====================================== */
+
+#fireplace {
+    position: absolute;
+
+    left: 225px;
+    top: 550px;
+
+    width: 46px;
+    height: 16px;
+
+    transform: translate(-50%, 0);
+
+    background: #302c25;
+    border-radius: 4px;
+
+    z-index: 1;
+    pointer-events: none;
+    image-rendering: pixelated;
+
+    box-shadow:
+        -18px -7px 0 -3px #77796b,
+        -5px -11px 0 -3px #64695f,
+        12px -9px 0 -3px #838477,
+        22px -3px 0 -4px #555b52,
+        16px 10px 0 -3px #737467,
+        0 12px 0 -3px #858475,
+        -16px 9px 0 -3px #62665c,
+        -23px 0 0 -4px #77786b,
+        2px 5px 0 2px #24231f;
+}
+
+/* ======================================
+   STUDNA
+====================================== */
+
+#well {
+    position: absolute;
+
+    left: 690px;
+    top: 690px;
+
+    width: 118px;
+    height: auto;
+
+    transform: translate(-50%, -100%);
+    image-rendering: pixelated;
+
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* ======================================
+   KLÁDA
+====================================== */
+
+#log {
+    position: absolute;
+
+    left: 265px;
+    top: 620px;
+
+    width: 100px;
+    height: auto;
+
+    transform: translate(-50%, -50%);
+    image-rendering: pixelated;
+
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* ======================================
+   MOBILNÍ ZOBRAZENÍ
+====================================== */
+
+@media (max-width: 600px) {
+
+    #hud {
+        top: 8px;
+        left: 8px;
+    }
+
+    #hint {
+        bottom: 10px;
+        font-size: 11px;
+    }
+
+    #health-bar {
+        left: 8px;
+        bottom: 8px;
+        width: 175px;
+    }
+}
