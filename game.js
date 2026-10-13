@@ -210,6 +210,50 @@ function playDamageSound() {
 // ======================================
 
 function playDeathSound() {
+    
+function playMyJingle() {
+    if (!audioContext) return;
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+    }
+
+    const notes = [
+        { freq: 344, duration: 0.13 },
+        { freq: 243, duration: 0.17 },
+        { freq: 204, duration: 0.13 },
+        { freq: 172, duration: 0.68 }
+    ];
+
+    let time = audioContext.currentTime;
+
+    notes.forEach(note => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        osc.type = "square";
+        osc.frequency.setValueAtTime(note.freq, time);
+
+        gain.gain.setValueAtTime(0.10, time);
+        gain.gain.setValueAtTime(
+            0.10,
+            time + note.duration - 0.01
+        );
+        gain.gain.linearRampToValueAtTime(
+            0,
+            time + note.duration
+        );
+
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        osc.start(time);
+        osc.stop(time + note.duration);
+
+        time += note.duration;
+    });
+}
+
     if (!audioContext) return;
 
     if (audioContext.state === "suspended") {
