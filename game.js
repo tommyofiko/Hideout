@@ -1083,3 +1083,58 @@ setInterval(updateWater, 100);
 setInterval(updateHunger, 100);
 
 update();
+
+
+// ======================================
+// ANIMACE DÝCHÁNÍ POSTAVIČKY
+// ======================================
+
+const idleFrames = [
+    "idle1.png",
+    "idle2.png",
+    "idle3.png",
+    "idle4.png",
+    "idle5.png",
+    "idle6.png"
+];
+
+// Přednačtení obrázků
+idleFrames.forEach(src => {
+    const image = new Image();
+    image.src = src;
+});
+
+let idleFrame = 0;
+let lastIdleFrameTime = 0;
+
+function animatePlayerIdle(time) {
+    const isMoving =
+        keys.has("w") ||
+        keys.has("a") ||
+        keys.has("s") ||
+        keys.has("d") ||
+        keys.has("arrowup") ||
+        keys.has("arrowdown") ||
+        keys.has("arrowleft") ||
+        keys.has("arrowright");
+
+    if (!isMoving && !isDead) {
+        if (time - lastIdleFrameTime >= 500) {
+            idleFrame = (idleFrame + 1) % idleFrames.length;
+
+            sprite.style.backgroundImage =
+                `url("${idleFrames[idleFrame]}")`;
+
+            lastIdleFrameTime = time;
+        }
+    } else {
+        sprite.style.backgroundImage = 'url("idle1.png")';
+        idleFrame = 0;
+        lastIdleFrameTime = time;
+    }
+
+    requestAnimationFrame(animatePlayerIdle);
+}
+
+requestAnimationFrame(animatePlayerIdle);
+
