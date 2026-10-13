@@ -76,39 +76,69 @@ let nearbyObject = null;
 // ======================================
 
 const FIRE = {
-    x: 225,
-    y: 550,
-    radius: 30,
     damage: 12,
     cooldown: 500
 };
 
 let lastFireDamage = -Infinity;
 
-function checkFireDamage() {
-    if (isDead) return;
+// Kolize podle skutečné polohy a velikosti fire.gif.
+// Každá elipsa pokrývá jednu část plamene.
+function isTouchingFire() {
+    const fireElement = document.getElementById("fire");
+    if (!fireElement) return false;
 
-    const distance = Math.hypot(
-        player.x - FIRE.x,
-        player.y - FIRE.y
-    );
+    const style = window.getComputedStyle(fireElement);
+    if (style.display === "none") return false;
+
+    // CSS transform: translate(-50%, -75%)
+    const width = fireElement.offsetWidth;
+    const height = fireElement.offsetHeight;
+    const left = fireElement.offsetLeft - width * 0.5;
+    const top = fireElement.offsetTop - height * 0.75;
+
+    // Kontakt u nohou hráče
+    const footX = player.x;
+    const footY = player.y + 8;
+    const footRadius = 4;
+
+    // Tvarované oblasti plamene
+    const zones = [
+        // x, y, vodorovný a svislý poloměr
+        [0.50, 0.81, 0.33, 0.16], // základna
+        [0.50, 0.61, 0.26, 0.19], // střed
+        [0.50, 0.41, 0.18, 0.16], // horní plamen
+        [0.53, 0.25, 0.10, 0.10]  // špička
+    ];
+
+    return zones.some(([cx, cy, rx, ry]) => {
+        const centerX = left + cx * width;
+        const centerY = top + cy * height;
+
+        const radiusX = rx * width + footRadius;
+        const radiusY = ry * height + footRadius;
+
+        const dx = (footX - centerX) / radiusX;
+        const dy = (footY - centerY) / radiusY;
+
+        return dx * dx + dy * dy <= 1;
+    });
+}
+
+function checkFireDamage() {
+    if (isDead || !isTouchingFire()) return;
 
     const now = performance.now();
 
-    if (
-        distance < FIRE.radius + player.radius &&
-        now - lastFireDamage >= FIRE.cooldown
-    ) {
-        lastFireDamage = now;
+    if (now - lastFireDamage < FIRE.cooldown) return;
 
-        takeDamage(FIRE.damage);
+    lastFireDamage = now;
+    takeDamage(FIRE.damage);
 
-        // Při posledním zásahu zahraj znělku.
-        if (isDead) {
-            playMyJingle();
-        } else {
-            playDamageSound();
-        }
+    if (isDead) {
+        playMyJingle();
+    } else {
+        playDamageSound();
     }
 }
 
@@ -142,21 +172,18 @@ function playFootstep() {
 
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
-
     const now = audioContext.currentTime;
 
     oscillator.type = "square";
 
     oscillator.frequency.setValueAtTime(140, now);
     oscillator.frequency.exponentialRampToValueAtTime(
-        65,
-        now + 0.055
+        65, now + 0.055
     );
 
     gain.gain.setValueAtTime(0.035, now);
     gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        now + 0.065
+        0.001, now + 0.065
     );
 
     oscillator.connect(gain);
@@ -180,21 +207,18 @@ function playDamageSound() {
 
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
-
     const now = audioContext.currentTime;
 
     oscillator.type = "sawtooth";
 
     oscillator.frequency.setValueAtTime(420, now);
     oscillator.frequency.exponentialRampToValueAtTime(
-        85,
-        now + 0.18
+        85, now + 0.18
     );
 
     gain.gain.setValueAtTime(0.09, now);
     gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        now + 0.2
+        0.001, now + 0.2
     );
 
     oscillator.connect(gain);
@@ -217,7 +241,6 @@ function playDeathSound() {
     }
 
     const now = audioContext.currentTime;
-
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
 
@@ -225,14 +248,12 @@ function playDeathSound() {
 
     oscillator.frequency.setValueAtTime(190, now);
     oscillator.frequency.exponentialRampToValueAtTime(
-        45,
-        now + 0.65
+        45, now + 0.65
     );
 
     gain.gain.setValueAtTime(0.13, now);
     gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        now + 0.75
+        0.001, now + 0.75
     );
 
     oscillator.connect(gain);
@@ -254,7 +275,6 @@ function playMyJingle() {
         audioContext.resume().catch(() => {});
     }
 
-    // Tady můžeš upravovat jednotlivé tóny.
     const notes = [
         { freq: 344, duration: 0.13 },
         { freq: 243, duration: 0.17 },
@@ -271,8 +291,7 @@ function playMyJingle() {
         oscillator.type = "square";
 
         oscillator.frequency.setValueAtTime(
-            note.freq,
-            time
+            note.freq, time
         );
 
         gain.gain.setValueAtTime(0.10, time);
@@ -425,7 +444,6 @@ function pointInPolygon(x, y, polygon) {
     return inside;
 }
 
-
 function distanceToSegment(px, py, ax, ay, bx, by) {
     const dx = bx - ax;
     const dy = by - ay;
@@ -468,12 +486,7 @@ function isBlocked(x, y) {
 
         if (
             distanceToSegment(
-                x,
-                y,
-                ax,
-                ay,
-                bx,
-                by
+                x, y, ax, ay, bx, by
             ) < radius
         ) {
             return true;
@@ -482,7 +495,6 @@ function isBlocked(x, y) {
 
     return false;
 }
-
 
 function canMoveTo(x, y) {
     return (
@@ -512,7 +524,6 @@ const objects = [
             );
         }
     },
-
     {
         name: "Starý strom",
         x: 360,
@@ -526,7 +537,6 @@ const objects = [
         }
     }
 ];
-
 
 function showMessage(title, message) {
     dialog.hidden = false;
@@ -545,11 +555,7 @@ function showMessage(title, message) {
         dialog.hidden = true;
     });
 
-    dialog.append(
-        heading,
-        paragraph,
-        button
-    );
+    dialog.append(heading, paragraph, button);
 }
 
 
@@ -561,34 +567,23 @@ function updateCamera() {
     const viewWidth = window.innerWidth;
     const viewHeight = window.innerHeight;
 
-    const scaledWidth =
-        WORLD_WIDTH * CAMERA_ZOOM;
-
-    const scaledHeight =
-        WORLD_HEIGHT * CAMERA_ZOOM;
+    const scaledWidth = WORLD_WIDTH * CAMERA_ZOOM;
+    const scaledHeight = WORLD_HEIGHT * CAMERA_ZOOM;
 
     let cameraX =
-        viewWidth / 2 -
-        player.x * CAMERA_ZOOM;
+        viewWidth / 2 - player.x * CAMERA_ZOOM;
 
     let cameraY =
-        viewHeight / 2 -
-        player.y * CAMERA_ZOOM;
+        viewHeight / 2 - player.y * CAMERA_ZOOM;
 
     cameraX = Math.min(
         0,
-        Math.max(
-            viewWidth - scaledWidth,
-            cameraX
-        )
+        Math.max(viewWidth - scaledWidth, cameraX)
     );
 
     cameraY = Math.min(
         0,
-        Math.max(
-            viewHeight - scaledHeight,
-            cameraY
-        )
+        Math.max(viewHeight - scaledHeight, cameraY)
     );
 
     scene.style.transform =
@@ -605,14 +600,9 @@ window.addEventListener("keydown", event => {
 
     if (
         [
-            "w",
-            "a",
-            "s",
-            "d",
-            "arrowup",
-            "arrowdown",
-            "arrowleft",
-            "arrowright",
+            "w", "a", "s", "d",
+            "arrowup", "arrowdown",
+            "arrowleft", "arrowright",
             " "
         ].includes(key)
     ) {
@@ -636,11 +626,9 @@ window.addEventListener("keydown", event => {
     }
 });
 
-
 window.addEventListener("keyup", event => {
     keys.delete(event.key.toLowerCase());
 });
-
 
 window.addEventListener("blur", () => {
     keys.clear();
@@ -686,24 +674,19 @@ function update() {
         dx++;
     }
 
-    // Stejná rychlost diagonálně i rovně.
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
 
     if (dialog.hidden && !isDead) {
-        const nextX =
-            player.x + dx * player.speed;
-
-        const nextY =
-            player.y + dy * player.speed;
+        const nextX = player.x + dx * player.speed;
+        const nextY = player.y + dy * player.speed;
 
         if (canMoveTo(nextX, nextY)) {
             player.x = nextX;
             player.y = nextY;
         } else {
-            // Pohyb podél překážky
             if (
                 dx !== 0 &&
                 canMoveTo(nextX, player.y)
@@ -720,20 +703,12 @@ function update() {
         }
     }
 
-
-    // ==================================
-    // OHEŇ - DAMAGE
-    // ==================================
-
+    // OHEŇ
     if (!isDead) {
         checkFireDamage();
     }
 
-
-    // ==================================
-    // RETRO FOOTSTEPS
-    // ==================================
-
+    // KROKY
     const isMoving =
         !isDead &&
         dialog.hidden &&
@@ -744,29 +719,14 @@ function update() {
 
     updateFootsteps(isMoving);
 
+    // HRÁČ
+    sprite.style.left = `${player.x}px`;
+    sprite.style.top = `${player.y}px`;
 
-    // ==================================
-    // PLAYER
-    // ==================================
-
-    sprite.style.left =
-        `${player.x}px`;
-
-    sprite.style.top =
-        `${player.y}px`;
-
-
-    // ==================================
-    // CAMERA
-    // ==================================
-
+    // KAMERA
     updateCamera();
 
-
-    // ==================================
     // INTERAKCE
-    // ==================================
-
     nearbyObject =
         objects.find(object =>
             Math.hypot(
@@ -775,11 +735,7 @@ function update() {
             ) < object.radius
         ) || null;
 
-
-    // ==================================
     // HUD
-    // ==================================
-
     if (isDead) {
         hint.textContent = "YOU DIED";
     } else if (!dialog.hidden) {
