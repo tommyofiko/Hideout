@@ -1,24 +1,39 @@
 
 <!DOCTYPE html>
 <html lang="cs">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Hideout</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+
     <div id="game">
 
-        <!-- HUD -->
+        <!-- ======================================
+             HUD
+        ======================================= -->
+
         <div id="hud">
             <h1>HIDEOUT</h1>
             <div id="status">STARÝ DŮM · 001</div>
         </div>
 
-        <!-- HEALTH BAR -->
+
+        <!-- ======================================
+             HEALTH BAR
+        ======================================= -->
+
         <div id="health-bar">
+
             <div id="health-info">
                 <span>HEALTH</span>
                 <span id="health-text">100 / 100</span>
@@ -27,20 +42,29 @@
             <div id="health-track">
                 <div id="health-fill"></div>
             </div>
+
         </div>
 
-        <!-- WORLD -->
+
+        <!-- ======================================
+             HERNÍ SVĚT
+        ======================================= -->
+
         <div id="world">
+
             <div id="scene">
 
-                <!-- MAPA -->
+                <!-- MAPA - POZADÍ -->
                 <div id="garden">
+
                     <img
                         id="house-image"
                         src="house.png"
                         alt="Dům a zahrada"
                     >
+
                 </div>
+
 
                 <!-- DŮM -->
                 <div id="house">
@@ -48,49 +72,106 @@
                     <div id="door"></div>
                 </div>
 
-                <!-- STROM -->
-                <div id="tree" class="object"></div>
 
-                <!-- KAMENNÉ OHNIŠTĚ -->
+                <!-- STROM -->
+                <div
+                    id="tree"
+                    class="object"
+                ></div>
+
+
+                <!-- ======================================
+                     STUDNA - SAMOSTATNÝ OBJEKT
+                ======================================= -->
+
+                <img
+                    id="well"
+                    src="studna.png"
+                    alt="Kamenná studna"
+                    draggable="false"
+                >
+
+
+                <!-- ======================================
+                     KAMENNÉ OHNIŠTĚ
+                ======================================= -->
+
                 <div id="fireplace"></div>
 
-                <!-- ANIMOVANÝ OHEŇ -->
+
+                <!-- ======================================
+                     ANIMOVANÝ OHEŇ
+                ======================================= -->
+
                 <img
                     id="fire"
                     src="fire.gif"
                     alt="Animovaný oheň"
+                    draggable="false"
                 >
 
-                <!-- HRÁČ -->
+
+                <!-- ======================================
+                     HRÁČ
+                ======================================= -->
+
                 <div
                     id="player"
                     aria-label="Postavička"
                 ></div>
 
             </div>
+
         </div>
 
-        <!-- OVLÁDÁNÍ -->
+
+        <!-- ======================================
+             OVLÁDÁNÍ
+        ======================================= -->
+
         <div id="hint">
             WASD / šipky · Pohyb
         </div>
 
-        <!-- DIALOG -->
+
+        <!-- ======================================
+             DIALOG
+        ======================================= -->
+
         <div id="dialog" hidden></div>
 
-        <!-- DEATH SCREEN -->
+
+        <!-- ======================================
+             DEATH SCREEN
+        ======================================= -->
+
         <div id="death-screen" hidden>
+
             <div id="death-content">
+
                 <h1>YOU DIED</h1>
+
                 <p>Po smrti tady nic neni?</p>
-                <button id="restart-button">
+
+                <button
+                    id="restart-button"
+                    type="button"
+                >
                     RESTART
                 </button>
+
             </div>
+
         </div>
 
     </div>
 
+
+    <!-- ======================================
+         JAVASCRIPT
+    ======================================= -->
+
     <script src="game.js"></script>
+
 </body>
 </html>
