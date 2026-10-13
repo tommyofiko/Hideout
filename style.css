@@ -77,10 +77,8 @@ body {
     display: none;
 }
 
-/* ======================================
-   POSTAVIČKA
-====================================== */
 
+/* POSTAVIČKA – 4 STATICKÉ SMĚRY */
 
 #player {
     position: absolute;
