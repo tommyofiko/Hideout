@@ -77,12 +77,11 @@ const keys = new Set();
 let nearbyObject = null;
 
 // ======================================
-// STUDNA - POZICE A KOLIZE
+// STUDNA - VŠECHNO PROPOJENÉ
 // ======================================
 
-// x, y = spodní střed obrázku.
-// Pozice podle červeného označení na mapě.
-
+// x, y = spodní střed PNG.
+// Kolize se automaticky zvětšuje podle width.
 
 const WELL = {
     x: 1080,
@@ -90,12 +89,27 @@ const WELL = {
 
     width: 165,
 
-    collisionRX: 46,
-    collisionRY: 23,
-
-    baseOffsetY: 20
+    collisionWidthRatio: 46 / 165,
+    collisionHeightRatio: 23 / 165,
+    baseOffsetRatio: 20 / 165
 };
 
+// Automaticky vypočítané rozměry
+function getWellCollision() {
+    return {
+        x: WELL.x,
+        y: WELL.y -
+            WELL.width * WELL.baseOffsetRatio,
+
+        rx: WELL.width *
+            WELL.collisionWidthRatio,
+
+        ry: WELL.width *
+            WELL.collisionHeightRatio
+    };
+}
+
+// Pozice obrázku
 function updateWellPosition() {
     if (!wellElement) return;
 
@@ -104,21 +118,24 @@ function updateWellPosition() {
     wellElement.style.width = `${WELL.width}px`;
 }
 
+// Kolize základny studny
 function isTouchingWell(x, y) {
     if (!wellElement) return false;
 
-    const centerX = WELL.x;
-    const centerY = WELL.y - WELL.baseOffsetY;
+    const collision = getWellCollision();
 
+    // Kolize u nohou hráče
     const footX = x;
     const footY = y + 8;
     const footRadius = 5;
 
-    const rx = WELL.collisionRX + footRadius;
-    const ry = WELL.collisionRY + footRadius;
+    const dx =
+        (footX - collision.x) /
+        (collision.rx + footRadius);
 
-    const dx = (footX - centerX) / rx;
-    const dy = (footY - centerY) / ry;
+    const dy =
+        (footY - collision.y) /
+        (collision.ry + footRadius);
 
     return dx * dx + dy * dy < 1;
 }
@@ -130,13 +147,15 @@ function isTouchingWell(x, y) {
 function updateDepthSorting() {
     if (!wellElement) return;
 
-    const wellBaseY = WELL.y - WELL.baseOffsetY;
+    const collision = getWellCollision();
     const playerFeetY = player.y + 8;
 
     wellElement.style.zIndex = "10";
 
+    // Za studnou = hráč je pod obrázkem
+    // Před studnou = hráč je nad obrázkem
     sprite.style.zIndex =
-        playerFeetY < wellBaseY ? "9" : "20";
+        playerFeetY < collision.y ? "9" : "20";
 }
 
 // ======================================
@@ -207,7 +226,6 @@ function checkFireDamage() {
     }
 
     lastFireDamage = now;
-
     takeDamage(FIRE.damage);
 
     if (isDead) {
