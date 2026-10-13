@@ -83,14 +83,15 @@ let nearbyObject = null;
 // x, y = spodní střed obrázku.
 // Pozice podle červeného označení na mapě.
 
+
 const WELL = {
-    x: 1110,
-    y: 690,
+    x: 1080,
+    y: 665,
 
-    width: 118,
+    width: 165,
 
-    collisionRX: 34,
-    collisionRY: 17,
+    collisionRX: 46,
+    collisionRY: 23,
 
     baseOffsetY: 20
 };
