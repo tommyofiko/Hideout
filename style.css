@@ -291,3 +291,30 @@ body {
 }
 
 
+/* KAMENNÉ OHNIŠTĚ */
+
+#fireplace {
+    position: absolute;
+    left: 225px;
+    top: 550px;
+
+    width: 56px;
+    height: 24px;
+
+    transform: translate(-50%, -35%);
+
+    background: #392d25;
+    border: 6px dashed #79786b;
+    border-radius: 48%;
+
+    box-shadow:
+        2px 2px 0 #343631,
+        inset 2px 2px 0 #4d4b42;
+
+    image-rendering: pixelated;
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+
