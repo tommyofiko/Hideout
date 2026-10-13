@@ -7,27 +7,33 @@
     <title>Hideout</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="game">
+
+        <!-- HUD -->
         <div id="hud">
             <h1>HIDEOUT</h1>
             <div id="status">STARÝ DŮM · 001</div>
         </div>
-        
-<div id="health-bar">
-    <div id="health-info">
-        <span>HEALTH</span>
-        <span id="health-text">100 / 100</span>
-    </div>
 
-    <div id="health-track">
-        <div id="health-fill"></div>
-    </div>
-</div>
+        <!-- HEALTH BAR -->
+        <div id="health-bar">
+            <div id="health-info">
+                <span>HEALTH</span>
+                <span id="health-text">100 / 100</span>
+            </div>
 
+            <div id="health-track">
+                <div id="health-fill"></div>
+            </div>
+        </div>
 
+        <!-- WORLD -->
         <div id="world">
             <div id="scene">
+
+                <!-- MAPA -->
                 <div id="garden">
                     <img
                         id="house-image"
@@ -36,26 +42,49 @@
                     >
                 </div>
 
+                <!-- DŮM -->
                 <div id="house">
                     <div id="roof"></div>
                     <div id="door"></div>
                 </div>
 
+                <!-- STROM -->
                 <div id="tree" class="object"></div>
-                <div id="player" aria-label="Postavička"></div>
+
+                <!-- ANIMOVANÝ OHEŇ -->
+                <img
+                    id="fire"
+                    src="fire.gif"
+                    alt="Animovaný oheň"
+                >
+
+                <!-- HRÁČ -->
+                <div
+                    id="player"
+                    aria-label="Postavička"
+                ></div>
+
             </div>
         </div>
 
-        <div id="hint">WASD / šipky · Pohyb</div>
+        <!-- OVLÁDÁNÍ -->
+        <div id="hint">
+            WASD / šipky · Pohyb
+        </div>
+
+        <!-- DIALOG -->
         <div id="dialog" hidden></div>
-        
-<!-- DEATH SCREEN -->
-<div id="death-screen" hidden>
-    <div id="death-content">
-        <h1>YOU DIED</h1>
-        <p>Tvá cesta zde skončila.</p>
-        <button id="restart-button">RESTART</button>
-    </div>
+
+        <!-- DEATH SCREEN -->
+        <div id="death-screen" hidden>
+            <div id="death-content">
+                <h1>YOU DIED</h1>
+                <p>Po smrti tady nic neni?</p>
+                <button id="restart-button">
+                    RESTART
+                </button>
+            </div>
+        </div>
 
     </div>
 
