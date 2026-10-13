@@ -8,12 +8,13 @@ const healthText = document.getElementById("health-text");
 const deathScreen = document.getElementById("death-screen");
 const restartButton = document.getElementById("restart-button");
 
-let isDead = false;
-
+// ======================================
+// HEALTH SYSTEM
+// ======================================
 
 const MAX_HEALTH = 100;
 let health = MAX_HEALTH;
-
+let isDead = false;
 
 function setHealth(value) {
     if (isDead) return;
@@ -33,97 +34,14 @@ function setHealth(value) {
     }
 }
 
-
 function takeDamage(amount) {
+    if (isDead) return;
     setHealth(health - amount);
 }
 
 function healPlayer(amount) {
-    setHealth(health + amount);
-}
-
-setHealth(MAX_HEALTH);
-
-// ======================================
-// SMRT HRÁČE
-// ======================================
-
-function die() {
     if (isDead) return;
-
-    isDead = true;
-    keys.clear();
-    dialog.hidden = true;
-    deathScreen.hidden = false;
-}
-
-
-// ======================================
-// RESTART HRY
-// ======================================
-
-function restartGame() {
-    // Obnovení životů
-    isDead = false;
-    setHealth(MAX_HEALTH);
-
-    // Návrat na původní spawn
-    player.x = 800;
-    player.y = 800;
-
-    // Reset ohně
-    lastFireDamage = -Infinity;
-
-    // Reset ovládání a dialogů
-    keys.clear();
-    nearbyObject = null;
-    dialog.hidden = true;
-
-    // Skrytí obrazovky smrti
-    deathScreen.hidden = true;
-
-    // Aktualizace pozice a kamery
-    sprite.style.left = `${player.x}px`;
-    sprite.style.top = `${player.y}px`;
-    updateCamera();
-}
-
-restartButton.addEventListener("click", restartGame);
-
-
-
-// ======================================
-// OHEŇ - DAMAGE KOLIZE
-// ======================================
-
-const FIRE = {
-    x: 225,
-    y: 550,
-    radius: 30,
-    damage: 10,
-    cooldown: 1000
-};
-
-let lastFireDamage = -Infinity;
-
-function checkFireDamage() {
-    const distance = Math.hypot(
-        player.x - FIRE.x,
-        player.y - FIRE.y
-    );
-
-    const now = performance.now();
-
-    if (
-        distance < FIRE.radius + player.radius &&
-        now - lastFireDamage >= FIRE.cooldown
-    ) {
-        
-takeDamage(FIRE.damage);
-playDamageSound();
-lastFireDamage = now;
-
-    }
+    setHealth(health + amount);
 }
 
 
@@ -143,7 +61,6 @@ const BOUNDS = {
 };
 
 const player = {
-    // Spawn uvnitř červeně vyznačené oblasti
     x: 800,
     y: 800,
     speed: 2,
@@ -151,57 +68,70 @@ const player = {
 };
 
 const keys = new Set();
+let nearbyObject = null;
+
 
 // ======================================
-// RETRO 8-BIT FOOTSTEPS
+// OHEŇ - DAMAGE KOLIZE
 // ======================================
 
-const audioContext = new (
-    window.AudioContext || window.webkitAudioContext
-)();
+const FIRE = {
+    x: 225,
+    y: 550,
+    radius: 30,
+    damage: 10,
+    cooldown: 1000
+};
+
+let lastFireDamage = -Infinity;
+
+function checkFireDamage() {
+    if (isDead) return;
+
+    const distance = Math.hypot(
+        player.x - FIRE.x,
+        player.y - FIRE.y
+    );
+
+    const now = performance.now();
+
+    if (
+        distance < FIRE.radius + player.radius &&
+        now - lastFireDamage >= FIRE.cooldown
+    ) {
+        lastFireDamage = now;
+
+        takeDamage(FIRE.damage);
+        playDamageSound();
+    }
+}
+
+
+// ======================================
+// RETRO 8-BIT SOUND SYSTEM
+// ======================================
+
+const AudioContextClass =
+    window.AudioContext ||
+    window.webkitAudioContext;
+
+const audioContext = AudioContextClass
+    ? new AudioContextClass()
+    : null;
 
 let lastFootstep = 0;
 const FOOTSTEP_INTERVAL = 280;
 
+
+// ======================================
+// ZVUK KROKŮ
+// ======================================
+
 function playFootstep() {
-    
-// ======================================
-// RETRO FIRE DAMAGE SOUND
-// ======================================
-
-function playDamageSound() {
-    if (audioContext.state === "suspended") {
-        audioContext.resume();
-    }
-
-    const now = audioContext.currentTime;
-
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-
-    oscillator.type = "sawtooth";
-
-    oscillator.frequency.setValueAtTime(420, now);
-    oscillator.frequency.exponentialRampToValueAtTime(
-        85,
-        now + 0.18
-    );
-
-    gain.gain.setValueAtTime(0.09, now);
-    gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        now + 0.2
-    );
-
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-
-    oscillator.start(now);
-    oscillator.stop(now + 0.2);
-}
+    if (!audioContext) return;
 
     if (audioContext.state === "suspended") {
-        audioContext.resume();
+        audioContext.resume().catch(() => {});
     }
 
     const oscillator = audioContext.createOscillator();
@@ -230,6 +160,49 @@ function playDamageSound() {
     oscillator.stop(now + 0.07);
 }
 
+
+// ======================================
+// ZVUK POŠKOZENÍ OD OHNĚ
+// ======================================
+
+function playDamageSound() {
+    if (!audioContext) return;
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+    }
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    const now = audioContext.currentTime;
+
+    oscillator.type = "sawtooth";
+
+    oscillator.frequency.setValueAtTime(420, now);
+    oscillator.frequency.exponentialRampToValueAtTime(
+        85,
+        now + 0.18
+    );
+
+    gain.gain.setValueAtTime(0.09, now);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + 0.2
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.2);
+}
+
+
+// ======================================
+// UPDATE KROKŮ
+// ======================================
+
 function updateFootsteps(isMoving) {
     if (!isMoving || isDead) return;
 
@@ -241,15 +214,56 @@ function updateFootsteps(isMoving) {
     }
 }
 
-let nearbyObject = null;
+
+// ======================================
+// SMRT HRÁČE
+// ======================================
+
+function die() {
+    if (isDead) return;
+
+    isDead = true;
+
+    keys.clear();
+    nearbyObject = null;
+    dialog.hidden = true;
+
+    deathScreen.hidden = false;
+}
+
+
+// ======================================
+// RESTART HRY
+// ======================================
+
+function restartGame() {
+    isDead = false;
+
+    player.x = 800;
+    player.y = 800;
+
+    lastFireDamage = -Infinity;
+    lastFootstep = 0;
+
+    keys.clear();
+    nearbyObject = null;
+
+    dialog.hidden = true;
+    deathScreen.hidden = true;
+
+    setHealth(MAX_HEALTH);
+
+    sprite.style.left = `${player.x}px`;
+    sprite.style.top = `${player.y}px`;
+
+    updateCamera();
+}
+
+restartButton.addEventListener("click", restartGame);
 
 
 // ======================================
 // PRŮCHOZÍ OBLAST
-// Souřadnice odpovídají mapě 1920 × 1080
-//
-// UVNITŘ = hráč může chodit
-// MIMO = blokováno
 // ======================================
 
 const WALKABLE_AREA = [
@@ -344,13 +358,10 @@ function distanceToSegment(px, py, ax, ay, bx, by) {
 function isBlocked(x, y) {
     const radius = player.radius;
 
-    // Hráč musí být uvnitř průchozí oblasti.
     if (!pointInPolygon(x, y, WALKABLE_AREA)) {
         return true;
     }
 
-    // Držíme hráče kousek od hranice,
-    // aby jeho sprite nepřesahoval ven.
     for (let i = 0; i < WALKABLE_AREA.length; i++) {
         const [ax, ay] = WALKABLE_AREA[i];
         const [bx, by] =
@@ -509,6 +520,8 @@ window.addEventListener("keydown", event => {
         event.preventDefault();
     }
 
+    if (isDead) return;
+
     keys.add(key);
 
     if (key === "escape") {
@@ -526,9 +539,7 @@ window.addEventListener("keydown", event => {
 
 
 window.addEventListener("keyup", event => {
-    keys.delete(
-        event.key.toLowerCase()
-    );
+    keys.delete(event.key.toLowerCase());
 });
 
 
@@ -543,7 +554,8 @@ window.addEventListener("blur", () => {
 
 function update() {
     const previousX = player.x;
-const previousY = player.y;
+    const previousY = player.y;
+
     let dx = 0;
     let dy = 0;
 
@@ -575,57 +587,34 @@ const previousY = player.y;
         dx++;
     }
 
-
     // Stejná rychlost diagonálně i rovně.
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
 
-
     if (dialog.hidden && !isDead) {
-
         const nextX =
-            player.x +
-            dx * player.speed;
+            player.x + dx * player.speed;
 
         const nextY =
-            player.y +
-            dy * player.speed;
+            player.y + dy * player.speed;
 
-
-        // Nejdříve zkusíme pohyb v obou osách.
-        if (
-            canMoveTo(
-                nextX,
-                nextY
-            )
-        ) {
+        if (canMoveTo(nextX, nextY)) {
             player.x = nextX;
             player.y = nextY;
-        }
-
-        else {
-
-            // Pohyb vodorovně podél překážky.
+        } else {
+            // Pohyb podél překážky
             if (
                 dx !== 0 &&
-                canMoveTo(
-                    nextX,
-                    player.y
-                )
+                canMoveTo(nextX, player.y)
             ) {
                 player.x = nextX;
             }
 
-
-            // Pohyb svisle podél překážky.
             if (
                 dy !== 0 &&
-                canMoveTo(
-                    player.x,
-                    nextY
-                )
+                canMoveTo(player.x, nextY)
             ) {
                 player.y = nextY;
             }
@@ -634,23 +623,28 @@ const previousY = player.y;
 
 
     // ==================================
-    // OHEŇ - KONTROLA POŠKOZENÍ
+    // OHEŇ - DAMAGE
     // ==================================
 
     if (!isDead) {
-    checkFireDamage();
-}
+        checkFireDamage();
+    }
 
 
-const isMoving =
-    !isDead &&
-    dialog.hidden &&
-    (
-        player.x !== previousX ||
-        player.y !== previousY
-    );
+    // ==================================
+    // RETRO FOOTSTEPS
+    // ==================================
 
-updateFootsteps(isMoving);
+    const isMoving =
+        !isDead &&
+        dialog.hidden &&
+        (
+            player.x !== previousX ||
+            player.y !== previousY
+        );
+
+    updateFootsteps(isMoving);
+
 
     // ==================================
     // PLAYER
@@ -687,25 +681,25 @@ updateFootsteps(isMoving);
     // HUD
     // ==================================
 
-    if (!dialog.hidden) {
-
-        hint.textContent =
-            "ESC · Zavřít";
-
+    if (isDead) {
+        hint.textContent = "YOU DIED";
+    } else if (!dialog.hidden) {
+        hint.textContent = "ESC · Zavřít";
     } else if (nearbyObject) {
-
         hint.textContent =
             `${nearbyObject.name} · Stiskni E`;
-
     } else {
-
         hint.textContent =
             "WASD / šipky · Pohyb | E · Interakce";
     }
-
 
     requestAnimationFrame(update);
 }
 
 
+// ======================================
+// START HRY
+// ======================================
+
+setHealth(MAX_HEALTH);
 update();
