@@ -444,4 +444,41 @@ body {
     z-index: 10;
 }
 
+/* HEALTH BAR - NAHOŘE */
+#health-bar {
+    bottom: 48px;
+}
+
+/* H2O BAR - TENČÍ, DOLE */
+#water-bar {
+    left: 12px;
+    bottom: 12px;
+    width: 400px;
+    padding: 5px 9px;
+}
+
+#water-info {
+    margin-bottom: 3px;
+    font-size: 9px;
+}
+
+#water-track {
+    height: 10px;
+}
+
+#water-fill {
+    background: #269cfa;
+}
+
+@media (max-width: 600px) {
+    #health-bar {
+        bottom: 44px;
+    }
+
+    #water-bar {
+        left: 8px;
+        bottom: 8px;
+        width: 175px;
+    }
+}
       
