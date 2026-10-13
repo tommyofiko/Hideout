@@ -81,24 +81,28 @@ body {
    POSTAVIČKA
 ====================================== */
 
+
 #player {
     position: absolute;
     z-index: 20;
+
     left: 480px;
     top: 450px;
-    width: 22px;
-    height: 25px;
+
+    width: 32px;
+    height: 48px;
+
     transform: translate(-50%, -50%);
 
-    background: #c7c9a9;
-    border: 3px solid #292d2b;
-
-    box-shadow:
-        0 -9px 0 -2px #554237,
-        0 5px 0 #292d2b;
+    background-image: url("idle1.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 
     image-rendering: pixelated;
+    pointer-events: none;
 }
+
 
 /* ======================================
    HUD
