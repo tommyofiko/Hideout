@@ -1,59 +1,64 @@
 <!DOCTYPE html>
 <html lang="cs">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Hideout</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
     <div id="game">
-        <!-- HUD -->
+
+        <!-- ======================================
+             HUD
+        ======================================= -->
+
         <div id="hud">
             <h1>HIDEOUT</h1>
             <div id="status">STARÝ DŮM · 001</div>
         </div>
 
-        <!-- HEALTH + H2O: jeden společný panel -->
+
+        <!-- ======================================
+             HEALTH + H2O + HUNGER
+             SPOLEČNÝ PANEL
+        ======================================= -->
+
         <div id="health-bar">
+
+            <!-- HEALTH -->
+
             <div id="health-info">
                 <span>HEALTH</span>
                 <span id="health-text">100 / 100</span>
             </div>
-            <div id="health-track"><div id="health-fill"></div></div>
+
+            <div id="health-track">
+                <div id="health-fill"></div>
+            </div>
+
+
+            <!-- H2O -->
+
             <div id="water-info">
                 <span>H2O</span>
                 <span id="water-text">100 / 100</span>
             </div>
-            <div id="water-track"><div id="water-fill"></div></div>
-        </div>
 
-        <!-- HERNÍ SVĚT -->
-        <div id="world">
-            <div id="scene">
-                <div id="garden">
-                    <img id="house-image" src="house.png" alt="Dům a zahrada">
-                </div>
-                <div id="house"><div id="roof"></div><div id="door"></div></div>
-                <div id="tree" class="object"></div>
-                <img id="well" src="studna.png" alt="Kamenná studna" draggable="false">
-                <img id="log" src="log.png" alt="Dřevěná kláda" draggable="false">
-                <div id="fireplace"></div>
-                <img id="fire" src="fire.gif" alt="Animovaný oheň" draggable="false">
-                <div id="player" aria-label="Postavička"></div>
+            <div id="water-track">
+                <div id="water-fill"></div>
             </div>
-        </div>
 
-        <div id="hint">WASD / šipky · Pohyb</div>
-        <div id="dialog" hidden></div>
-        <div id="death-screen" hidden>
-            <div id="death-content">
-                <h1>YOU DIED</h1>
-                <p>Po smrti tady nic neni?</p>
-                <button id="restart-button" type="button">RESTART</button>
-            </div>
-        </div>
-    </div>
-    <script src="game.js"></script>
-</body>
-</html>
+
+            <!-- HUNGER -->
+
+            <
