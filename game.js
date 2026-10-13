@@ -2,6 +2,23 @@ const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
 const sprite = document.getElementById("player");
+const healthFill = document.getElementById("health-fill");
+const healthText = document.getElementById("health-text");
+
+const MAX_HEALTH = 100;
+let health = MAX_HEALTH;
+
+function setHealth(value) {
+    health = Math.max(0, Math.min(MAX_HEALTH, value));
+
+    healthFill.style.width =
+        `${(health / MAX_HEALTH) * 100}%`;
+
+    healthText.textContent =
+        `${health} / ${MAX_HEALTH}`;
+
+    healthFill.style.background = "#e84949";
+}
 
 const WORLD_WIDTH = 1920;
 const WORLD_HEIGHT = 1080;
