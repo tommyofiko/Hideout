@@ -26,44 +26,45 @@ const keys = new Set();
 let nearbyObject = null;
 
 // ======================================
-// ZAKÁZANÉ OBLASTI
+// PRŮCHOZÍ OBLAST
 // Souřadnice odpovídají mapě 1920 × 1080
+//
+// Uvnitř polygonu = hráč může chodit
+// Mimo polygon = blokováno
 // ======================================
 
-const BLOCKED_AREAS = [
-    // Řeka, vodopády a skalní sráz napravo.
-    [
-        [1730, 0],
-        [1920, 0],
-        [1920, 1080],
-        [1080, 1080],
-        [1190, 1015],
-        [1320, 940],
-        [1420, 850],
-        [1490, 750],
-        [1540, 650],
-        [1580, 550],
-        [1620, 450],
-        [1670, 350],
-        [1710, 250],
-        [1740, 150],
-        [1760, 70]
-    ],
-
-    // Malé jezírko na louce.
-    [
-        [620, 850],
-        [665, 825],
-        [715, 830],
-        [755, 855],
-        [780, 890],
-        [765, 920],
-        [720, 945],
-        [675, 950],
-        [635, 925],
-        [610, 890]
-    ]
+const WALKABLE_AREA = [
+    [1310, 591],
+    [1249, 542],
+    [1203, 565],
+    [986, 423],
+    [1084, 310],
+    [1006, 265],
+    [918, 334],
+    [963, 359],
+    [935, 418],
+    [901, 390],
+    [805, 451],
+    [753, 441],
+    [621, 505],
+    [513, 439],
+    [356, 414],
+    [92, 562],
+    [238, 695],
+    [324, 643],
+    [360, 651],
+    [379, 677],
+    [328, 702],
+    [311, 759],
+    [338, 794],
+    [328, 822],
+    [541, 994],
+    [630, 1034],
+    [745, 1033],
+    [852, 989],
+    [1125, 717]
 ];
+
 
 // ======================================
 // GEOMETRIE KOLIZÍ
@@ -118,36 +119,33 @@ function distanceToSegment(px, py, ax, ay, bx, by) {
 function isBlocked(x, y) {
     const radius = player.radius;
 
-    return BLOCKED_AREAS.some(polygon => {
-        // Hráč nesmí být uvnitř zakázané oblasti.
-        if (pointInPolygon(x, y, polygon)) {
+    // Hráč musí být uvnitř průchozí oblasti.
+    if (!pointInPolygon(x, y, WALKABLE_AREA)) {
+        return true;
+    }
+
+    // Držíme hráče kousek od hranice,
+    // aby část postavy nepřesahovala ven.
+    for (let i = 0; i < WALKABLE_AREA.length; i++) {
+        const [ax, ay] = WALKABLE_AREA[i];
+        const [bx, by] =
+            WALKABLE_AREA[(i + 1) % WALKABLE_AREA.length];
+
+        if (
+            distanceToSegment(
+                x,
+                y,
+                ax,
+                ay,
+                bx,
+                by
+            ) < radius
+        ) {
             return true;
         }
+    }
 
-        // Hráč nesmí zasahovat přes hranu polygonu.
-        for (let i = 0; i < polygon.length; i++) {
-            const [ax, ay] = polygon[i];
-            const [bx, by] = polygon[(i + 1) % polygon.length];
-
-            if (
-                distanceToSegment(x, y, ax, ay, bx, by) < radius
-            ) {
-                return true;
-            }
-        }
-
-        return false;
-    });
-}
-
-function canMoveTo(x, y) {
-    return (
-        x >= BOUNDS.left &&
-        x <= BOUNDS.right &&
-        y >= BOUNDS.top &&
-        y <= BOUNDS.bottom &&
-        !isBlocked(x, y)
-    );
+    return false;
 }
 
 // ======================================
