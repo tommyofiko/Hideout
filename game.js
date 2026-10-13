@@ -3,7 +3,9 @@ const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
 const sprite = document.getElementById("player");
+
 const wellElement = document.getElementById("well");
+const logElement = document.getElementById("log");
 
 const healthFill = document.getElementById("health-fill");
 const healthText = document.getElementById("health-text");
@@ -77,11 +79,8 @@ const keys = new Set();
 let nearbyObject = null;
 
 // ======================================
-// STUDNA - VŠECHNO PROPOJENÉ
+// STUDNA
 // ======================================
-
-// x, y = spodní střed PNG.
-// Kolize se automaticky zvětšuje podle width.
 
 const WELL = {
     x: 1080,
@@ -93,16 +92,18 @@ const WELL = {
     baseOffsetRatio: 20 / 165
 };
 
-// Automaticky vypočítané rozměry
-
 function getWellCollision() {
     const rx = WELL.width * WELL.collisionWidthRatio;
 
-    // Původní spodní hranice kolize
-    const oldRY = WELL.width * WELL.collisionHeightRatio;
-    const oldY = WELL.y - WELL.width * WELL.baseOffsetRatio - 15;
+    const oldRY =
+        WELL.width * WELL.collisionHeightRatio;
 
-    // Rozšíření směrem nahoru
+    const oldY =
+        WELL.y -
+        WELL.width * WELL.baseOffsetRatio -
+        15;
+
+    // Rozšíření kolize směrem nahoru
     const extraTop = 22;
 
     return {
@@ -113,8 +114,6 @@ function getWellCollision() {
     };
 }
 
-
-// Pozice obrázku
 function updateWellPosition() {
     if (!wellElement) return;
 
@@ -123,13 +122,11 @@ function updateWellPosition() {
     wellElement.style.width = `${WELL.width}px`;
 }
 
-// Kolize základny studny
 function isTouchingWell(x, y) {
     if (!wellElement) return false;
 
     const collision = getWellCollision();
 
-    // Kolize u nohou hráče
     const footX = x;
     const footY = y + 8;
     const footRadius = 5;
@@ -146,21 +143,95 @@ function isTouchingWell(x, y) {
 }
 
 // ======================================
-// VRSTVENÍ STUDNY A HRÁČE
+// KLÁDA - SAMOSTATNÝ OBJEKT
+// ======================================
+
+// Pozice odpovídá přibližně původní kládě
+// nad dřevěným přístřeškem.
+//
+// x, y = střed obrázku log.png.
+//
+// Kolize má tvar šikmé kapsle:
+// úsečka mezi dvěma body + poloměr.
+
+const LOG = {
+    x: 265,
+    y: 620,
+    width: 100,
+
+    // Konce kolizní úsečky
+    ax: 232,
+    ay: 635,
+
+    bx: 298,
+    by: 605,
+
+    radius: 11
+};
+
+function updateLogPosition() {
+    if (!logElement) return;
+
+    logElement.style.left = `${LOG.x}px`;
+    logElement.style.top = `${LOG.y}px`;
+    logElement.style.width = `${LOG.width}px`;
+}
+
+function isTouchingLog(x, y) {
+    if (!logElement) return false;
+
+    // Kolize se počítá u nohou hráče
+    const footX = x;
+    const footY = y + 8;
+    const footRadius = 5;
+
+    return distanceToSegment(
+        footX,
+        footY,
+        LOG.ax,
+        LOG.ay,
+        LOG.bx,
+        LOG.by
+    ) < LOG.radius + footRadius;
+}
+
+// ======================================
+// VRSTVENÍ OBJEKTŮ A HRÁČE
 // ======================================
 
 function updateDepthSorting() {
-    if (!wellElement) return;
-
-    const collision = getWellCollision();
     const playerFeetY = player.y + 8;
 
-    wellElement.style.zIndex = "10";
+    // STUDNA
+    if (wellElement) {
+        const collision = getWellCollision();
 
-    // Za studnou = hráč je pod obrázkem
-    // Před studnou = hráč je nad obrázkem
-    sprite.style.zIndex =
-        playerFeetY < collision.y ? "9" : "20";
+        wellElement.style.zIndex = "10";
+
+        sprite.style.zIndex =
+            playerFeetY < collision.y ? "9" : "20";
+    } else {
+        sprite.style.zIndex = "20";
+    }
+
+    // KLÁDA
+    if (logElement) {
+        logElement.style.zIndex = "10";
+
+        // Hráč za kládou se vykreslí pod ní.
+        // Hráč před kládou se vykreslí nad ní.
+        const logDepthY =
+            (LOG.ay + LOG.by) / 2;
+
+        if (playerFeetY < logDepthY) {
+            sprite.style.zIndex = "9";
+        } else if (
+            !wellElement ||
+            playerFeetY >= getWellCollision().y
+        ) {
+            sprite.style.zIndex = "20";
+        }
+    }
 }
 
 // ======================================
@@ -567,7 +638,7 @@ function distanceToSegment(px, py, ax, ay, bx, by) {
 }
 
 // ======================================
-// KOLIZE OSTROVA + STUDNY
+// KOLIZE OSTROVA + STUDNY + KLÁDY
 // ======================================
 
 function isBlocked(x, y) {
@@ -591,7 +662,13 @@ function isBlocked(x, y) {
         }
     }
 
+    // Kolize studny
     if (isTouchingWell(x, y)) {
+        return true;
+    }
+
+    // Kolize klády
+    if (isTouchingLog(x, y)) {
         return true;
     }
 
@@ -848,7 +925,7 @@ function update() {
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
-    // STUDNA - VRSTVENÍ
+    // VRSTVENÍ OBJEKTŮ
 
     updateDepthSorting();
 
@@ -888,5 +965,6 @@ function update() {
 // ======================================
 
 updateWellPosition();
+updateLogPosition();
 setHealth(MAX_HEALTH);
 update();
