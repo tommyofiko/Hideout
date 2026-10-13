@@ -79,8 +79,8 @@ const FIRE = {
     x: 225,
     y: 550,
     radius: 30,
-    damage: 10,
-    cooldown: 1000
+    damage: 12,
+    cooldown: 500
 };
 
 let lastFireDamage = -Infinity;
