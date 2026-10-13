@@ -1,220 +1,112 @@
+
 <!DOCTYPE html>
 <html lang="cs">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hideout</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
     <div id="game">
 
-        <!-- ======================================
-             HUD
-        ======================================= -->
-
+        <!-- HUD -->
         <div id="hud">
             <h1>HIDEOUT</h1>
             <div id="status">STARÝ DŮM · 001</div>
         </div>
 
+        <!-- INVENTÁŘ -->
+        <div id="inventory">
+            <button class="inventory-slot selected" data-slot="0" type="button">
+                <span class="slot-number">1</span>
+                <span class="slot-item"></span>
+            </button>
+            <button class="inventory-slot" data-slot="1" type="button">
+                <span class="slot-number">2</span>
+                <span class="slot-item"></span>
+            </button>
+            <button class="inventory-slot" data-slot="2" type="button">
+                <span class="slot-number">3</span>
+                <span class="slot-item"></span>
+            </button>
+            <button class="inventory-slot" data-slot="3" type="button">
+                <span class="slot-number">4</span>
+                <span class="slot-item"></span>
+            </button>
+            <button class="inventory-slot" data-slot="4" type="button">
+                <span class="slot-number">5</span>
+                <span class="slot-item"></span>
+            </button>
+        </div>
 
-        <!-- ======================================
-             HEALTH + H2O + HUNGER
-             SPOLEČNÝ PANEL
-        ======================================= -->
-
+        <!-- HEALTH + H2O + HUNGER -->
         <div id="health-bar">
-
-            <!-- HEALTH -->
-
             <div id="health-info">
                 <span>HEALTH</span>
                 <span id="health-text">100 / 100</span>
             </div>
-
             <div id="health-track">
                 <div id="health-fill"></div>
             </div>
-
-
-            <!-- H2O -->
 
             <div id="water-info">
                 <span>H2O</span>
                 <span id="water-text">100 / 100</span>
             </div>
-
             <div id="water-track">
                 <div id="water-fill"></div>
             </div>
-
-
-            <!-- HUNGER -->
 
             <div id="hunger-info">
                 <span>HUNGER</span>
                 <span id="hunger-text">100 / 100</span>
             </div>
-
             <div id="hunger-track">
                 <div id="hunger-fill"></div>
             </div>
-
         </div>
 
-
-        <!-- ======================================
-             HERNÍ SVĚT
-        ======================================= -->
-
+        <!-- HERNÍ SVĚT -->
         <div id="world">
-
             <div id="scene">
-
-                <!-- MAPA - POZADÍ -->
-
                 <div id="garden">
-
-                    <img
-                        id="house-image"
-                        src="house.png"
-                        alt="Dům a zahrada"
-                        draggable="false"
-                    >
-
+                    <img id="house-image" src="house.png" alt="Dům a zahrada">
                 </div>
-
-
-                <!-- DŮM -->
 
                 <div id="house">
                     <div id="roof"></div>
                     <div id="door"></div>
                 </div>
 
+                <div id="tree" class="object"></div>
 
-                <!-- STROM -->
-
-                <div
-                    id="tree"
-                    class="object"
-                ></div>
-
-
-                <!-- ======================================
-                     STUDNA
-                ======================================= -->
-
-                <img
-                    id="well"
-                    src="studna.png"
-                    alt="Kamenná studna"
-                    draggable="false"
-                >
-
-
-                <!-- ======================================
-                     KLÁDA
-                ======================================= -->
-
-                <img
-                    id="log"
-                    src="log.png"
-                    alt="Dřevěná kláda"
-                    draggable="false"
-                >
-
-
-                <!-- ======================================
-                     KAMENNÉ OHNIŠTĚ
-                ======================================= -->
+                <img id="well" src="studna.png" alt="Kamenná studna" draggable="false">
+                <img id="log" src="log.png" alt="Dřevěná kláda" draggable="false">
 
                 <div id="fireplace"></div>
+                <img id="fire" src="fire.gif" alt="Animovaný oheň" draggable="false">
 
-
-                <!-- ======================================
-                     ANIMOVANÝ OHEŇ
-                ======================================= -->
-
-                <img
-                    id="fire"
-                    src="fire.gif"
-                    alt="Animovaný oheň"
-                    draggable="false"
-                >
-
-
-                <!-- ======================================
-                     HRÁČ
-                ======================================= -->
-
-                <div
-                    id="player"
-                    aria-label="Postavička"
-                ></div>
-
+                <div id="player" aria-label="Postavička"></div>
             </div>
-
         </div>
-
-
-        <!-- ======================================
-             OVLÁDÁNÍ
-        ======================================= -->
 
         <div id="hint">
-            WASD / šipky · Pohyb
+            WASD / šipky · Pohyb | 1–5 · Inventář
         </div>
-
-
-        <!-- ======================================
-             DIALOG
-        ======================================= -->
 
         <div id="dialog" hidden></div>
 
-
-        <!-- ======================================
-             DEATH SCREEN
-        ======================================= -->
-
         <div id="death-screen" hidden>
-
             <div id="death-content">
-
                 <h1>YOU DIED</h1>
-
                 <p>Po smrti tady nic neni?</p>
-
-                <button
-                    id="restart-button"
-                    type="button"
-                >
-                    RESTART
-                </button>
-
+                <button id="restart-button" type="button">RESTART</button>
             </div>
-
         </div>
 
     </div>
 
-
-    <!-- ======================================
-         JAVASCRIPT
-    ======================================= -->
-
     <script src="game.js"></script>
-
 </body>
 </html>
