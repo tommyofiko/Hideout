@@ -86,11 +86,10 @@ let nearbyObject = null;
 const WELL = {
     x: 1080,
     y: 665,
-
     width: 165,
 
-    collisionWidthRatio: 46 / 165,
-    collisionHeightRatio: 23 / 165,
+    collisionWidthRatio: 34 / 165,
+    collisionHeightRatio: 15 / 165,
     baseOffsetRatio: 20 / 165
 };
 
