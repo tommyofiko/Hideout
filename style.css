@@ -416,4 +416,26 @@ body {
     z-index: 10;
 }
 
+/* ======================================
+   KLÁDA - PIXEL ART
+====================================== */
+
+#log {
+    position: absolute;
+
+    /* Pozice na mapě 1920x1080 */
+    left: 265px;
+    top: 620px;
+
+    width: 100px;
+    height: auto;
+
+    transform: translate(-50%, -50%);
+
+    image-rendering: pixelated;
+    pointer-events: none;
+
+    z-index: 5;
+}
+
       
