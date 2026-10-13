@@ -5,11 +5,19 @@ const dialog = document.getElementById("dialog");
 const sprite = document.getElementById("player");
 const healthFill = document.getElementById("health-fill");
 const healthText = document.getElementById("health-text");
+const deathScreen = document.getElementById("death-screen");
+const restartButton = document.getElementById("restart-button");
+
+let isDead = false;
+
 
 const MAX_HEALTH = 100;
 let health = MAX_HEALTH;
 
+
 function setHealth(value) {
+    if (isDead) return;
+
     health = Math.max(0, Math.min(MAX_HEALTH, value));
 
     healthFill.style.width =
@@ -19,7 +27,12 @@ function setHealth(value) {
         `${health} / ${MAX_HEALTH}`;
 
     healthFill.style.background = "#e84949";
+
+    if (health <= 0) {
+        die();
+    }
 }
+
 
 function takeDamage(amount) {
     setHealth(health - amount);
@@ -30,6 +43,53 @@ function healPlayer(amount) {
 }
 
 setHealth(MAX_HEALTH);
+
+// ======================================
+// SMRT HRÁČE
+// ======================================
+
+function die() {
+    if (isDead) return;
+
+    isDead = true;
+    keys.clear();
+    dialog.hidden = true;
+    deathScreen.hidden = false;
+}
+
+
+// ======================================
+// RESTART HRY
+// ======================================
+
+function restartGame() {
+    // Obnovení životů
+    isDead = false;
+    setHealth(MAX_HEALTH);
+
+    // Návrat na původní spawn
+    player.x = 800;
+    player.y = 800;
+
+    // Reset ohně
+    lastFireDamage = -Infinity;
+
+    // Reset ovládání a dialogů
+    keys.clear();
+    nearbyObject = null;
+    dialog.hidden = true;
+
+    // Skrytí obrazovky smrti
+    deathScreen.hidden = true;
+
+    // Aktualizace pozice a kamery
+    sprite.style.left = `${player.x}px`;
+    sprite.style.top = `${player.y}px`;
+    updateCamera();
+}
+
+restartButton.addEventListener("click", restartGame);
+
 
 
 // ======================================
@@ -428,7 +488,7 @@ function update() {
     }
 
 
-    if (dialog.hidden) {
+    if (dialog.hidden && !isDead) {
 
         const nextX =
             player.x +
@@ -482,7 +542,9 @@ function update() {
     // OHEŇ - KONTROLA POŠKOZENÍ
     // ==================================
 
+    if (!isDead) {
     checkFireDamage();
+}
 
 
     // ==================================
