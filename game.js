@@ -101,8 +101,15 @@ function checkFireDamage() {
     ) {
         lastFireDamage = now;
 
-        takeDamage(FIRE.damage);
-        playDamageSound();
+        
+takeDamage(FIRE.damage);
+
+if (isDead) {
+    playDeathSound();
+} else {
+    playDamageSound();
+}
+
     }
 }
 
@@ -166,6 +173,46 @@ function playFootstep() {
 // ======================================
 
 function playDamageSound() {
+    
+ // ======================================
+ // RETRO DEATH SOUND - GRRR
+ // ======================================
+
+function playDeathSound() {
+    if (!audioContext) return;
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+    }
+
+    const now = audioContext.currentTime;
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sawtooth";
+
+    // Hluboké klesající zavrčení
+    oscillator.frequency.setValueAtTime(190, now);
+    oscillator.frequency.exponentialRampToValueAtTime(
+        45,
+        now + 0.65
+    );
+
+    // Silný začátek, postupné doznívání
+    gain.gain.setValueAtTime(0.13, now);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + 0.75
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.75);
+}
+
     if (!audioContext) return;
 
     if (audioContext.state === "suspended") {
