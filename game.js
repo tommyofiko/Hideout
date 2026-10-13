@@ -101,15 +101,14 @@ function checkFireDamage() {
     ) {
         lastFireDamage = now;
 
-        
-takeDamage(FIRE.damage);
+        takeDamage(FIRE.damage);
 
-if (isDead) {
-    playDeathSound();
-} else {
-    playDamageSound();
-}
-
+        // Poslední zásah má vlastní zvuk.
+        if (isDead) {
+            playDeathSound();
+        } else {
+            playDamageSound();
+        }
     }
 }
 
@@ -144,9 +143,9 @@ function playFootstep() {
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
 
-    oscillator.type = "square";
-
     const now = audioContext.currentTime;
+
+    oscillator.type = "square";
 
     oscillator.frequency.setValueAtTime(140, now);
     oscillator.frequency.exponentialRampToValueAtTime(
@@ -173,46 +172,6 @@ function playFootstep() {
 // ======================================
 
 function playDamageSound() {
-    
- // ======================================
- // RETRO DEATH SOUND - GRRR
- // ======================================
-
-function playDeathSound() {
-    if (!audioContext) return;
-
-    if (audioContext.state === "suspended") {
-        audioContext.resume().catch(() => {});
-    }
-
-    const now = audioContext.currentTime;
-
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-
-    oscillator.type = "sawtooth";
-
-    // Hluboké klesající zavrčení
-    oscillator.frequency.setValueAtTime(190, now);
-    oscillator.frequency.exponentialRampToValueAtTime(
-        45,
-        now + 0.65
-    );
-
-    // Silný začátek, postupné doznívání
-    gain.gain.setValueAtTime(0.13, now);
-    gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        now + 0.75
-    );
-
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-
-    oscillator.start(now);
-    oscillator.stop(now + 0.75);
-}
-
     if (!audioContext) return;
 
     if (audioContext.state === "suspended") {
@@ -243,6 +202,46 @@ function playDeathSound() {
 
     oscillator.start(now);
     oscillator.stop(now + 0.2);
+}
+
+
+// ======================================
+// RETRO DEATH SOUND - GRRR
+// ======================================
+
+function playDeathSound() {
+    if (!audioContext) return;
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+    }
+
+    const now = audioContext.currentTime;
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sawtooth";
+
+    // Hluboké klesající zavrčení
+    oscillator.frequency.setValueAtTime(190, now);
+    oscillator.frequency.exponentialRampToValueAtTime(
+        45,
+        now + 0.65
+    );
+
+    // Silný začátek a postupné doznívání
+    gain.gain.setValueAtTime(0.13, now);
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + 0.75
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.75);
 }
 
 
