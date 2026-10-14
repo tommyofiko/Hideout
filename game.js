@@ -843,18 +843,19 @@ function updateFireAudio() {
 //
 // Hlubokou část jezírka sem nezahrnujeme.
 
+
 const SHALLOW_WATER_AREA = [
-    [688, 823],
-    [728, 801],
-    [774, 803],
-    [806, 827],
-    [809, 872],
-    [782, 910],
-    [726, 931],
-    [676, 916],
-    [651, 881],
-    [661, 847]
+    [710, 830],
+    [745, 814],
+    [780, 823],
+    [792, 848],
+    [785, 883],
+    [759, 902],
+    [719, 908],
+    [686, 889],
+    [681, 858]
 ];
+
 
 function isWalkingInShallowWater() {
     return pointInPolygon(
@@ -864,62 +865,17 @@ function isWalkingInShallowWater() {
     );
 }
 
-function playWaterStep() {
-    // MP3 má přibližně 7 sekund.
-    // Použijeme z něj krátké úseky,
-    // aby každé šlápnutí znělo jinak.
-
-    const sound = walkingWaterSound;
-
-    const duration = Number.isFinite(sound.duration)
-        ? sound.duration
-        : 0;
-
-    if (duration > 1.5) {
-        const maxStart = Math.max(0, duration - 1.2);
-
-        try {
-            sound.currentTime =
-                Math.random() * maxStart;
-        } catch (error) {
-            // Soubor se ještě může načítat.
-        }
-    } else {
-        try {
-            sound.currentTime = 0;
-        } catch (error) {}
-    }
-
-    sound.volume = SOUND_SETTINGS.waterVolume;
-
-    safePlay(sound);
+function isWalkingInShallowWater() {
+    // původní kód
 }
 
-function updateWalkingAudio(isMoving) {
-    if (!isMoving) {
-        // Šplouchnutí může krátce doznít.
-        return;
-    }
-
-    const now = performance.now();
-
-    if (isWalkingInShallowWater()) {
-        if (
-            now - lastWaterStep >=
-            SOUND_SETTINGS.waterStepInterval
-        ) {
-            playWaterStep();
-            lastWaterStep = now;
-        }
-
-        return;
-    }
-
-    // Na trávě necháváme původní kroky.
-    updateFootsteps(true);
-}
+// TADY BUDE NOVÝ KÓD Z KROKU 3
 
 // ========================================
+// PŮVODNÍ KROKY
+// ========================================
+
+let lastFootstep = 0;// ========================================
 // PŮVODNÍ KROKY
 // ========================================
 
@@ -951,8 +907,8 @@ const ITEM_IMAGES = {
 };
 
 const PAPER_LOCATION = {
-    x: 800,
-    y: 750,
+    x: 660,
+    y: 580,
     radius: 42
 };
 
