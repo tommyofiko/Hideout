@@ -2068,8 +2068,7 @@ function updateRabbit() {
     // NÁHODNÉ ROZHODOVÁNÍ
     if (!rabbit.hopping && now >= rabbit.nextDecision) {
         rabbit.direction = Math.random() * Math.PI * 2;
-        rabbit.moving = Math.random() > 0.25;
-
+        rabbit.moving = true;
         rabbit.nextDecision =
             now + 700 + Math.random() * 1600;
     }
@@ -2111,11 +2110,10 @@ function updateRabbit() {
             rabbit.hopToX = nextX;
             rabbit.hopToY = nextY;
         } else {
-            rabbit.direction = Math.random() * Math.PI * 2;
-            rabbit.nextDecision = now + 250;
-            rabbit.moving = false;
-        }
-    }
+    rabbit.direction = Math.random() * Math.PI * 2;
+    rabbit.nextDecision = now + 250;
+    rabbit.moving = true;
+}
 
     let jumpHeight = 0;
 
