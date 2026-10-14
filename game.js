@@ -500,33 +500,44 @@ const WALKABLE_AREA = mapPolygon([
 
 // SCHODY A VERANDA
 
+
 const STAIRS_AREA = mapPolygon([
     [777, 368],
     [793, 343],
     [812, 319],
     [837, 302],
-    [858, 281],
-    [872, 267],
-    [894, 257],
-    [915, 277],
-    [901, 293],
-    [878, 310],
-    [860, 322],
     [844, 338],
     [826, 358],
     [803, 390],
     [787, 387]
 ]);
 
-
-const SHED_BLOCKED_AREA = mapPolygon([
-    [202, 586],
-    [290, 540],
-    [336, 559],
-    [337, 607],
-    [261, 646],
-    [204, 615]
+const PORCH_AREA = mapPolygon([
+    [790, 316],
+    [801, 307],
+    [811, 305],
+    [821, 306],
+    [832, 299],
+    [843, 288],
+    [860, 279],
+    [867, 282],
+    [872, 288],
+    [891, 295],
+    [909, 306],
+    [898, 317],
+    [893, 329],
+    [893, 342],
+    [899, 351],
+    [889, 358],
+    [861, 346],
+    [856, 351],
+    [849, 360],
+    [836, 350],
+    [822, 347],
+    [823, 333],
+    [811, 324]
 ]);
+
 
 
 
@@ -568,12 +579,15 @@ function pointInPolygon(x, y, polygon) {
 // ========================================
 
 
+
 function insideWalkable(x, y) {
     return (
         pointInPolygon(x, y, WALKABLE_AREA) ||
-        pointInPolygon(x, y, STAIRS_AREA)
+        pointInPolygon(x, y, STAIRS_AREA) ||
+        pointInPolygon(x, y, PORCH_AREA)
     );
 }
+
 
 
 function isBlocked(x, y) {
