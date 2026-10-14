@@ -86,6 +86,7 @@ function resetPlayerAppearance() {
 
     sprite.style.backgroundImage =
         `url("${PLAYER_IMAGES.down}")`;
+
     sprite.style.backgroundRepeat = "no-repeat";
     sprite.style.backgroundPosition = "center";
     sprite.style.backgroundSize = "contain";
@@ -530,6 +531,96 @@ function distanceToSegment(px, py, ax, ay, bx, by) {
 }
 
 // ========================================
+// NOVÉ: MĚLKÁ A HLUBOKÁ VODA
+// ========================================
+
+// Souřadnice jsou přibližně odhadnuté
+// podle tvého označeného obrázku.
+//
+// ORANŽOVÁ = mělká, průchozí voda.
+// ČERVENÁ = hluboká, neprůchozí voda.
+//
+// Pro doladění upravuj pouze tyto body.
+
+// Mělká voda — pravá a spodní část jezírka.
+const SHALLOW_WATER_AREA = [
+    [619, 818],
+    [674, 797],
+    [727, 809],
+    [761, 842],
+    [773, 880],
+    [755, 914],
+    [711, 938],
+    [654, 945],
+    [613, 935],
+    [636, 904],
+    [659, 877],
+    [641, 848]
+];
+
+// Hluboká voda — levá část jezírka.
+const DEEP_WATER_AREA = [
+    [468, 827],
+    [495, 791],
+    [547, 770],
+    [592, 775],
+    [618, 802],
+    [619, 818],
+    [641, 848],
+    [659, 877],
+    [636, 904],
+    [613, 935],
+    [574, 939],
+    [527, 923],
+    [482, 892],
+    [459, 856]
+];
+
+function isInShallowWater(x, y) {
+    return pointInPolygon(
+        x,
+        y + 8,
+        SHALLOW_WATER_AREA
+    );
+}
+
+function isInDeepWater(x, y) {
+    return pointInPolygon(
+        x,
+        y + 8,
+        DEEP_WATER_AREA
+    );
+}
+
+function isNearDeepWaterEdge(x, y) {
+    const feetY = y + 8;
+
+    for (let i = 0; i < DEEP_WATER_AREA.length; i++) {
+        const [ax, ay] = DEEP_WATER_AREA[i];
+
+        const [bx, by] =
+            DEEP_WATER_AREA[
+                (i + 1) % DEEP_WATER_AREA.length
+            ];
+
+        if (
+            distanceToSegment(
+                x,
+                feetY,
+                ax,
+                ay,
+                bx,
+                by
+            ) < player.radius
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// ========================================
 // KOLIZE
 // ========================================
 
@@ -564,6 +655,16 @@ function isBlocked(x, y) {
         }
     }
 
+    // Nová kolize hluboké vody.
+    if (isInDeepWater(x, y)) {
+        return true;
+    }
+
+    // Hráč nesmí překročit hranici hloubky.
+    if (isNearDeepWaterEdge(x, y)) {
+        return true;
+    }
+
     return (
         isTouchingWell(x, y) ||
         isTouchingLog(x, y)
@@ -581,10 +682,12 @@ function canMoveTo(x, y) {
 }
 
 // ========================================
-// OHEŇ
+// OHEŇ — DAMAGE
 // ========================================
 
 const FIRE = {
+    x: 225,
+    y: 550,
     damage: 12,
     cooldown: 500
 };
@@ -594,14 +697,11 @@ let lastFireDamage = -Infinity;
 function isTouchingFire() {
     if (!fireElement) return false;
 
-    const fireX = 225;
-    const fireY = 550;
-
     const footX = player.x;
     const footY = player.y + 8;
 
-    const dx = (footX - fireX) / 29;
-    const dy = (footY - fireY) / 24;
+    const dx = (footX - FIRE.x) / 29;
+    const dy = (footY - FIRE.y) / 24;
 
     return dx * dx + dy * dy < 1;
 }
@@ -770,22 +870,228 @@ function playMyJingle() {
 }
 
 // ========================================
-// KROKY
+// NOVÉ: 8BITOVÉ ŠPLOUCHÁNÍ
+// ========================================
+
+function playWaterSplash() {
+    if (
+        !audioContext ||
+        audioContext.state !== "running"
+    ) {
+        return;
+    }
+
+    const now = audioContext.currentTime;
+
+    // Dvě krátké retro kapky.
+    const drops = [
+        {
+            delay: 0,
+            start: 290,
+            end: 105,
+            duration: 0.11,
+            volume: 0.043
+        },
+        {
+            delay: 0.065,
+            start: 185,
+            end: 75,
+            duration: 0.14,
+            volume: 0.028
+        }
+    ];
+
+    drops.forEach(drop => {
+        const oscillator =
+            audioContext.createOscillator();
+
+        const gain =
+            audioContext.createGain();
+
+        const startTime = now + drop.delay;
+
+        oscillator.type = "triangle";
+
+        oscillator.frequency.setValueAtTime(
+            drop.start,
+            startTime
+        );
+
+        oscillator.frequency.exponentialRampToValueAtTime(
+            drop.end,
+            startTime + drop.duration
+        );
+
+        gain.gain.setValueAtTime(
+            0.001,
+            startTime
+        );
+
+        gain.gain.linearRampToValueAtTime(
+            drop.volume,
+            startTime + 0.012
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            startTime + drop.duration
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + drop.duration);
+    });
+}
+
+// ========================================
+// NOVÉ: 8BITOVÉ PRASKÁNÍ OHNĚ
+// ========================================
+
+const FIRE_SOUND = {
+    maxDistance: 230,
+    minInterval: 110,
+    maxInterval: 370,
+    maxVolume: 0.035
+};
+
+let nextFireCrackle = 0;
+
+function getFireVolume() {
+    if (!fireElement || isDead) return 0;
+
+    const distance = Math.hypot(
+        player.x - FIRE.x,
+        player.y + 8 - FIRE.y
+    );
+
+    if (distance >= FIRE_SOUND.maxDistance) {
+        return 0;
+    }
+
+    const proximity =
+        1 - distance / FIRE_SOUND.maxDistance;
+
+    return (
+        FIRE_SOUND.maxVolume *
+        proximity *
+        proximity
+    );
+}
+
+function playFireCrackle(volume) {
+    if (
+        !audioContext ||
+        audioContext.state !== "running" ||
+        volume <= 0
+    ) {
+        return;
+    }
+
+    const now = audioContext.currentTime;
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
+    const duration =
+        0.018 + Math.random() * 0.045;
+
+    const frequency =
+        180 + Math.random() * 1100;
+
+    oscillator.type = "square";
+
+    oscillator.frequency.setValueAtTime(
+        frequency,
+        now
+    );
+
+    oscillator.frequency.exponentialRampToValueAtTime(
+        Math.max(40, frequency * 0.35),
+        now + duration
+    );
+
+    gain.gain.setValueAtTime(
+        Math.max(0.001, volume),
+        now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + duration
+    );
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+}
+
+function updateFireSound() {
+    if (
+        isDead ||
+        !audioContext ||
+        audioContext.state !== "running"
+    ) {
+        return;
+    }
+
+    const now = performance.now();
+
+    if (now < nextFireCrackle) {
+        return;
+    }
+
+    const volume = getFireVolume();
+
+    if (volume > 0) {
+        playFireCrackle(volume);
+    }
+
+    nextFireCrackle =
+        now +
+        FIRE_SOUND.minInterval +
+        Math.random() *
+        (
+            FIRE_SOUND.maxInterval -
+            FIRE_SOUND.minInterval
+        );
+}
+
+// ========================================
+// KROKY + VODA
 // ========================================
 
 let lastFootstep = 0;
 const FOOTSTEP_INTERVAL = 280;
+const WATER_STEP_INTERVAL = 330;
 
 function updateFootsteps(isMoving) {
     if (!isMoving) return;
 
     const now = performance.now();
 
-    if (
-        now - lastFootstep >=
-        FOOTSTEP_INTERVAL
-    ) {
-        playFootstep();
+    const inWater = isInShallowWater(
+        player.x,
+        player.y
+    );
+
+    const interval = inWater
+        ? WATER_STEP_INTERVAL
+        : FOOTSTEP_INTERVAL;
+
+    if (now - lastFootstep >= interval) {
+        if (inWater) {
+            playWaterSplash();
+        } else {
+            playFootstep();
+        }
+
         lastFootstep = now;
     }
 }
@@ -854,7 +1160,6 @@ function renderInventory() {
             image.src = item.image;
             image.alt = item.name;
 
-            // VĚTŠÍ IKONKY
             image.style.width = "39px";
             image.style.height = "39px";
             image.style.maxWidth = "100%";
@@ -1243,10 +1548,15 @@ const POND = {
 };
 
 function isNearPond() {
-    return Math.hypot(
-        player.x - POND.x,
-        player.y - POND.y
-    ) < POND.radius;
+    // Původní místo interakce zůstává.
+    // Navíc lze nabírat v mělké vodě.
+    return (
+        Math.hypot(
+            player.x - POND.x,
+            player.y - POND.y
+        ) < POND.radius ||
+        isInShallowWater(player.x, player.y)
+    );
 }
 
 // ========================================
@@ -1673,9 +1983,6 @@ function findNearbyObject() {
         };
     }
 
-    // OPRAVA:
-    // Žádné staré objects.find().
-    // Proměnná objects už neexistuje.
     return null;
 }
 
@@ -1836,6 +2143,9 @@ function restartGame() {
     lastFireDamage = -Infinity;
     lastFootstep = 0;
 
+    // Reset nového zvuku ohně.
+    nextFireCrackle = 0;
+
     dialog.hidden = true;
     deathScreen.hidden = true;
 
@@ -1981,7 +2291,7 @@ function update() {
         checkFireDamage();
     }
 
-    // ZVUK KROKŮ
+    // ZVUK KROKŮ NEBO ŠPLOUCHÁNÍ
     const isMoving =
         !isDead &&
         dialog.hidden &&
@@ -1991,6 +2301,9 @@ function update() {
         );
 
     updateFootsteps(isMoving);
+
+    // NOVÉ: PRASKÁNÍ OHNĚ PODLE VZDÁLENOSTI
+    updateFireSound();
 
     // POZICE HRÁČE
     sprite.style.left = `${player.x}px`;
