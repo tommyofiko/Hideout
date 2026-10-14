@@ -2,13 +2,10 @@
 "use strict";
 
 // ========================================
-// HIDEOUT - GAME.JS
+// HIDEOUT — GAME.JS
 // ========================================
 
-// ========================================
 // HTML ELEMENTY
-// ========================================
-
 const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
@@ -20,10 +17,8 @@ const fireElement = document.getElementById("fire");
 
 const healthFill = document.getElementById("health-fill");
 const healthText = document.getElementById("health-text");
-
 const waterFill = document.getElementById("water-fill");
 const waterText = document.getElementById("water-text");
-
 const hungerFill = document.getElementById("hunger-fill");
 const hungerText = document.getElementById("hunger-text");
 
@@ -58,11 +53,10 @@ const player = {
 };
 
 const keys = new Set();
-
 let nearbyObject = null;
 
 // ========================================
-// POSTAVIČKA - 8 SMĚRŮ
+// POSTAVIČKA — 8 SMĚRŮ
 // ========================================
 
 const PLAYER_IMAGES = {
@@ -83,7 +77,6 @@ function setPlayerDirection(direction) {
     if (playerDirection === direction) return;
 
     playerDirection = direction;
-
     sprite.style.backgroundImage =
         `url("${PLAYER_IMAGES[direction]}")`;
 }
@@ -93,18 +86,14 @@ function resetPlayerAppearance() {
 
     sprite.style.backgroundImage =
         `url("${PLAYER_IMAGES.down}")`;
-
     sprite.style.backgroundRepeat = "no-repeat";
     sprite.style.backgroundPosition = "center";
     sprite.style.backgroundSize = "contain";
-
     sprite.style.width = "43px";
     sprite.style.height = "64px";
-
     sprite.style.backgroundColor = "transparent";
     sprite.style.border = "none";
     sprite.style.boxShadow = "none";
-
     sprite.style.transform = "translate(-50%, -50%)";
     sprite.style.imageRendering = "pixelated";
     sprite.style.pointerEvents = "none";
@@ -122,10 +111,7 @@ let isDead = false;
 function setHealth(value) {
     if (isDead) return;
 
-    health = Math.max(
-        0,
-        Math.min(MAX_HEALTH, value)
-    );
+    health = Math.max(0, Math.min(MAX_HEALTH, value));
 
     if (healthFill) {
         healthFill.style.width = `${health}%`;
@@ -143,18 +129,16 @@ function setHealth(value) {
 
 function takeDamage(amount) {
     if (isDead) return;
-
     setHealth(health - amount);
 }
 
 function healPlayer(amount) {
     if (isDead) return;
-
     setHealth(health + amount);
 }
 
 // ========================================
-// H2O - 20 MINUT
+// H2O — 20 MINUT
 // ========================================
 
 const MAX_WATER = 100;
@@ -164,15 +148,11 @@ const DEHYDRATION_DAMAGE = 5;
 const DEHYDRATION_INTERVAL = 3000;
 
 let water = MAX_WATER;
-
 let lastWaterUpdate = performance.now();
 let lastDehydrationDamage = null;
 
 function setWater(value) {
-    water = Math.max(
-        0,
-        Math.min(MAX_WATER, value)
-    );
+    water = Math.max(0, Math.min(MAX_WATER, value));
 
     if (waterFill) {
         waterFill.style.width = `${water}%`;
@@ -196,17 +176,12 @@ function drinkWater(amount) {
 
 function loseWater(amount) {
     if (isDead) return;
-
     setWater(water - amount);
 }
 
 function updateWater() {
     const now = performance.now();
-
-    const deltaTime = Math.max(
-        0,
-        now - lastWaterUpdate
-    );
+    const deltaTime = Math.max(0, now - lastWaterUpdate);
 
     lastWaterUpdate = now;
 
@@ -245,7 +220,7 @@ function updateWater() {
 }
 
 // ========================================
-// HUNGER - 30 MINUT
+// HUNGER — 30 MINUT
 // ========================================
 
 const MAX_HUNGER = 100;
@@ -255,15 +230,11 @@ const STARVATION_DAMAGE = 5;
 const STARVATION_INTERVAL = 3000;
 
 let hunger = MAX_HUNGER;
-
 let lastHungerUpdate = performance.now();
 let lastStarvationDamage = null;
 
 function setHunger(value) {
-    hunger = Math.max(
-        0,
-        Math.min(MAX_HUNGER, value)
-    );
+    hunger = Math.max(0, Math.min(MAX_HUNGER, value));
 
     if (hungerFill) {
         hungerFill.style.width = `${hunger}%`;
@@ -287,17 +258,12 @@ function eatFood(amount) {
 
 function loseHunger(amount) {
     if (isDead) return;
-
     setHunger(hunger - amount);
 }
 
 function updateHunger() {
     const now = performance.now();
-
-    const deltaTime = Math.max(
-        0,
-        now - lastHungerUpdate
-    );
+    const deltaTime = Math.max(0, now - lastHungerUpdate);
 
     lastHungerUpdate = now;
 
@@ -336,14 +302,13 @@ function updateHunger() {
 }
 
 // ========================================
-// STUDNA
+// STUDNA — POZICE A KOLIZE
 // ========================================
 
 const WELL = {
     x: 1080,
     y: 665,
     width: 165,
-
     collisionWidthRatio: 34 / 165,
     collisionHeightRatio: 15 / 165,
     baseOffsetRatio: 20 / 165
@@ -366,7 +331,7 @@ function getWellCollision() {
     return {
         x: WELL.x + 15,
         y: oldY - extraTop / 2,
-        rx,
+        rx: rx,
         ry: oldRY + extraTop / 2
     };
 }
@@ -404,13 +369,10 @@ const LOG = {
     x: 265,
     y: 620,
     width: 100,
-
     ax: 232,
     ay: 635,
-
     bx: 298,
     by: 605,
-
     radius: 11
 };
 
@@ -523,15 +485,12 @@ function pointInPolygon(x, y, polygon) {
     ) {
         const xi = polygon[i][0];
         const yi = polygon[i][1];
-
         const xj = polygon[j][0];
         const yj = polygon[j][1];
 
         const intersects =
             (yi > y) !== (yj > y) &&
-            x <
-            ((xj - xi) * (y - yi)) /
-            (yj - yi) + xi;
+            x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
 
         if (intersects) {
             inside = !inside;
@@ -544,7 +503,6 @@ function pointInPolygon(x, y, polygon) {
 function distanceToSegment(px, py, ax, ay, bx, by) {
     const dx = bx - ax;
     const dy = by - ay;
-
     const lengthSquared = dx * dx + dy * dy;
 
     if (lengthSquared === 0) {
@@ -658,7 +616,6 @@ function checkFireDamage() {
     }
 
     lastFireDamage = now;
-
     takeDamage(FIRE.damage);
 
     if (isDead) {
@@ -817,7 +774,6 @@ function playMyJingle() {
 // ========================================
 
 let lastFootstep = 0;
-
 const FOOTSTEP_INTERVAL = 280;
 
 function updateFootsteps(isMoving) {
@@ -835,7 +791,7 @@ function updateFootsteps(isMoving) {
 }
 
 // ========================================
-// INVENTÁŘ
+// INVENTÁŘ — 5 SLOTŮ
 // ========================================
 
 const INVENTORY_SIZE = 5;
@@ -898,6 +854,7 @@ function renderInventory() {
             image.src = item.image;
             image.alt = item.name;
 
+            // VĚTŠÍ IKONKY
             image.style.width = "39px";
             image.style.height = "39px";
             image.style.maxWidth = "100%";
@@ -920,9 +877,6 @@ function renderInventory() {
             resumeAudio();
 
             if (!dialog.hidden) return;
-
-            // Kliknutí na předmět otevře nabídku.
-            // Slot se zároveň vybere.
 
             selectedInventorySlot = index;
             renderInventory();
@@ -1107,11 +1061,8 @@ const ITEM_IMAGES = {
 const CUP_MAX_FILLS = 4;
 
 // ========================================
-// PAPÍR NA ZEMI
+// PAPÍR NA ZEMI — U BOUDY
 // ========================================
-
-// Spawn hráče: 800, 800
-// Papír: kousek před hráčem.
 
 const PAPER_POSITION = {
     x: 660,
@@ -1282,19 +1233,13 @@ function craftPaperCup(index) {
 }
 
 // ========================================
-// JEZÍRKO - ŠPINAVÁ VODA
+// JEZÍRKO — ŠPINAVÁ VODA
 // ========================================
-
-// Oblast u pravého břehu jezírka,
-// vedle počáteční pozice hráče.
-//
-// Pokud bude potřeba doladit dosah,
-// mění se pouze tyto souřadnice.
 
 const POND = {
     x: 745,
     y: 820,
-    radius: 75
+    radius: 45
 };
 
 function isNearPond() {
@@ -1305,10 +1250,10 @@ function isNearPond() {
 }
 
 // ========================================
-// STUDNA - ČISTÁ VODA
+// STUDNA — ČISTÁ VODA
 // ========================================
 
-const WELL_INTERACTION_RADIUS = 100;
+const WELL_INTERACTION_RADIUS = 55;
 
 function isNearWell() {
     if (!wellElement) return false;
@@ -1395,10 +1340,7 @@ function fillPaperCup(source) {
     // Každé nabrání se počítá.
     result.item.uses++;
 
-    // ====================================
-    // ČTVRTÉ NABRÁNÍ - ROZPAD KELÍMKU
-    // ====================================
-
+    // ČTVRTÉ NABRÁNÍ — ROZPAD KELÍMKU
     if (result.item.uses >= CUP_MAX_FILLS) {
         inventoryItems[result.index] = null;
 
@@ -1412,10 +1354,7 @@ function fillPaperCup(source) {
         return;
     }
 
-    // ====================================
     // ÚSPĚŠNÉ NABRÁNÍ
-    // ====================================
-
     result.item.contents = source;
 
     result.item.name =
@@ -1514,7 +1453,6 @@ function pourOutCup(index) {
 
     // Vylití nemění H2O hráče.
     // Počet použití kelímku se neresetuje.
-
     item.contents = null;
     item.name = "Papírový kelímek";
     item.image = ITEM_IMAGES.cup;
@@ -1609,7 +1547,7 @@ function openCupMenu(index) {
 }
 
 // ========================================
-// ZMĚNA H2O - BAREVNÝ TEXT
+// ZMĚNA H2O — BAREVNÝ TEXT
 // ========================================
 
 const waterChangeElement =
@@ -1701,7 +1639,6 @@ function interactWithWell() {
     fillPaperCup("well");
 }
 
-
 // ========================================
 // VYHLEDÁNÍ INTERAKCE
 // ========================================
@@ -1736,13 +1673,10 @@ function findNearbyObject() {
         };
     }
 
-    // 4. Původní objekty.
-    return objects.find(object => {
-        return Math.hypot(
-            player.x - object.x,
-            player.y - object.y
-        ) < object.radius;
-    }) || null;
+    // OPRAVA:
+    // Žádné staré objects.find().
+    // Proměnná objects už neexistuje.
+    return null;
 }
 
 // ========================================
@@ -1831,7 +1765,7 @@ window.addEventListener("keydown", event => {
         return;
     }
 
-    // Inventář 1-5.
+    // Inventář 1–5.
     if (
         /^[1-5]$/.test(event.key) &&
         !event.repeat &&
@@ -1950,10 +1884,7 @@ function update() {
     let dx = 0;
     let dy = 0;
 
-    // ====================================
     // POHYB
-    // ====================================
-
     if (
         keys.has("w") ||
         keys.has("arrowup")
@@ -1982,10 +1913,7 @@ function update() {
         dx++;
     }
 
-    // ====================================
     // SMĚR POSTAVIČKY
-    // ====================================
-
     if (!isDead && dialog.hidden) {
         if (dy < 0 && dx < 0) {
             setPlayerDirection("upLeft");
@@ -2013,19 +1941,13 @@ function update() {
         }
     }
 
-    // ====================================
     // DIAGONÁLNÍ POHYB
-    // ====================================
-
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
 
-    // ====================================
     // POHYB A KOLIZE
-    // ====================================
-
     if (dialog.hidden && !isDead) {
         const nextX =
             player.x + dx * player.speed;
@@ -2054,18 +1976,12 @@ function update() {
         }
     }
 
-    // ====================================
     // DAMAGE Z OHNĚ
-    // ====================================
-
     if (!isDead) {
         checkFireDamage();
     }
 
-    // ====================================
     // ZVUK KROKŮ
-    // ====================================
-
     const isMoving =
         !isDead &&
         dialog.hidden &&
@@ -2076,26 +1992,17 @@ function update() {
 
     updateFootsteps(isMoving);
 
-    // ====================================
     // POZICE HRÁČE
-    // ====================================
-
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
     updateDepthSorting();
     updateCamera();
 
-    // ====================================
     // INTERAKCE
-    // ====================================
-
     nearbyObject = findNearbyObject();
 
-    // ====================================
     // NÁPOVĚDA
-    // ====================================
-
     if (isDead) {
         hint.textContent = "YOU DIED";
 
