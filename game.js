@@ -2174,7 +2174,7 @@ rabbitSprite.style.top = `${rabbit.y - jumpHeight}px`;
 rabbitSprite.style.zIndex =
     rabbit.y < player.y ? "9" : "21";
 }
-
+}
 
 
 
