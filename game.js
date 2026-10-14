@@ -1194,7 +1194,7 @@ function pickupPaper() {
 
     showMessage(
         "List papíru",
-        "Sebral jsi ze země list papíru."
+        "Sebrals ze země list papíru."
     );
 }
 
@@ -1276,7 +1276,7 @@ function craftPaperCup(index) {
     renderInventory();
 
     showMessage(
-        "Papírový kelímek",
+        "Papírovej kelímek",
         "Složil jsi papír do tvaru malého kelímku."
     );
 }
@@ -1377,7 +1377,7 @@ function fillPaperCup(source) {
     if (!result.item) {
         showMessage(
             "Voda",
-            "Nemáš u sebe papírový kelímek."
+            "Nemáš do čeho nabrat vodu."
         );
 
         return;
@@ -1406,7 +1406,7 @@ function fillPaperCup(source) {
 
         showMessage(
             "Kelímek se rozpadl",
-            "Papír nasákl vodou. Kelímek se ti rozpadl přímo v rukou."
+            "Papír nasákl vodou a kelímek se ti v rukách proměnil na MR**U..."
         );
 
         return;
@@ -1429,12 +1429,12 @@ function fillPaperCup(source) {
     if (source === "well") {
         showMessage(
             "Studna",
-            "Nabral jsi čistou vodu ze studny."
+            "Nabrals čistou vodu ze studny."
         );
     } else {
         showMessage(
             "Jezírko",
-            "Nabral jsi vodu z jezírka. Nevypadá příliš čistě."
+            "Nabrals vodu z jezírka. Nevypadá příliš čistě."
         );
     }
 }
@@ -1562,7 +1562,7 @@ function openCupMenu(index) {
                 if (current.contents === "well") {
                     showMessage(
                         "Papírový kelímek",
-                        "Uvnitř je čistá voda ze studny."
+                        "Uvnitř je čistá, studeňoučká voda ze studny."
                     );
 
                 } else if (current.contents === "pond") {
@@ -1701,38 +1701,6 @@ function interactWithWell() {
     fillPaperCup("well");
 }
 
-// ========================================
-// PŮVODNÍ OBJEKTY
-// ========================================
-
-const objects = [
-    {
-        name: "Vchod do domu",
-        x: 960,
-        y: 580,
-        radius: 65,
-
-        action: () => {
-            showMessage(
-                "Vítej doma.",
-                "Interiér teprve postavíme. Tohle místo bude růst podle tebe."
-            );
-        }
-    },
-    {
-        name: "Starý strom",
-        x: 360,
-        y: 700,
-        radius: 55,
-
-        action: () => {
-            showMessage(
-                "Pod stromem",
-                "Kořeny nadzvedávají staré kameny. Jeden z nich vypadá, že jde odsunout."
-            );
-        }
-    }
-];
 
 // ========================================
 // VYHLEDÁNÍ INTERAKCE
