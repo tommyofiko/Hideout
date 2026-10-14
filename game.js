@@ -898,8 +898,8 @@ function renderInventory() {
             image.src = item.image;
             image.alt = item.name;
 
-            image.style.width = "30px";
-            image.style.height = "30px";
+            image.style.width = "39px";
+            image.style.height = "39px";
             image.style.maxWidth = "100%";
             image.style.maxHeight = "100%";
             image.style.objectFit = "contain";
@@ -1114,8 +1114,8 @@ const CUP_MAX_FILLS = 4;
 // Papír: kousek před hráčem.
 
 const PAPER_POSITION = {
-    x: 800,
-    y: 750,
+    x: 660,
+    y: 580,
     radius: 48
 };
 
