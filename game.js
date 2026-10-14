@@ -62,13 +62,6 @@ let nearbyObject = null;
 // POSTAVIČKA - 6 SMĚRŮ
 // ======================================
 
-// S       = dolů
-// A       = doleva
-// W       = nahoru
-// D       = doprava
-// S + D   = diagonálně dolů doprava
-// S + A   = diagonálně dolů doleva
-
 const PLAYER_IMAGES = {
     down: "idle11.png",
     left: "idle12.png",
@@ -651,7 +644,7 @@ function checkFireDamage() {
 }
 
 // ======================================
-// ZVUKY
+// PŮVODNÍ ZVUKY
 // ======================================
 
 const AudioContextClass =
@@ -672,7 +665,8 @@ function resumeAudio() {
 }
 
 function playTone(
-    frequency,
+    startFrequency,
+    endFrequency,
     duration,
     volume,
     type = "square"
@@ -695,8 +689,13 @@ function playTone(
     oscillator.type = type;
 
     oscillator.frequency.setValueAtTime(
-        frequency,
+        startFrequency,
         now
+    );
+
+    oscillator.frequency.exponentialRampToValueAtTime(
+        Math.max(1, endFrequency),
+        now + duration
     );
 
     gain.gain.setValueAtTime(volume, now);
@@ -713,17 +712,37 @@ function playTone(
     oscillator.stop(now + duration);
 }
 
+// PŮVODNÍ KROKY
+
 function playFootstep() {
-    playTone(95, 0.055, 0.025, "triangle");
+    playTone(
+        140,
+        65,
+        0.09,
+        0.035,
+        "triangle"
+    );
 }
+
+// PŮVODNÍ DAMAGE
 
 function playDamageSound() {
-    playTone(150, 0.18, 0.08, "sawtooth");
+    playTone(
+        420,
+        85,
+        0.22,
+        0.09,
+        "sawtooth"
+    );
 }
 
+// ZVUK SMRTI
+
 function playDeathSound() {
-    playTone(85, 0.45, 0.09, "sawtooth");
+    playMyJingle();
 }
+
+// VLASTNÍ MELODIE SMRTI
 
 function playMyJingle() {
     if (
@@ -746,8 +765,17 @@ function playMyJingle() {
             audioContext.currentTime +
             index * 0.22;
 
+        const duration =
+            index === notes.length - 1
+                ? 0.65
+                : 0.25;
+
         oscillator.type = "triangle";
-        oscillator.frequency.value = frequency;
+
+        oscillator.frequency.setValueAtTime(
+            frequency,
+            start
+        );
 
         gain.gain.setValueAtTime(
             0.06,
@@ -756,14 +784,14 @@ function playMyJingle() {
 
         gain.gain.exponentialRampToValueAtTime(
             0.001,
-            start + 0.25
+            start + duration
         );
 
         oscillator.connect(gain);
         gain.connect(audioContext.destination);
 
         oscillator.start(start);
-        oscillator.stop(start + 0.25);
+        oscillator.stop(start + duration);
     });
 }
 
@@ -1166,13 +1194,9 @@ function restartGame() {
     lastHungerUpdate = performance.now();
     lastStarvationDamage = null;
 
-    // RESET INVENTÁŘE
-
     inventoryItems.fill(null);
     selectedInventorySlot = 0;
     renderInventory();
-
-    // RESET POSTAVIČKY
 
     resetPlayerAppearance();
 
@@ -1199,16 +1223,12 @@ function update() {
     let dx = 0;
     let dy = 0;
 
-    // NAHORU
-
     if (
         keys.has("w") ||
         keys.has("arrowup")
     ) {
         dy--;
     }
-
-    // DOLŮ
 
     if (
         keys.has("s") ||
@@ -1217,16 +1237,12 @@ function update() {
         dy++;
     }
 
-    // DOLEVA
-
     if (
         keys.has("a") ||
         keys.has("arrowleft")
     ) {
         dx--;
     }
-
-    // DOPRAVA
 
     if (
         keys.has("d") ||
@@ -1241,28 +1257,28 @@ function update() {
 
     if (!isDead && dialog.hidden) {
 
-        // S + D = DOLŮ DOPRAVA
         if (dy > 0 && dx > 0) {
+            // S + D
             setPlayerDirection("downRight");
 
-        // S + A = DOLŮ DOLEVA
         } else if (dy > 0 && dx < 0) {
+            // S + A
             setPlayerDirection("downLeft");
 
-        // S = DOLŮ
         } else if (dy > 0) {
+            // S
             setPlayerDirection("down");
 
-        // W = NAHORU
         } else if (dy < 0) {
+            // W
             setPlayerDirection("up");
 
-        // D = DOPRAVA
         } else if (dx > 0) {
+            // D
             setPlayerDirection("right");
 
-        // A = DOLEVA
         } else if (dx < 0) {
+            // A
             setPlayerDirection("left");
         }
     }
@@ -1270,8 +1286,6 @@ function update() {
     // ======================================
     // DIAGONÁLNÍ POHYB
     // ======================================
-
-    // Stejná rychlost jako při chůzi rovně
 
     if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
@@ -1294,8 +1308,6 @@ function update() {
             player.y = nextY;
 
         } else {
-
-            // KLOUZÁNÍ PODÉL PŘEKÁŽEK
 
             if (
                 dx !== 0 &&
