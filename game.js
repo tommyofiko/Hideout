@@ -480,66 +480,58 @@ const mapPolygon = points =>
         y * MAP_Y
     ]);
 
-// HRANICE OSTROVA PODLE MODRÉ ČÁRY
-const WALKABLE_AREA = mapPolygon([
-    [270,385], [310,350], [355,350],
-    [403,375], [475,402], [532,433],
-    [579,386], [630,369], [676,377],
-    [714,349], [751,346], [783,313],
-    [801,324], [827,353], [880,388],
-    [940,414], [1004,473], [1066,490],
-    [1138,466], [1202,470], [1211,481],
-    [1080,532], [987,603], [876,706],
-    [753,798], [653,849], [533,851],
-    [460,820], [332,708], [257,648],
-    [258,624], [336,591], [325,557],
-    [295,545], [210,596], [185,587],
-    [177,572], [150,541], [112,510],
-    [118,474], [169,432], [222,407]
+
+ // ========================================
+ // KOLIZE BUDOV PODLE MODRÉ ČÁRY
+ // ========================================
+
+ // Souřadnice původní mapy 1648 × 928.
+ // Dům je rozdělený na dvě části,
+ // aby veranda a schody zůstaly průchozí.
+
+const HOUSE_LEFT_BLOCKED_AREA = mapPolygon([
+    [345, 335],
+    [384, 366],
+    [432, 390],
+    [483, 414],
+    [531, 426],
+    [580, 384],
+    [651, 378],
+    [702, 342],
+    [757, 324],
+    [773, 335],
+    [773, 0],
+    [345, 0]
 ]);
 
-// SCHODY A VERANDA
-
-
-const STAIRS_AREA = mapPolygon([
-    [777, 368],
-    [793, 343],
-    [812, 319],
-    [837, 302],
-    [844, 338],
-    [826, 358],
-    [803, 390],
-    [787, 387]
+const HOUSE_RIGHT_BLOCKED_AREA = mapPolygon([
+    [943, 263],
+    [960, 287],
+    [952, 318],
+    [973, 365],
+    [1012, 431],
+    [1043, 497],
+    [1220, 497],
+    [1220, 0],
+    [943, 0]
 ]);
 
-const PORCH_AREA = mapPolygon([
-    [790, 316],
-    [801, 307],
-    [811, 305],
-    [821, 306],
-    [832, 299],
-    [843, 288],
-    [860, 279],
-    [867, 282],
-    [872, 288],
-    [891, 295],
-    [909, 306],
-    [898, 317],
-    [893, 329],
-    [893, 342],
-    [899, 351],
-    [889, 358],
-    [861, 346],
-    [856, 351],
-    [849, 360],
-    [836, 350],
-    [822, 347],
-    [823, 333],
-    [811, 324]
+// Malá dřevěná bouda vlevo dole.
+
+const SHED_BLOCKED_AREA = mapPolygon([
+    [190, 588],
+    [214, 567],
+    [289, 538],
+    [323, 550],
+    [338, 580],
+    [339, 614],
+    [285, 650],
+    [273, 643],
+    [302, 615],
+    [295, 580],
+    [245, 599],
+    [201, 610]
 ]);
-
-
-
 
 
 // ========================================
@@ -590,7 +582,6 @@ function insideWalkable(x, y) {
 
 
 
-
 function isBlocked(x, y) {
     const r = 5;
 
@@ -602,32 +593,48 @@ function isBlocked(x, y) {
         [0, -r]
     ];
 
-    // Hranice ostrova, schodů a verandy
+    // ====================================
+    // HRANICE OSTROVA, SCHODŮ A VERANDY
+    // ====================================
+
     if (checks.some(([dx, dy]) =>
         !insideWalkable(x + dx, y + dy)
     )) {
         return true;
     }
 
-    // Studna a kláda
+    // ====================================
+    // NEPRŮCHOZÍ BUDOVY
+    // ====================================
+
+    const blockedBuildings = [
+        HOUSE_LEFT_BLOCKED_AREA,
+        HOUSE_RIGHT_BLOCKED_AREA,
+        SHED_BLOCKED_AREA
+    ];
+
+    if (checks.some(([dx, dy]) =>
+        blockedBuildings.some(area =>
+            pointInPolygon(
+                x + dx,
+                y + dy,
+                area
+            )
+        )
+    )) {
+        return true;
+    }
+
+    // ====================================
+    // STUDNA A KLÁDA
+    // ====================================
+
     return (
         isTouchingWell(x, y) ||
         isTouchingLog(x, y)
     );
 }
 
-
-
-
-function canMoveTo(x, y) {
-    return (
-        x >= BOUNDS.left &&
-        x <= BOUNDS.right &&
-        y >= BOUNDS.top &&
-        y <= BOUNDS.bottom &&
-        !isBlocked(x, y)
-    );
-}
 
 // ========================================
 // OHEŇ - POŠKOZENÍ
