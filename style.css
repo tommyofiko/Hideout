@@ -1,584 +1,67 @@
-* {
-    box-sizing: border-box;
+* { box-sizing: border-box; }
+:root { --sky:#171c26; --grass:#526747; --text:#e4dfd0; --muted:#a9aa9a; }
+html,body { margin:0; width:100%; height:100%; }
+body { overflow:hidden; background:var(--sky); color:var(--text); font-family:Consolas,monospace; }
+#game { position:relative; width:100%; height:100%; overflow:hidden; background:var(--grass); }
+#world { position:absolute; inset:0; overflow:hidden; }
+#scene { position:absolute; width:1920px; height:1080px; left:0; top:0; transform-origin:0 0; will-change:transform; }
+#garden { position:absolute; inset:0; overflow:hidden; background:var(--grass); }
+#garden::after { display:none; }
+#house-image { position:absolute; inset:0; display:block; width:100%; height:100%; object-fit:fill; pointer-events:none; }
+#house,#tree { display:none; }
+#player { position:absolute; z-index:20; left:480px; top:450px; width:43px; height:64px; transform:translate(-50%,-50%); background-image:url("idle11.png"); background-repeat:no-repeat; background-position:center; background-size:contain; image-rendering:pixelated; pointer-events:none; }
+#hud { position:absolute; z-index:100; top:18px; left:18px; padding:12px 16px; background:rgba(18,20,22,.88); border:2px solid #77766b; box-shadow:4px 4px 0 rgba(0,0,0,.25); }
+#hud h1 { margin:0 0 6px; font-size:18px; letter-spacing:4px; }
+#status { color:var(--muted); font-size:11px; }
+#hint { position:absolute; z-index:100; bottom:18px; left:50%; transform:translateX(-50%); max-width:calc(100vw - 32px); padding:10px 14px; background:rgba(18,20,22,.9); border:1px solid #77766b; color:var(--text); font-size:12px; text-align:center; }
+#dialog { position:absolute; z-index:200; left:50%; bottom:64px; transform:translateX(-50%); width:min(520px,calc(100vw - 32px)); padding:20px; background:#17191c; border:2px solid #aaa38d; line-height:1.6; }
+#dialog[hidden] { display:none; }
+#dialog button { padding:8px 12px; color:var(--text); background:#343c32; border:1px solid #899078; font-family:inherit; cursor:pointer; }
+#dialog button:hover { background:#4b5a43; }
+.dialog-actions { display:flex; flex-wrap:wrap; gap:8px; }
+#health-bar { position:absolute; z-index:110; left:12px; bottom:12px; width:400px; padding:8px 9px; background:rgba(18,20,22,.9); border:1px solid #77766b; box-shadow:3px 3px 0 rgba(0,0,0,.25); pointer-events:none; }
+#health-info,#water-info,#hunger-info { display:flex; justify-content:space-between; align-items:center; font-weight:bold; }
+#health-info { margin-bottom:6px; color:var(--text); font-size:10px; }
+#health-track { width:100%; height:24px; overflow:hidden; background:#493333; border:1px solid #292323; }
+#health-fill { width:100%; height:100%; background:#e84949; transition:width .2s ease; }
+#water-info { margin-top:9px; margin-bottom:1px; color:#9ddcff; font-size:9px; }
+#water-track { width:100%; height:11px; overflow:hidden; background:#203b51; border:1px solid #182c3b; }
+#water-fill { width:100%; height:100%; background:#269cfa; transition:width .2s ease; }
+#hunger-info { margin-top:9px; margin-bottom:1px; color:#f5c98a; font-size:9px; }
+#hunger-track { width:100%; height:11px; overflow:hidden; background:#493522; border:1px solid #302318; }
+#hunger-fill { width:100%; height:100%; background:#e5a044; transition:width .2s ease; }
+#death-screen { position:absolute; inset:0; z-index:1000; display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,.85); }
+#death-screen[hidden] { display:none; }
+#death-content { text-align:center; font-family:Consolas,monospace; }
+#death-content h1 { color:#b52b2b; font-size:clamp(36px,7vw,72px); letter-spacing:8px; margin-bottom:15px; text-shadow:4px 4px 0 #290909; }
+#death-content p { color:#a9aa9a; font-size:14px; margin-bottom:35px; }
+#restart-button { padding:14px 35px; background:#241a1a; color:#e4dfd0; border:2px solid #9c3030; font-family:Consolas,monospace; font-size:16px; letter-spacing:3px; cursor:pointer; }
+#restart-button:hover { background:#9c3030; color:white; }
+#fire { position:absolute; left:225px; top:550px; width:48px; height:96px; transform:translate(-50%,-75%); image-rendering:pixelated; pointer-events:none; z-index:2; }
+#fireplace { position:absolute; left:225px; top:550px; width:46px; height:16px; transform:translate(-50%,0); background:#302c25; border-radius:4px; z-index:1; pointer-events:none; image-rendering:pixelated; box-shadow:-18px -7px 0 -3px #77796b,-5px -11px 0 -3px #64695f,12px -9px 0 -3px #838477,22px -3px 0 -4px #555b52,16px 10px 0 -3px #737467,0 12px 0 -3px #858475,-16px 9px 0 -3px #62665c,-23px 0 0 -4px #77786b,2px 5px 0 2px #24231f; }
+#well { position:absolute; left:690px; top:690px; width:118px; height:auto; transform:translate(-50%,-100%); image-rendering:pixelated; pointer-events:none; z-index:10; }
+#log { position:absolute; left:265px; top:620px; width:100px; height:auto; transform:translate(-50%,-50%); image-rendering:pixelated; pointer-events:none; z-index:10; }
+#inventory { position:absolute; z-index:120; left:12px; bottom:139px; width:400px; display:flex; gap:7px; align-items:stretch; }
+.inventory-slot { position:relative; flex:1; min-width:0; height:58px; padding:5px; background:rgba(18,20,22,.92); border:2px solid #77766b; box-shadow:2px 2px 0 rgba(0,0,0,.35); cursor:pointer; color:#e4dfd0; font-family:Consolas,monospace; image-rendering:pixelated; }
+.inventory-slot.selected { border-color:#e8bd67; background:rgba(77,62,34,.94); }
+.inventory-slot:hover { border-color:#c5b99b; }
+.slot-number { position:absolute; top:3px; left:5px; font-size:10px; color:#c6c1b4; }
+.slot-item { display:flex; height:100%; align-items:center; justify-content:center; font-size:23px; }
+.inventory-item-image { width:34px; height:34px; object-fit:contain; image-rendering:pixelated; }
+#ground-paper { position:absolute; width:24px; height:24px; transform:translate(-50%,-50%); object-fit:contain; image-rendering:pixelated; pointer-events:none; z-index:11; }
+#ground-paper[hidden] { display:none; }
+#water-feedback { position:absolute; z-index:300; left:18px; bottom:210px; font-size:20px; font-weight:bold; text-shadow:2px 2px 2px #000; opacity:0; transition:opacity .25s; pointer-events:none; }
+#water-feedback.visible { opacity:1; }
+#water-feedback.positive { color:#48ff83; }
+#water-feedback.negative { color:#ff5252; }
+@media (max-width:600px) {
+  #hud { top:8px; left:8px; }
+  #hint { bottom:10px; font-size:11px; }
+  #health-bar { left:8px; bottom:8px; width:175px; }
+  #inventory { left:8px; bottom:135px; width:175px; gap:3px; }
+  .inventory-slot { height:32px; padding:2px; }
+  .slot-number { top:1px; left:2px; font-size:8px; }
+  .slot-item { font-size:15px; }
+  .inventory-item-image { width:22px; height:22px; }
+  #water-feedback { left:8px; bottom:190px; font-size:15px; }
 }
-
-:root {
-    --sky: #171c26;
-    --grass: #526747;
-    --text: #e4dfd0;
-    --muted: #a9aa9a;
-}
-
-html,
-body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-}
-
-body {
-    overflow: hidden;
-    background: var(--sky);
-    color: var(--text);
-    font-family: Consolas, monospace;
-}
-
-#game {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: var(--grass);
-}
-
-#world {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-}
-
-/* ======================================
-   SCÉNA
-====================================== */
-
-#scene {
-    position: absolute;
-    width: 1920px;
-    height: 1080px;
-    left: 0;
-    top: 0;
-    transform-origin: 0 0;
-    will-change: transform;
-}
-
-#garden {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    background: var(--grass);
-}
-
-#garden::after {
-    display: none;
-}
-
-#house-image {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    pointer-events: none;
-}
-
-#house,
-#tree {
-    display: none;
-}
-
-
-/* POSTAVIČKA – 4 STATICKÉ SMĚRY */
-
-#player {
-    position: absolute;
-    z-index: 20;
-
-    left: 480px;
-    top: 450px;
-
-    width: 43px;
-    height: 64px;
-
-    transform: translate(-50%, -50%);
-
-    background-image: url("idle1.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-
-    image-rendering: pixelated;
-    pointer-events: none;
-}
-
-
-/* ======================================
-   HUD
-====================================== */
-
-#hud {
-    position: absolute;
-    z-index: 100;
-    top: 18px;
-    left: 18px;
-    padding: 12px 16px;
-
-    background: rgba(18, 20, 22, 0.88);
-    border: 2px solid #77766b;
-    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
-}
-
-#hud h1 {
-    margin: 0 0 6px;
-    font-size: 18px;
-    letter-spacing: 4px;
-}
-
-#status {
-    color: var(--muted);
-    font-size: 11px;
-}
-
-/* ======================================
-   NÁPOVĚDA
-====================================== */
-
-#hint {
-    position: absolute;
-    z-index: 100;
-    bottom: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-
-    max-width: calc(100vw - 32px);
-    padding: 10px 14px;
-
-    background: rgba(18, 20, 22, 0.9);
-    border: 1px solid #77766b;
-
-    color: var(--text);
-    font-size: 12px;
-    text-align: center;
-}
-
-/* ======================================
-   DIALOG
-====================================== */
-
-#dialog {
-    position: absolute;
-    z-index: 200;
-    left: 50%;
-    bottom: 64px;
-    transform: translateX(-50%);
-
-    width: min(520px, calc(100vw - 32px));
-    padding: 20px;
-
-    background: #17191c;
-    border: 2px solid #aaa38d;
-    line-height: 1.6;
-}
-
-#dialog[hidden] {
-    display: none;
-}
-
-#dialog button {
-    padding: 8px 12px;
-    color: var(--text);
-    background: #343c32;
-    border: 1px solid #899078;
-    font-family: inherit;
-    cursor: pointer;
-}
-
-/* ======================================
-   HEALTH + H2O + HUNGER
-   SPOLEČNÝ PANEL
-====================================== */
-
-#health-bar {
-    position: absolute;
-    z-index: 110;
-    left: 12px;
-    bottom: 12px;
-    width: 400px;
-    padding: 8px 9px;
-
-    background: rgba(18, 20, 22, 0.9);
-    border: 1px solid #77766b;
-
-    box-shadow:
-        3px 3px 0 rgba(0, 0, 0, 0.25);
-
-    pointer-events: none;
-}
-
-/* ======================================
-   HEALTH
-====================================== */
-
-#health-info,
-#water-info,
-#hunger-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-}
-
-#health-info {
-    margin-bottom: 6px;
-    color: var(--text);
-    font-size: 10px;
-}
-
-#health-track {
-    width: 100%;
-    height: 24px;
-    overflow: hidden;
-
-    background: #493333;
-    border: 1px solid #292323;
-}
-
-#health-fill {
-    width: 100%;
-    height: 100%;
-    background: #e84949;
-    transition: width 0.2s ease;
-}
-
-/* ======================================
-   H2O
-====================================== */
-
-#water-info {
-    margin-top: 9px;
-    margin-bottom: 1px;
-
-    color: #9ddcff;
-    font-size: 9px;
-}
-
-#water-track {
-    width: 100%;
-    height: 11px;
-    overflow: hidden;
-
-    background: #203b51;
-    border: 1px solid #182c3b;
-}
-
-#water-fill {
-    width: 100%;
-    height: 100%;
-
-    background: #269cfa;
-    transition: width 0.2s ease;
-}
-
-/* ======================================
-   HUNGER
-====================================== */
-
-#hunger-info {
-    margin-top: 9px;
-    margin-bottom: 1px;
-
-    color: #f5c98a;
-    font-size: 9px;
-}
-
-#hunger-track {
-    width: 100%;
-    height: 11px;
-    overflow: hidden;
-
-    background: #493522;
-    border: 1px solid #302318;
-}
-
-#hunger-fill {
-    width: 100%;
-    height: 100%;
-
-    background: #e5a044;
-    transition: width 0.2s ease;
-}
-
-/* ======================================
-   DEATH SCREEN
-====================================== */
-
-#death-screen {
-    position: absolute;
-    inset: 0;
-    z-index: 1000;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    background: rgba(0, 0, 0, 0.85);
-}
-
-#death-screen[hidden] {
-    display: none;
-}
-
-#death-content {
-    text-align: center;
-    font-family: Consolas, monospace;
-}
-
-#death-content h1 {
-    color: #b52b2b;
-    font-size: clamp(36px, 7vw, 72px);
-    letter-spacing: 8px;
-    margin-bottom: 15px;
-    text-shadow: 4px 4px 0 #290909;
-}
-
-#death-content p {
-    color: #a9aa9a;
-    font-size: 14px;
-    margin-bottom: 35px;
-}
-
-#restart-button {
-    padding: 14px 35px;
-
-    background: #241a1a;
-    color: #e4dfd0;
-
-    border: 2px solid #9c3030;
-
-    font-family: Consolas, monospace;
-    font-size: 16px;
-    letter-spacing: 3px;
-    cursor: pointer;
-}
-
-#restart-button:hover {
-    background: #9c3030;
-    color: white;
-}
-
-/* ======================================
-   ANIMOVANÝ OHEŇ
-====================================== */
-
-#fire {
-    position: absolute;
-    left: 225px;
-    top: 550px;
-
-    width: 48px;
-    height: 96px;
-
-    transform: translate(-50%, -75%);
-    image-rendering: pixelated;
-
-    pointer-events: none;
-    z-index: 2;
-}
-
-/* ======================================
-   KAMENNÉ OHNIŠTĚ
-====================================== */
-
-#fireplace {
-    position: absolute;
-
-    left: 225px;
-    top: 550px;
-
-    width: 46px;
-    height: 16px;
-
-    transform: translate(-50%, 0);
-
-    background: #302c25;
-    border-radius: 4px;
-
-    z-index: 1;
-    pointer-events: none;
-    image-rendering: pixelated;
-
-    box-shadow:
-        -18px -7px 0 -3px #77796b,
-        -5px -11px 0 -3px #64695f,
-        12px -9px 0 -3px #838477,
-        22px -3px 0 -4px #555b52,
-        16px 10px 0 -3px #737467,
-        0 12px 0 -3px #858475,
-        -16px 9px 0 -3px #62665c,
-        -23px 0 0 -4px #77786b,
-        2px 5px 0 2px #24231f;
-}
-
-/* ======================================
-   STUDNA
-====================================== */
-
-#well {
-    position: absolute;
-
-    left: 690px;
-    top: 690px;
-
-    width: 118px;
-    height: auto;
-
-    transform: translate(-50%, -100%);
-    image-rendering: pixelated;
-
-    pointer-events: none;
-    z-index: 10;
-}
-
-/* ======================================
-   KLÁDA
-====================================== */
-
-#log {
-    position: absolute;
-
-    left: 265px;
-    top: 620px;
-
-    width: 100px;
-    height: auto;
-
-    transform: translate(-50%, -50%);
-    image-rendering: pixelated;
-
-    pointer-events: none;
-    z-index: 10;
-}
-
-/* ======================================
-   MOBILNÍ ZOBRAZENÍ
-====================================== */
-
-@media (max-width: 600px) {
-
-    #hud {
-        top: 8px;
-        left: 8px;
-    }
-
-    #hint {
-        bottom: 10px;
-        font-size: 11px;
-    }
-
-    #health-bar {
-        left: 8px;
-        bottom: 8px;
-        width: 175px;
-    }
-}
-
-/* ======================================
-   INVENTÁŘ - 5 SLOTŮ
-====================================== */
-
-#inventory {
-    position: absolute;
-    z-index: 120;
-
-    left: 12px;
-    bottom: 139px;
-
-    width: 400px;
-
-    display: flex;
-    gap: 7px;
-    align-items: stretch;
-}
-
-/* JEDNOTLIVÉ SLOTY */
-
-.inventory-slot {
-    position: relative;
-
-    flex: 1;
-    min-width: 0;
-    height: 58px;
-    padding: 5px;
-
-    background: rgba(18, 20, 22, 0.92);
-    border: 2px solid #77766b;
-
-    box-shadow:
-        2px 2px 0 rgba(0, 0, 0, 0.35);
-
-    cursor: pointer;
-
-    color: #e4dfd0;
-    font-family: Consolas, monospace;
-
-    image-rendering: pixelated;
-}
-
-/* VYBRANÝ SLOT */
-
-.inventory-slot.selected {
-    border-color: #e8bd67;
-    background: rgba(77, 62, 34, 0.94);
-}
-
-/* PŘEJETÍ MYŠÍ */
-
-.inventory-slot:hover {
-    border-color: #c5b99b;
-}
-
-/* ČÍSLO SLOTU */
-
-.slot-number {
-    position: absolute;
-
-    top: 3px;
-    left: 5px;
-
-    font-size: 10px;
-    color: #c6c1b4;
-}
-
-/* OBRÁZEK PŘEDMĚTU */
-
-.slot-item {
-    display: flex;
-
-    height: 100%;
-
-    align-items: center;
-    justify-content: center;
-
-    font-size: 23px;
-}
-
-/* ======================================
-   MOBILNÍ ZOBRAZENÍ
-====================================== */
-
-@media (max-width: 600px) {
-
-    #inventory {
-        left: 8px;
-        bottom: 135px;
-
-        width: 175px;
-        gap: 3px;
-    }
-
-    .inventory-slot {
-        height: 32px;
-        padding: 2px;
-    }
-
-    .slot-number {
-        top: 1px;
-        left: 2px;
-        font-size: 8px;
-    }
-
-    .slot-item {
-        font-size: 15px;
-    }
-}
-
