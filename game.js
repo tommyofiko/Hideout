@@ -6,6 +6,7 @@
 // ======================================
 
 // ELEMENTY
+
 const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
@@ -58,26 +59,30 @@ const keys = new Set();
 let nearbyObject = null;
 
 // ======================================
-// POSTAVIČKA - ČTYŘI SMĚRY
+// POSTAVIČKA - 6 SMĚRŮ
 // ======================================
 
-// S = čelem k nám
-// A = levý bok
-// W = zády k nám
-// D = pravý bok
+// S       = dolů
+// A       = doleva
+// W       = nahoru
+// D       = doprava
+// S + D   = diagonálně dolů doprava
+// S + A   = diagonálně dolů doleva
 
 const PLAYER_IMAGES = {
     down: "idle11.png",
     left: "idle12.png",
     up: "idle13.png",
-    right: "idle14.png"
+    right: "idle14.png",
+
+    downRight: "idle1.png",
+    downLeft: "idle2.png"
 };
 
 let playerDirection = "down";
 
 function setPlayerDirection(direction) {
     if (!PLAYER_IMAGES[direction]) return;
-
     if (playerDirection === direction) return;
 
     playerDirection = direction;
@@ -103,9 +108,7 @@ function resetPlayerAppearance() {
     sprite.style.border = "none";
     sprite.style.boxShadow = "none";
 
-    sprite.style.transform =
-        "translate(-50%, -50%)";
-
+    sprite.style.transform = "translate(-50%, -50%)";
     sprite.style.imageRendering = "pixelated";
     sprite.style.pointerEvents = "none";
 }
@@ -122,14 +125,10 @@ let isDead = false;
 function setHealth(value) {
     if (isDead) return;
 
-    health = Math.max(
-        0,
-        Math.min(MAX_HEALTH, value)
-    );
+    health = Math.max(0, Math.min(MAX_HEALTH, value));
 
     if (healthFill) {
-        healthFill.style.width =
-            `${health}%`;
+        healthFill.style.width = `${health}%`;
     }
 
     if (healthText) {
@@ -144,13 +143,11 @@ function setHealth(value) {
 
 function takeDamage(amount) {
     if (isDead) return;
-
     setHealth(health - amount);
 }
 
 function healPlayer(amount) {
     if (isDead) return;
-
     setHealth(health + amount);
 }
 
@@ -159,9 +156,7 @@ function healPlayer(amount) {
 // ======================================
 
 const MAX_WATER = 100;
-
-const WATER_DURATION =
-    20 * 60 * 1000;
+const WATER_DURATION = 20 * 60 * 1000;
 
 const DEHYDRATION_DAMAGE = 5;
 const DEHYDRATION_INTERVAL = 3000;
@@ -172,14 +167,10 @@ let lastWaterUpdate = performance.now();
 let lastDehydrationDamage = null;
 
 function setWater(value) {
-    water = Math.max(
-        0,
-        Math.min(MAX_WATER, value)
-    );
+    water = Math.max(0, Math.min(MAX_WATER, value));
 
     if (waterFill) {
-        waterFill.style.width =
-            `${water}%`;
+        waterFill.style.width = `${water}%`;
     }
 
     if (waterText) {
@@ -200,17 +191,12 @@ function drinkWater(amount) {
 
 function loseWater(amount) {
     if (isDead) return;
-
     setWater(water - amount);
 }
 
 function updateWater() {
     const now = performance.now();
-
-    const deltaTime = Math.max(
-        0,
-        now - lastWaterUpdate
-    );
+    const deltaTime = Math.max(0, now - lastWaterUpdate);
 
     lastWaterUpdate = now;
 
@@ -218,8 +204,7 @@ function updateWater() {
 
     if (water > 0) {
         loseWater(
-            (MAX_WATER / WATER_DURATION) *
-            deltaTime
+            (MAX_WATER / WATER_DURATION) * deltaTime
         );
 
         if (water > 0) {
@@ -254,9 +239,7 @@ function updateWater() {
 // ======================================
 
 const MAX_HUNGER = 100;
-
-const HUNGER_DURATION =
-    30 * 60 * 1000;
+const HUNGER_DURATION = 30 * 60 * 1000;
 
 const STARVATION_DAMAGE = 5;
 const STARVATION_INTERVAL = 3000;
@@ -267,14 +250,10 @@ let lastHungerUpdate = performance.now();
 let lastStarvationDamage = null;
 
 function setHunger(value) {
-    hunger = Math.max(
-        0,
-        Math.min(MAX_HUNGER, value)
-    );
+    hunger = Math.max(0, Math.min(MAX_HUNGER, value));
 
     if (hungerFill) {
-        hungerFill.style.width =
-            `${hunger}%`;
+        hungerFill.style.width = `${hunger}%`;
     }
 
     if (hungerText) {
@@ -295,17 +274,12 @@ function eatFood(amount) {
 
 function loseHunger(amount) {
     if (isDead) return;
-
     setHunger(hunger - amount);
 }
 
 function updateHunger() {
     const now = performance.now();
-
-    const deltaTime = Math.max(
-        0,
-        now - lastHungerUpdate
-    );
+    const deltaTime = Math.max(0, now - lastHungerUpdate);
 
     lastHungerUpdate = now;
 
@@ -313,8 +287,7 @@ function updateHunger() {
 
     if (hunger > 0) {
         loseHunger(
-            (MAX_HUNGER / HUNGER_DURATION) *
-            deltaTime
+            (MAX_HUNGER / HUNGER_DURATION) * deltaTime
         );
 
         if (hunger > 0) {
@@ -360,17 +333,14 @@ const WELL = {
 
 function getWellCollision() {
     const rx =
-        WELL.width *
-        WELL.collisionWidthRatio;
+        WELL.width * WELL.collisionWidthRatio;
 
     const oldRY =
-        WELL.width *
-        WELL.collisionHeightRatio;
+        WELL.width * WELL.collisionHeightRatio;
 
     const oldY =
         WELL.y -
-        WELL.width *
-        WELL.baseOffsetRatio -
+        WELL.width * WELL.baseOffsetRatio -
         15;
 
     const extraTop = 22;
@@ -386,22 +356,15 @@ function getWellCollision() {
 function updateWellPosition() {
     if (!wellElement) return;
 
-    wellElement.style.left =
-        `${WELL.x}px`;
-
-    wellElement.style.top =
-        `${WELL.y}px`;
-
-    wellElement.style.width =
-        `${WELL.width}px`;
+    wellElement.style.left = `${WELL.x}px`;
+    wellElement.style.top = `${WELL.y}px`;
+    wellElement.style.width = `${WELL.width}px`;
 }
 
 function isTouchingWell(x, y) {
     if (!wellElement) return false;
 
-    const collision =
-        getWellCollision();
-
+    const collision = getWellCollision();
     const footRadius = 5;
 
     const dx =
@@ -436,14 +399,9 @@ const LOG = {
 function updateLogPosition() {
     if (!logElement) return;
 
-    logElement.style.left =
-        `${LOG.x}px`;
-
-    logElement.style.top =
-        `${LOG.y}px`;
-
-    logElement.style.width =
-        `${LOG.width}px`;
+    logElement.style.left = `${LOG.x}px`;
+    logElement.style.top = `${LOG.y}px`;
+    logElement.style.width = `${LOG.width}px`;
 }
 
 function isTouchingLog(x, y) {
@@ -465,23 +423,17 @@ function isTouchingLog(x, y) {
 
 function updateDepthSorting() {
     const feetY = player.y + 8;
-
     let behindObject = false;
 
     if (wellElement) {
         wellElement.style.zIndex = "10";
 
-        const collision =
-            getWellCollision();
+        const collision = getWellCollision();
 
         const nearWell =
-            Math.abs(player.x - WELL.x) <
-            WELL.width;
+            Math.abs(player.x - WELL.x) < WELL.width;
 
-        if (
-            nearWell &&
-            feetY < collision.y
-        ) {
+        if (nearWell && feetY < collision.y) {
             behindObject = true;
         }
     }
@@ -490,22 +442,17 @@ function updateDepthSorting() {
         logElement.style.zIndex = "10";
 
         const nearLog =
-            Math.abs(player.x - LOG.x) <
-            LOG.width;
+            Math.abs(player.x - LOG.x) < LOG.width;
 
         const logDepthY =
             (LOG.ay + LOG.by) / 2;
 
-        if (
-            nearLog &&
-            feetY < logDepthY
-        ) {
+        if (nearLog && feetY < logDepthY) {
             behindObject = true;
         }
     }
 
-    sprite.style.zIndex =
-        behindObject ? "9" : "20";
+    sprite.style.zIndex = behindObject ? "9" : "20";
 }
 
 // ======================================
@@ -576,20 +523,14 @@ function pointInPolygon(x, y, polygon) {
     return inside;
 }
 
-function distanceToSegment(
-    px, py, ax, ay, bx, by
-) {
+function distanceToSegment(px, py, ax, ay, bx, by) {
     const dx = bx - ax;
     const dy = by - ay;
 
-    const lengthSquared =
-        dx * dx + dy * dy;
+    const lengthSquared = dx * dx + dy * dy;
 
     if (lengthSquared === 0) {
-        return Math.hypot(
-            px - ax,
-            py - ay
-        );
+        return Math.hypot(px - ax, py - ay);
     }
 
     const t = Math.max(
@@ -617,13 +558,7 @@ function distanceToSegment(
 // ======================================
 
 function isBlocked(x, y) {
-    if (
-        !pointInPolygon(
-            x,
-            y,
-            WALKABLE_AREA
-        )
-    ) {
+    if (!pointInPolygon(x, y, WALKABLE_AREA)) {
         return true;
     }
 
@@ -632,13 +567,11 @@ function isBlocked(x, y) {
         i < WALKABLE_AREA.length;
         i++
     ) {
-        const [ax, ay] =
-            WALKABLE_AREA[i];
+        const [ax, ay] = WALKABLE_AREA[i];
 
         const [bx, by] =
             WALKABLE_AREA[
-                (i + 1) %
-                WALKABLE_AREA.length
+                (i + 1) % WALKABLE_AREA.length
             ];
 
         if (
@@ -698,19 +631,11 @@ function isTouchingFire() {
 }
 
 function checkFireDamage() {
-    if (
-        isDead ||
-        !isTouchingFire()
-    ) {
-        return;
-    }
+    if (isDead || !isTouchingFire()) return;
 
     const now = performance.now();
 
-    if (
-        now - lastFireDamage <
-        FIRE.cooldown
-    ) {
+    if (now - lastFireDamage < FIRE.cooldown) {
         return;
     }
 
@@ -733,19 +658,16 @@ const AudioContextClass =
     window.AudioContext ||
     window.webkitAudioContext;
 
-const audioContext =
-    AudioContextClass
-        ? new AudioContextClass()
-        : null;
+const audioContext = AudioContextClass
+    ? new AudioContextClass()
+    : null;
 
 function resumeAudio() {
     if (
         audioContext &&
         audioContext.state === "suspended"
     ) {
-        audioContext.resume().catch(
-            () => {}
-        );
+        audioContext.resume().catch(() => {});
     }
 }
 
@@ -768,8 +690,7 @@ function playTone(
     const gain =
         audioContext.createGain();
 
-    const now =
-        audioContext.currentTime;
+    const now = audioContext.currentTime;
 
     oscillator.type = type;
 
@@ -778,10 +699,7 @@ function playTone(
         now
     );
 
-    gain.gain.setValueAtTime(
-        volume,
-        now
-    );
+    gain.gain.setValueAtTime(volume, now);
 
     gain.gain.exponentialRampToValueAtTime(
         0.001,
@@ -789,41 +707,22 @@ function playTone(
     );
 
     oscillator.connect(gain);
-    gain.connect(
-        audioContext.destination
-    );
+    gain.connect(audioContext.destination);
 
     oscillator.start(now);
-    oscillator.stop(
-        now + duration
-    );
+    oscillator.stop(now + duration);
 }
 
 function playFootstep() {
-    playTone(
-        95,
-        0.055,
-        0.025,
-        "triangle"
-    );
+    playTone(95, 0.055, 0.025, "triangle");
 }
 
 function playDamageSound() {
-    playTone(
-        150,
-        0.18,
-        0.08,
-        "sawtooth"
-    );
+    playTone(150, 0.18, 0.08, "sawtooth");
 }
 
 function playDeathSound() {
-    playTone(
-        85,
-        0.45,
-        0.09,
-        "sawtooth"
-    );
+    playTone(85, 0.45, 0.09, "sawtooth");
 }
 
 function playMyJingle() {
@@ -834,51 +733,38 @@ function playMyJingle() {
         return;
     }
 
-    const notes = [
-        344,
-        243,
-        204,
-        172
-    ];
+    const notes = [344, 243, 204, 172];
 
-    notes.forEach(
-        (frequency, index) => {
-            const oscillator =
-                audioContext.createOscillator();
+    notes.forEach((frequency, index) => {
+        const oscillator =
+            audioContext.createOscillator();
 
-            const gain =
-                audioContext.createGain();
+        const gain =
+            audioContext.createGain();
 
-            const start =
-                audioContext.currentTime +
-                index * 0.22;
+        const start =
+            audioContext.currentTime +
+            index * 0.22;
 
-            oscillator.type = "triangle";
-            oscillator.frequency.value =
-                frequency;
+        oscillator.type = "triangle";
+        oscillator.frequency.value = frequency;
 
-            gain.gain.setValueAtTime(
-                0.06,
-                start
-            );
+        gain.gain.setValueAtTime(
+            0.06,
+            start
+        );
 
-            gain.gain.exponentialRampToValueAtTime(
-                0.001,
-                start + 0.25
-            );
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            start + 0.25
+        );
 
-            oscillator.connect(gain);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
 
-            gain.connect(
-                audioContext.destination
-            );
-
-            oscillator.start(start);
-            oscillator.stop(
-                start + 0.25
-            );
-        }
-    );
+        oscillator.start(start);
+        oscillator.stop(start + 0.25);
+    });
 }
 
 // ======================================
@@ -940,28 +826,18 @@ function showMessage(title, message) {
     dialog.hidden = false;
     dialog.replaceChildren();
 
-    const heading =
-        document.createElement("strong");
-
+    const heading = document.createElement("strong");
     heading.textContent = title;
 
-    const paragraph =
-        document.createElement("p");
-
+    const paragraph = document.createElement("p");
     paragraph.textContent = message;
 
-    const button =
-        document.createElement("button");
+    const button = document.createElement("button");
+    button.textContent = "Zavřít [Esc]";
 
-    button.textContent =
-        "Zavřít [Esc]";
-
-    button.addEventListener(
-        "click",
-        () => {
-            dialog.hidden = true;
-        }
-    );
+    button.addEventListener("click", () => {
+        dialog.hidden = true;
+    });
 
     dialog.append(
         heading,
@@ -988,8 +864,7 @@ if (!inventoryElement) {
     inventoryElement =
         document.createElement("div");
 
-    inventoryElement.id =
-        "inventory";
+    inventoryElement.id = "inventory";
 
     document
         .getElementById("game")
@@ -999,75 +874,59 @@ if (!inventoryElement) {
 function renderInventory() {
     inventoryElement.replaceChildren();
 
-    inventoryItems.forEach(
-        (item, index) => {
-            const slot =
-                document.createElement("button");
+    inventoryItems.forEach((item, index) => {
+        const slot =
+            document.createElement("button");
 
-            slot.type = "button";
+        slot.type = "button";
 
-            slot.className =
-                "inventory-slot" +
-                (
-                    index ===
-                    selectedInventorySlot
-                        ? " selected"
-                        : ""
-                );
-
-            slot.title = item
-                ? item.name
-                : `Prázdný slot ${index + 1}`;
-
-            const number =
-                document.createElement("span");
-
-            number.className =
-                "slot-number";
-
-            number.textContent =
-                String(index + 1);
-
-            const icon =
-                document.createElement("span");
-
-            icon.className =
-                "slot-item";
-
-            icon.textContent =
-                item
-                    ? (item.icon || "📦")
-                    : "";
-
-            slot.append(
-                number,
-                icon
+        slot.className =
+            "inventory-slot" +
+            (
+                index === selectedInventorySlot
+                    ? " selected"
+                    : ""
             );
 
-            slot.addEventListener(
-                "click",
-                () => {
-                    if (isDead) return;
+        slot.title = item
+            ? item.name
+            : `Prázdný slot ${index + 1}`;
 
-                    resumeAudio();
+        const number =
+            document.createElement("span");
 
-                    if (
-                        selectedInventorySlot === index &&
-                        item &&
-                        typeof item.use === "function"
-                    ) {
-                        item.use();
-                    } else {
-                        selectInventorySlot(index);
-                    }
-                }
-            );
+        number.className = "slot-number";
+        number.textContent = String(index + 1);
 
-            inventoryElement.appendChild(
-                slot
-            );
-        }
-    );
+        const icon =
+            document.createElement("span");
+
+        icon.className = "slot-item";
+
+        icon.textContent = item
+            ? (item.icon || "📦")
+            : "";
+
+        slot.append(number, icon);
+
+        slot.addEventListener("click", () => {
+            if (isDead) return;
+
+            resumeAudio();
+
+            if (
+                selectedInventorySlot === index &&
+                item &&
+                typeof item.use === "function"
+            ) {
+                item.use();
+            } else {
+                selectInventorySlot(index);
+            }
+        });
+
+        inventoryElement.appendChild(slot);
+    });
 }
 
 function selectInventorySlot(index) {
@@ -1080,7 +939,6 @@ function selectInventorySlot(index) {
     }
 
     selectedInventorySlot = index;
-
     renderInventory();
 }
 
@@ -1107,7 +965,6 @@ function addInventoryItem(item) {
     };
 
     renderInventory();
-
     return true;
 }
 
@@ -1121,32 +978,22 @@ function removeInventoryItem(
         return null;
     }
 
-    const item =
-        inventoryItems[index];
+    const item = inventoryItems[index];
 
     inventoryItems[index] = null;
 
     renderInventory();
-
     return item;
 }
 
 function getSelectedInventoryItem() {
-    return inventoryItems[
-        selectedInventorySlot
-    ];
+    return inventoryItems[selectedInventorySlot];
 }
 
 function useSelectedInventoryItem() {
-    if (
-        isDead ||
-        !dialog.hidden
-    ) {
-        return;
-    }
+    if (isDead || !dialog.hidden) return;
 
-    const item =
-        getSelectedInventoryItem();
+    const item = getSelectedInventoryItem();
 
     if (
         item &&
@@ -1161,11 +1008,8 @@ function useSelectedInventoryItem() {
 // ======================================
 
 function updateCamera() {
-    const viewportWidth =
-        window.innerWidth;
-
-    const viewportHeight =
-        window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
     const scaledWidth =
         WORLD_WIDTH * CAMERA_ZOOM;
@@ -1181,44 +1025,30 @@ function updateCamera() {
         viewportHeight / 2 -
         player.y * CAMERA_ZOOM;
 
-    if (
-        scaledWidth >
-        viewportWidth
-    ) {
+    if (scaledWidth > viewportWidth) {
         cameraX = Math.min(
             0,
             Math.max(
-                viewportWidth -
-                scaledWidth,
+                viewportWidth - scaledWidth,
                 cameraX
             )
         );
     } else {
         cameraX =
-            (
-                viewportWidth -
-                scaledWidth
-            ) / 2;
+            (viewportWidth - scaledWidth) / 2;
     }
 
-    if (
-        scaledHeight >
-        viewportHeight
-    ) {
+    if (scaledHeight > viewportHeight) {
         cameraY = Math.min(
             0,
             Math.max(
-                viewportHeight -
-                scaledHeight,
+                viewportHeight - scaledHeight,
                 cameraY
             )
         );
     } else {
         cameraY =
-            (
-                viewportHeight -
-                scaledHeight
-            ) / 2;
+            (viewportHeight - scaledHeight) / 2;
     }
 
     scene.style.transform =
@@ -1229,78 +1059,67 @@ function updateCamera() {
 // OVLÁDÁNÍ
 // ======================================
 
-window.addEventListener(
-    "keydown",
-    event => {
-        const key =
-            event.key.toLowerCase();
+window.addEventListener("keydown", event => {
+    const key = event.key.toLowerCase();
 
-        if (
-            [
-                "w",
-                "a",
-                "s",
-                "d",
-                "arrowup",
-                "arrowdown",
-                "arrowleft",
-                "arrowright",
-                " "
-            ].includes(key)
-        ) {
-            event.preventDefault();
-        }
-
-        if (isDead) return;
-
-        resumeAudio();
-
-        // INVENTÁŘ 1-5
-        if (
-            /^[1-5]$/.test(event.key) &&
-            !event.repeat &&
-            !event.altKey &&
-            !event.ctrlKey &&
-            !event.metaKey
-        ) {
-            selectInventorySlot(
-                Number(event.key) - 1
-            );
-
-            return;
-        }
-
-        keys.add(key);
-
-        if (key === "escape") {
-            dialog.hidden = true;
-        }
-
-        if (
-            key === "e" &&
-            nearbyObject &&
-            dialog.hidden
-        ) {
-            nearbyObject.action();
-        }
+    if (
+        [
+            "w",
+            "a",
+            "s",
+            "d",
+            "arrowup",
+            "arrowdown",
+            "arrowleft",
+            "arrowright",
+            " "
+        ].includes(key)
+    ) {
+        event.preventDefault();
     }
-);
 
-window.addEventListener(
-    "keyup",
-    event => {
-        keys.delete(
-            event.key.toLowerCase()
+    if (isDead) return;
+
+    resumeAudio();
+
+    // INVENTÁŘ 1-5
+
+    if (
+        /^[1-5]$/.test(event.key) &&
+        !event.repeat &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey
+    ) {
+        selectInventorySlot(
+            Number(event.key) - 1
         );
-    }
-);
 
-window.addEventListener(
-    "blur",
-    () => {
-        keys.clear();
+        return;
     }
-);
+
+    keys.add(key);
+
+    if (key === "escape") {
+        dialog.hidden = true;
+    }
+
+    if (
+        key === "e" &&
+        nearbyObject &&
+        dialog.hidden
+    ) {
+        nearbyObject.action();
+    }
+});
+
+window.addEventListener("keyup", event => {
+    keys.delete(event.key.toLowerCase());
+});
+
+window.addEventListener("blur", () => {
+    keys.clear();
+});
 
 // ======================================
 // SMRT
@@ -1325,11 +1144,8 @@ function die() {
 function restartGame() {
     isDead = false;
 
-    player.x =
-        PLAYER_START.x;
-
-    player.y =
-        PLAYER_START.y;
+    player.x = PLAYER_START.x;
+    player.y = PLAYER_START.y;
 
     keys.clear();
     nearbyObject = null;
@@ -1351,18 +1167,17 @@ function restartGame() {
     lastStarvationDamage = null;
 
     // RESET INVENTÁŘE
+
     inventoryItems.fill(null);
     selectedInventorySlot = 0;
     renderInventory();
 
     // RESET POSTAVIČKY
+
     resetPlayerAppearance();
 
-    sprite.style.left =
-        `${player.x}px`;
-
-    sprite.style.top =
-        `${player.y}px`;
+    sprite.style.left = `${player.x}px`;
+    sprite.style.top = `${player.y}px`;
 
     updateDepthSorting();
     updateCamera();
@@ -1385,6 +1200,7 @@ function update() {
     let dy = 0;
 
     // NAHORU
+
     if (
         keys.has("w") ||
         keys.has("arrowup")
@@ -1393,6 +1209,7 @@ function update() {
     }
 
     // DOLŮ
+
     if (
         keys.has("s") ||
         keys.has("arrowdown")
@@ -1401,6 +1218,7 @@ function update() {
     }
 
     // DOLEVA
+
     if (
         keys.has("a") ||
         keys.has("arrowleft")
@@ -1409,6 +1227,7 @@ function update() {
     }
 
     // DOPRAVA
+
     if (
         keys.has("d") ||
         keys.has("arrowright")
@@ -1417,42 +1236,44 @@ function update() {
     }
 
     // ======================================
-    // OTÁČENÍ POSTAVIČKY
+    // OTÁČENÍ POSTAVIČKY - 6 SMĚRŮ
     // ======================================
 
-    if (
-        !isDead &&
-        dialog.hidden
-    ) {
-        if (
-            Math.abs(dx) >
-            Math.abs(dy)
-        ) {
-            if (dx > 0) {
-                setPlayerDirection("right");
-            } else if (dx < 0) {
-                setPlayerDirection("left");
-            }
-        } else if (dy !== 0) {
-            if (dy > 0) {
-                setPlayerDirection("down");
-            } else {
-                setPlayerDirection("up");
-            }
-        } else if (dx !== 0) {
-            if (dx > 0) {
-                setPlayerDirection("right");
-            } else {
-                setPlayerDirection("left");
-            }
+    if (!isDead && dialog.hidden) {
+
+        // S + D = DOLŮ DOPRAVA
+        if (dy > 0 && dx > 0) {
+            setPlayerDirection("downRight");
+
+        // S + A = DOLŮ DOLEVA
+        } else if (dy > 0 && dx < 0) {
+            setPlayerDirection("downLeft");
+
+        // S = DOLŮ
+        } else if (dy > 0) {
+            setPlayerDirection("down");
+
+        // W = NAHORU
+        } else if (dy < 0) {
+            setPlayerDirection("up");
+
+        // D = DOPRAVA
+        } else if (dx > 0) {
+            setPlayerDirection("right");
+
+        // A = DOLEVA
+        } else if (dx < 0) {
+            setPlayerDirection("left");
         }
     }
 
+    // ======================================
     // DIAGONÁLNÍ POHYB
-    if (
-        dx !== 0 &&
-        dy !== 0
-    ) {
+    // ======================================
+
+    // Stejná rychlost jako při chůzi rovně
+
+    if (dx !== 0 && dy !== 0) {
         dx *= Math.SQRT1_2;
         dy *= Math.SQRT1_2;
     }
@@ -1461,45 +1282,31 @@ function update() {
     // POHYB A KOLIZE
     // ======================================
 
-    if (
-        dialog.hidden &&
-        !isDead
-    ) {
+    if (dialog.hidden && !isDead) {
         const nextX =
-            player.x +
-            dx * player.speed;
+            player.x + dx * player.speed;
 
         const nextY =
-            player.y +
-            dy * player.speed;
+            player.y + dy * player.speed;
 
-        if (
-            canMoveTo(
-                nextX,
-                nextY
-            )
-        ) {
+        if (canMoveTo(nextX, nextY)) {
             player.x = nextX;
             player.y = nextY;
+
         } else {
+
             // KLOUZÁNÍ PODÉL PŘEKÁŽEK
 
             if (
                 dx !== 0 &&
-                canMoveTo(
-                    nextX,
-                    player.y
-                )
+                canMoveTo(nextX, player.y)
             ) {
                 player.x = nextX;
             }
 
             if (
                 dy !== 0 &&
-                canMoveTo(
-                    player.x,
-                    nextY
-                )
+                canMoveTo(player.x, nextY)
             ) {
                 player.y = nextY;
             }
@@ -1532,11 +1339,8 @@ function update() {
     // POZICE POSTAVIČKY
     // ======================================
 
-    sprite.style.left =
-        `${player.x}px`;
-
-    sprite.style.top =
-        `${player.y}px`;
+    sprite.style.left = `${player.x}px`;
+    sprite.style.top = `${player.y}px`;
 
     updateDepthSorting();
     updateCamera();
@@ -1546,28 +1350,27 @@ function update() {
     // ======================================
 
     nearbyObject =
-        objects.find(
-            object => {
-                return Math.hypot(
-                    player.x - object.x,
-                    player.y - object.y
-                ) < object.radius;
-            }
-        ) || null;
+        objects.find(object => {
+            return Math.hypot(
+                player.x - object.x,
+                player.y - object.y
+            ) < object.radius;
+        }) || null;
 
     // ======================================
     // NÁPOVĚDA
     // ======================================
 
     if (isDead) {
-        hint.textContent =
-            "YOU DIED";
+        hint.textContent = "YOU DIED";
+
     } else if (!dialog.hidden) {
-        hint.textContent =
-            "ESC · Zavřít";
+        hint.textContent = "ESC · Zavřít";
+
     } else if (nearbyObject) {
         hint.textContent =
             `${nearbyObject.name} · Stiskni E`;
+
     } else {
         hint.textContent =
             "WASD / šipky · Pohyb | E · Interakce | 1–5 · Inventář";
@@ -1591,20 +1394,10 @@ setHunger(MAX_HUNGER);
 
 renderInventory();
 
-lastWaterUpdate =
-    performance.now();
+lastWaterUpdate = performance.now();
+lastHungerUpdate = performance.now();
 
-lastHungerUpdate =
-    performance.now();
-
-setInterval(
-    updateWater,
-    100
-);
-
-setInterval(
-    updateHunger,
-    100
-);
+setInterval(updateWater, 100);
+setInterval(updateHunger, 100);
 
 update();
