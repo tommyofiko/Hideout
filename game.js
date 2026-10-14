@@ -302,9 +302,10 @@ function updateHunger() {
     }
 }
 
-// ========================================
-// STUDNA
-// ========================================
+
+ // ========================================
+ // STUDNA
+ // ========================================
 
 const WELL = {
     x: 1080,
@@ -470,7 +471,6 @@ function updateDepthSorting() {
 // HRANICE OSTROVA - NEMĚNĚNÉ
 // ========================================
 
-
 const MAP_X = WORLD_WIDTH / 1648;
 const MAP_Y = WORLD_HEIGHT / 928;
 
@@ -480,14 +480,13 @@ const mapPolygon = points =>
         y * MAP_Y
     ]);
 
+// ========================================
+// KOLIZE BUDOV PODLE MODRÉ ČÁRY
+// ========================================
 
- // ========================================
- // KOLIZE BUDOV PODLE MODRÉ ČÁRY
- // ========================================
-
- // Souřadnice původní mapy 1648 × 928.
- // Dům je rozdělený na dvě části,
- // aby veranda a schody zůstaly průchozí.
+// Souřadnice původní mapy 1648 × 928.
+// Dům je rozdělený na dvě části,
+// aby veranda a schody zůstaly průchozí.
 
 const HOUSE_LEFT_BLOCKED_AREA = mapPolygon([
     [345, 335],
@@ -533,6 +532,46 @@ const SHED_BLOCKED_AREA = mapPolygon([
     [201, 610]
 ]);
 
+// ========================================
+// PRŮCHOZÍ PLOCHA OSTROVA, SCHODY, VERANDA
+// Body jsou v souřadnicích podkladové mapy 1648 × 928.
+// ========================================
+
+const WALKABLE_AREA = mapPolygon([
+    [270,385], [310,350], [355,350],
+    [403,375], [475,402], [532,433],
+    [579,386], [630,369], [676,377],
+    [714,349], [751,346], [783,313],
+    [801,324], [827,353], [880,388],
+    [940,414], [1004,473], [1066,490],
+    [1138,466], [1202,470], [1211,481],
+    [1080,532], [987,603], [876,706],
+    [753,798], [653,849], [533,851],
+    [460,820], [332,708], [257,648],
+    [258,624], [336,591], [325,557],
+    [295,545], [210,596], [185,587],
+    [177,572], [150,541], [112,510],
+    [118,474], [169,432], [222,407]
+]);
+
+const STAIRS_AREA = mapPolygon([
+    [777,368], [793,343], [812,319],
+    [837,302], [858,281], [872,267],
+    [894,257], [915,277], [901,293],
+    [878,310], [860,322], [844,338],
+    [826,358], [803,390], [787,387]
+]);
+
+const PORCH_AREA = mapPolygon([
+    [790,316], [801,307], [811,305],
+    [821,306], [832,299], [843,288],
+    [860,279], [867,282], [872,288],
+    [891,295], [909,306], [898,317],
+    [893,329], [893,342], [899,351],
+    [889,358], [861,346], [856,351],
+    [849,360], [836,350], [822,347],
+    [823,333], [811,324]
+]);
 
 // ========================================
 // GEOMETRIE
@@ -570,8 +609,6 @@ function pointInPolygon(x, y, polygon) {
 // KOLIZE - PŮVODNÍ
 // ========================================
 
-
-
 function insideWalkable(x, y) {
     return (
         pointInPolygon(x, y, WALKABLE_AREA) ||
@@ -579,7 +616,6 @@ function insideWalkable(x, y) {
         pointInPolygon(x, y, PORCH_AREA)
     );
 }
-
 
 
 function isBlocked(x, y) {
@@ -635,6 +671,19 @@ function isBlocked(x, y) {
     );
 }
 
+// ========================================
+// KONTROLA POHYBU
+// ========================================
+
+function canMoveTo(x, y) {
+    return (
+        x >= BOUNDS.left &&
+        x <= BOUNDS.right &&
+        y >= BOUNDS.top &&
+        y <= BOUNDS.bottom &&
+        !isBlocked(x, y)
+    );
+}
 
 // ========================================
 // OHEŇ - POŠKOZENÍ
@@ -923,7 +972,6 @@ function updateFireAudio() {
 // Jde o úzkou oblast u pravého břehu
 // jezírka, ne o celou okolní trávu.
 
-
 const SHALLOW_WATER_AREA = mapPolygon([
     [488,709],
     [511,695],
@@ -938,7 +986,6 @@ const SHALLOW_WATER_AREA = mapPolygon([
     [517,760],
     [495,737]
 ]);
-
 
 function isWalkingInShallowWater() {
     return pointInPolygon(
@@ -1006,9 +1053,10 @@ function playWaterStep() {
     }, SOUND_SETTINGS.waterStepDuration);
 }
 
-// ========================================
-// KROKY PO TRÁVĚ
-// ========================================
+
+ // ========================================
+ // KROKY PO TRÁVĚ
+ // ========================================
 
 let lastFootstep = 0;
 
@@ -1323,9 +1371,10 @@ function openInventoryItem(index) {
     }
 }
 
-// ========================================
-// STUDNA A JEZÍRKO - INTERAKCE
-// ========================================
+
+ // ========================================
+ // STUDNA A JEZÍRKO - INTERAKCE
+ // ========================================
 
 function findCup() {
     return inventoryItems.findIndex(
@@ -1733,9 +1782,10 @@ function useSelectedInventoryItem() {
     }
 }
 
-// ========================================
-// KAMERA
-// ========================================
+
+ // ========================================
+ // KAMERA
+ // ========================================
 
 function updateCamera() {
     const viewportWidth = window.innerWidth;
@@ -2102,3 +2152,10 @@ setInterval(updateWater, 100);
 setInterval(updateHunger, 100);
 
 update();
+
+
+
+
+
+
+
