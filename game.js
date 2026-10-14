@@ -499,12 +499,36 @@ const WALKABLE_AREA = mapPolygon([
 ]);
 
 // SCHODY A VERANDA
+
 const STAIRS_AREA = mapPolygon([
-    [772,316], [786,280], [817,264],
-    [865,237], [899,249], [945,273],
-    [913,301], [942,325], [918,349],
-    [854,315], [830,365], [802,348]
+    [777, 368],
+    [793, 343],
+    [812, 319],
+    [837, 302],
+    [858, 281],
+    [872, 267],
+    [894, 257],
+    [915, 277],
+    [901, 293],
+    [878, 310],
+    [860, 322],
+    [844, 338],
+    [826, 358],
+    [803, 390],
+    [787, 387]
 ]);
+
+
+const SHED_BLOCKED_AREA = mapPolygon([
+    [202, 586],
+    [290, 540],
+    [336, 559],
+    [337, 607],
+    [261, 646],
+    [204, 615]
+]);
+
+
 
 
 // ========================================
@@ -551,6 +575,7 @@ function insideWalkable(x, y) {
     );
 }
 
+
 function isBlocked(x, y) {
     const r = 5;
 
@@ -562,19 +587,31 @@ function isBlocked(x, y) {
         [0, -r]
     ];
 
-    if (
-        checks.some(([dx, dy]) =>
-            !insideWalkable(x + dx, y + dy)
-        )
-    ) {
+    // Hranice ostrova a schodů
+    if (checks.some(([dx, dy]) =>
+        !insideWalkable(x + dx, y + dy)
+    )) {
         return true;
     }
 
+    // Bouda - zákaz vstupu na střechu a skrz stěny
+    if (checks.some(([dx, dy]) =>
+        pointInPolygon(
+            x + dx,
+            y + dy,
+            SHED_BLOCKED_AREA
+        )
+    )) {
+        return true;
+    }
+
+    // Studna a kláda
     return (
         isTouchingWell(x, y) ||
         isTouchingLog(x, y)
     );
 }
+
 
 
 function canMoveTo(x, y) {
