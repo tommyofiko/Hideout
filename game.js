@@ -1,12 +1,11 @@
 
-
 "use strict";
 
 // ========================================
-// HIDEOUT — GAME.JS
+// HIDEOUT - GAME.JS
 // ========================================
 
-// HTML ELEMENTY
+// ELEMENTY
 const scene = document.getElementById("scene");
 const hint = document.getElementById("hint");
 const dialog = document.getElementById("dialog");
@@ -27,7 +26,7 @@ const deathScreen = document.getElementById("death-screen");
 const restartButton = document.getElementById("restart-button");
 
 // ========================================
-// SVĚT
+// SVĚT A HRÁČ
 // ========================================
 
 const WORLD_WIDTH = 1920;
@@ -41,10 +40,7 @@ const BOUNDS = {
     bottom: 1040
 };
 
-const PLAYER_START = {
-    x: 800,
-    y: 800
-};
+const PLAYER_START = { x: 800, y: 800 };
 
 const player = {
     x: PLAYER_START.x,
@@ -57,7 +53,7 @@ const keys = new Set();
 let nearbyObject = null;
 
 // ========================================
-// POSTAVIČKA — 8 SMĚRŮ
+// POSTAVIČKA - 8 SMĚRŮ
 // ========================================
 
 const PLAYER_IMAGES = {
@@ -87,6 +83,7 @@ function resetPlayerAppearance() {
 
     sprite.style.backgroundImage =
         `url("${PLAYER_IMAGES.down}")`;
+
     sprite.style.backgroundRepeat = "no-repeat";
     sprite.style.backgroundPosition = "center";
     sprite.style.backgroundSize = "contain";
@@ -123,23 +120,19 @@ function setHealth(value) {
             `${Math.ceil(health)} / ${MAX_HEALTH}`;
     }
 
-    if (health <= 0) {
-        die();
-    }
+    if (health <= 0) die();
 }
 
 function takeDamage(amount) {
-    if (isDead) return;
-    setHealth(health - amount);
+    if (!isDead) setHealth(health - amount);
 }
 
 function healPlayer(amount) {
-    if (isDead) return;
-    setHealth(health + amount);
+    if (!isDead) setHealth(health + amount);
 }
 
 // ========================================
-// H2O — 20 MINUT
+// H2O - 20 MINUT
 // ========================================
 
 const MAX_WATER = 100;
@@ -176,8 +169,7 @@ function drinkWater(amount) {
 }
 
 function loseWater(amount) {
-    if (isDead) return;
-    setWater(water - amount);
+    if (!isDead) setWater(water - amount);
 }
 
 function updateWater() {
@@ -221,7 +213,7 @@ function updateWater() {
 }
 
 // ========================================
-// HUNGER — 30 MINUT
+// HUNGER - 30 MINUT
 // ========================================
 
 const MAX_HUNGER = 100;
@@ -258,8 +250,7 @@ function eatFood(amount) {
 }
 
 function loseHunger(amount) {
-    if (isDead) return;
-    setHunger(hunger - amount);
+    if (!isDead) setHunger(hunger - amount);
 }
 
 function updateHunger() {
@@ -303,7 +294,7 @@ function updateHunger() {
 }
 
 // ========================================
-// STUDNA — POZICE A KOLIZE
+// STUDNA
 // ========================================
 
 const WELL = {
@@ -332,7 +323,7 @@ function getWellCollision() {
     return {
         x: WELL.x + 15,
         y: oldY - extraTop / 2,
-        rx: rx,
+        rx,
         ry: oldRY + extraTop / 2
     };
 }
@@ -385,6 +376,35 @@ function updateLogPosition() {
     logElement.style.width = `${LOG.width}px`;
 }
 
+function distanceToSegment(px, py, ax, ay, bx, by) {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const lengthSquared = dx * dx + dy * dy;
+
+    if (lengthSquared === 0) {
+        return Math.hypot(px - ax, py - ay);
+    }
+
+    const t = Math.max(
+        0,
+        Math.min(
+            1,
+            (
+                (px - ax) * dx +
+                (py - ay) * dy
+            ) / lengthSquared
+        )
+    );
+
+    const closestX = ax + t * dx;
+    const closestY = ay + t * dy;
+
+    return Math.hypot(
+        px - closestX,
+        py - closestY
+    );
+}
+
 function isTouchingLog(x, y) {
     if (!logElement) return false;
 
@@ -410,7 +430,6 @@ function updateDepthSorting() {
         wellElement.style.zIndex = "10";
 
         const collision = getWellCollision();
-
         const nearWell =
             Math.abs(player.x - WELL.x) < WELL.width;
 
@@ -437,7 +456,7 @@ function updateDepthSorting() {
 }
 
 // ========================================
-// HRANICE OSTROVA
+// HRANICE OSTROVA - PŮVODNÍ
 // ========================================
 
 const WALKABLE_AREA = [
@@ -472,10 +491,6 @@ const WALKABLE_AREA = [
     [1130, 726]
 ];
 
-// ========================================
-// GEOMETRIE
-// ========================================
-
 function pointInPolygon(x, y, polygon) {
     let inside = false;
 
@@ -491,59 +506,22 @@ function pointInPolygon(x, y, polygon) {
 
         const intersects =
             (yi > y) !== (yj > y) &&
-            x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+            x <
+            ((xj - xi) * (y - yi)) /
+            (yj - yi) + xi;
 
-        if (intersects) {
-            inside = !inside;
-        }
+        if (intersects) inside = !inside;
     }
 
     return inside;
 }
-
-function distanceToSegment(px, py, ax, ay, bx, by) {
-    const dx = bx - ax;
-    const dy = by - ay;
-    const lengthSquared = dx * dx + dy * dy;
-
-    if (lengthSquared === 0) {
-        return Math.hypot(px - ax, py - ay);
-    }
-
-    const t = Math.max(
-        0,
-        Math.min(
-            1,
-            (
-                (px - ax) * dx +
-                (py - ay) * dy
-            ) / lengthSquared
-        )
-    );
-
-    const closestX = ax + t * dx;
-    const closestY = ay + t * dy;
-
-    return Math.hypot(
-        px - closestX,
-        py - closestY
-    );
-}
-
-// ========================================
-// KOLIZE
-// ========================================
 
 function isBlocked(x, y) {
     if (!pointInPolygon(x, y, WALKABLE_AREA)) {
         return true;
     }
 
-    for (
-        let i = 0;
-        i < WALKABLE_AREA.length;
-        i++
-    ) {
+    for (let i = 0; i < WALKABLE_AREA.length; i++) {
         const [ax, ay] = WALKABLE_AREA[i];
 
         const [bx, by] =
@@ -553,12 +531,7 @@ function isBlocked(x, y) {
 
         if (
             distanceToSegment(
-                x,
-                y,
-                ax,
-                ay,
-                bx,
-                by
+                x, y, ax, ay, bx, by
             ) < player.radius
         ) {
             return true;
@@ -582,7 +555,7 @@ function canMoveTo(x, y) {
 }
 
 // ========================================
-// OHEŇ
+// OHEŇ A POŠKOZENÍ
 // ========================================
 
 const FIRE = {
@@ -627,7 +600,7 @@ function checkFireDamage() {
 }
 
 // ========================================
-// PŮVODNÍ ZVUKY
+// PŮVODNÍ 8BIT ZVUKY
 // ========================================
 
 const AudioContextClass =
@@ -645,6 +618,8 @@ function resumeAudio() {
     ) {
         audioContext.resume().catch(() => {});
     }
+
+    startGameAudio();
 }
 
 function playTone(
@@ -661,19 +636,14 @@ function playTone(
         return;
     }
 
-    const oscillator =
-        audioContext.createOscillator();
-
-    const gain =
-        audioContext.createGain();
-
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
     const now = audioContext.currentTime;
 
     oscillator.type = type;
 
     oscillator.frequency.setValueAtTime(
-        startFrequency,
-        now
+        startFrequency, now
     );
 
     oscillator.frequency.exponentialRampToValueAtTime(
@@ -696,23 +666,11 @@ function playTone(
 }
 
 function playFootstep() {
-    playTone(
-        140,
-        65,
-        0.09,
-        0.035,
-        "triangle"
-    );
+    playTone(140, 65, 0.09, 0.035, "triangle");
 }
 
 function playDamageSound() {
-    playTone(
-        420,
-        85,
-        0.22,
-        0.09,
-        "sawtooth"
-    );
+    playTone(420, 85, 0.22, 0.09, "sawtooth");
 }
 
 function playDeathSound() {
@@ -730,11 +688,8 @@ function playMyJingle() {
     const notes = [344, 243, 204, 172];
 
     notes.forEach((frequency, index) => {
-        const oscillator =
-            audioContext.createOscillator();
-
-        const gain =
-            audioContext.createGain();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
 
         const start =
             audioContext.currentTime +
@@ -748,14 +703,10 @@ function playMyJingle() {
         oscillator.type = "triangle";
 
         oscillator.frequency.setValueAtTime(
-            frequency,
-            start
+            frequency, start
         );
 
-        gain.gain.setValueAtTime(
-            0.06,
-            start
-        );
+        gain.gain.setValueAtTime(0.06, start);
 
         gain.gain.exponentialRampToValueAtTime(
             0.001,
@@ -771,7 +722,205 @@ function playMyJingle() {
 }
 
 // ========================================
-// KROKY
+// NOVÉ MP3 ZVUKY
+// ========================================
+
+const SOUND_SETTINGS = {
+    ambientVolume: 0.23,
+    fireVolume: 0.65,
+    fireRange: 340,
+    waterVolume: 0.55,
+    waterStepInterval: 370
+};
+
+function createGameSound(filename, loop, volume) {
+    const sound = new Audio(filename);
+
+    sound.loop = loop;
+    sound.volume = volume;
+    sound.preload = "auto";
+
+    return sound;
+}
+
+const ambientSound = createGameSound(
+    "ambient.mp3",
+    true,
+    SOUND_SETTINGS.ambientVolume
+);
+
+const campfireSound = createGameSound(
+    "campfire.mp3",
+    true,
+    0
+);
+
+const walkingWaterSound = createGameSound(
+    "walkingwater.mp3",
+    false,
+    SOUND_SETTINGS.waterVolume
+);
+
+let gameAudioStarted = false;
+let currentFireVolume = 0;
+let lastWaterStep = -Infinity;
+
+function safePlay(sound) {
+    const result = sound.play();
+
+    if (result && typeof result.catch === "function") {
+        result.catch(() => {});
+    }
+}
+
+function startGameAudio() {
+    if (gameAudioStarted) return;
+
+    gameAudioStarted = true;
+
+    safePlay(ambientSound);
+    safePlay(campfireSound);
+}
+
+// Spustí MP3 také při kliknutí do hry.
+window.addEventListener(
+    "pointerdown",
+    resumeAudio,
+    { passive: true }
+);
+
+// ========================================
+// OHEŇ - PROSTOROVÁ HLASITOST
+// ========================================
+
+function updateFireAudio() {
+    if (!gameAudioStarted) return;
+
+    if (isDead) {
+        currentFireVolume = 0;
+        campfireSound.volume = 0;
+        return;
+    }
+
+    // Stejná pozice jako u poškození ohně.
+    const fireX = 225;
+    const fireY = 550;
+
+    const distance = Math.hypot(
+        player.x - fireX,
+        player.y - fireY
+    );
+
+    const proximity = Math.max(
+        0,
+        1 - distance / SOUND_SETTINGS.fireRange
+    );
+
+    // Plynulejší útlum do dálky.
+    const targetVolume =
+        SOUND_SETTINGS.fireVolume *
+        proximity *
+        proximity;
+
+    currentFireVolume +=
+        (targetVolume - currentFireVolume) * 0.06;
+
+    campfireSound.volume = Math.max(
+        0,
+        Math.min(1, currentFireVolume)
+    );
+}
+
+// ========================================
+// MĚLKÁ VODA - ZVUKOVÁ OBLAST
+// ========================================
+
+// Přibližná oblast podle vyznačeného
+// oranžového okraje jezírka.
+//
+// Tyto body ovlivňují JEN ZVUK.
+// Kolize ostrova se tím nemění.
+//
+// Hlubokou část jezírka sem nezahrnujeme.
+
+const SHALLOW_WATER_AREA = [
+    [688, 823],
+    [728, 801],
+    [774, 803],
+    [806, 827],
+    [809, 872],
+    [782, 910],
+    [726, 931],
+    [676, 916],
+    [651, 881],
+    [661, 847]
+];
+
+function isWalkingInShallowWater() {
+    return pointInPolygon(
+        player.x,
+        player.y + 8,
+        SHALLOW_WATER_AREA
+    );
+}
+
+function playWaterStep() {
+    // MP3 má přibližně 7 sekund.
+    // Použijeme z něj krátké úseky,
+    // aby každé šlápnutí znělo jinak.
+
+    const sound = walkingWaterSound;
+
+    const duration = Number.isFinite(sound.duration)
+        ? sound.duration
+        : 0;
+
+    if (duration > 1.5) {
+        const maxStart = Math.max(0, duration - 1.2);
+
+        try {
+            sound.currentTime =
+                Math.random() * maxStart;
+        } catch (error) {
+            // Soubor se ještě může načítat.
+        }
+    } else {
+        try {
+            sound.currentTime = 0;
+        } catch (error) {}
+    }
+
+    sound.volume = SOUND_SETTINGS.waterVolume;
+
+    safePlay(sound);
+}
+
+function updateWalkingAudio(isMoving) {
+    if (!isMoving) {
+        // Šplouchnutí může krátce doznít.
+        return;
+    }
+
+    const now = performance.now();
+
+    if (isWalkingInShallowWater()) {
+        if (
+            now - lastWaterStep >=
+            SOUND_SETTINGS.waterStepInterval
+        ) {
+            playWaterStep();
+            lastWaterStep = now;
+        }
+
+        return;
+    }
+
+    // Na trávě necháváme původní kroky.
+    updateFootsteps(true);
+}
+
+// ========================================
+// PŮVODNÍ KROKY
 // ========================================
 
 let lastFootstep = 0;
@@ -792,7 +941,529 @@ function updateFootsteps(isMoving) {
 }
 
 // ========================================
-// INVENTÁŘ — 5 SLOTŮ
+// PAPÍR, KELÍMEK A VODA
+// ========================================
+
+const ITEM_IMAGES = {
+    paper: "papir.png",
+    cup: "kelimek.png",
+    full: "plnykelimek.png"
+};
+
+const PAPER_LOCATION = {
+    x: 800,
+    y: 750,
+    radius: 42
+};
+
+const LAKE_SHORE = {
+    x: 765,
+    y: 800,
+    radius: 73
+};
+
+const WELL_USE_RADIUS = 105;
+
+let paperAvailable = true;
+
+const paperSprite = document.createElement("img");
+
+paperSprite.id = "ground-paper";
+paperSprite.src = ITEM_IMAGES.paper;
+paperSprite.alt = "List papíru";
+paperSprite.draggable = false;
+
+paperSprite.style.position = "absolute";
+paperSprite.style.left = `${PAPER_LOCATION.x}px`;
+paperSprite.style.top = `${PAPER_LOCATION.y}px`;
+paperSprite.style.width = "22px";
+paperSprite.style.height = "22px";
+paperSprite.style.objectFit = "contain";
+paperSprite.style.transform = "translate(-50%, -50%)";
+paperSprite.style.imageRendering = "pixelated";
+paperSprite.style.pointerEvents = "none";
+paperSprite.style.zIndex = "8";
+
+scene.appendChild(paperSprite);
+
+function refreshGroundPaper() {
+    paperSprite.hidden = !paperAvailable;
+    paperSprite.style.display =
+        paperAvailable ? "block" : "none";
+}
+
+function makePaper() {
+    return {
+        id: "paper",
+        name: "List papíru",
+        image: ITEM_IMAGES.paper
+    };
+}
+
+function makeCup(uses = 0, contents = null) {
+    return {
+        id: "cup",
+        name: contents
+            ? "Kelímek s vodou"
+            : "Papírový kelímek",
+        image: contents
+            ? ITEM_IMAGES.full
+            : ITEM_IMAGES.cup,
+        uses,
+        contents
+    };
+}
+
+// ========================================
+// DIALOGY
+// ========================================
+
+function showChoices(title, description, choices) {
+    dialog.hidden = false;
+    dialog.replaceChildren();
+
+    const heading = document.createElement("strong");
+    heading.textContent = title;
+
+    const descriptionNode = document.createElement("p");
+    descriptionNode.textContent = description;
+
+    dialog.append(heading, descriptionNode);
+
+    const actions = document.createElement("div");
+    actions.className = "dialog-actions";
+
+    actions.style.display = "flex";
+    actions.style.flexWrap = "wrap";
+    actions.style.gap = "8px";
+
+    for (const choice of choices) {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.textContent = choice.label;
+        button.addEventListener("click", choice.action);
+
+        actions.appendChild(button);
+    }
+
+    const close = document.createElement("button");
+
+    close.type = "button";
+    close.textContent = "Zavřít [Esc]";
+
+    close.addEventListener("click", () => {
+        dialog.hidden = true;
+    });
+
+    actions.appendChild(close);
+    dialog.appendChild(actions);
+}
+
+function showMessage(title, message) {
+    dialog.hidden = false;
+    dialog.replaceChildren();
+
+    const heading = document.createElement("strong");
+    heading.textContent = title;
+
+    const paragraph = document.createElement("p");
+    paragraph.textContent = message;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Zavřít [Esc]";
+
+    button.addEventListener("click", () => {
+        dialog.hidden = true;
+    });
+
+    dialog.append(heading, paragraph, button);
+}
+
+// ========================================
+// SEBRÁNÍ PAPÍRU - POUZE E
+// ========================================
+
+function pickupPaper() {
+    if (isDead || !paperAvailable) return;
+
+    const distance = Math.hypot(
+        player.x - PAPER_LOCATION.x,
+        player.y - PAPER_LOCATION.y
+    );
+
+    if (distance >= PAPER_LOCATION.radius) {
+        return;
+    }
+
+    if (!addInventoryItem(makePaper())) {
+        showMessage(
+            "Inventář je plný",
+            "Na papír nemáš volný slot."
+        );
+        return;
+    }
+
+    paperAvailable = false;
+    refreshGroundPaper();
+
+    showMessage(
+        "List papíru",
+        "Sebral jsi list papíru."
+    );
+}
+
+// ========================================
+// INVENTÁŘ - MENU PŘEDMĚTŮ
+// ========================================
+
+function openInventoryItem(index) {
+    if (isDead || !dialog.hidden) return;
+
+    const item = inventoryItems[index];
+    if (!item) return;
+
+    if (item.id === "paper") {
+        showChoices(
+            "List papíru",
+            "Co chceš udělat?",
+            [
+                {
+                    label: "Prozkoumat",
+                    action: () => {
+                        showMessage(
+                            "List papíru",
+                            "Obyčejný list papíru."
+                        );
+                    }
+                },
+                {
+                    label: "Vyrobit kelímek",
+                    action: () => {
+                        if (
+                            inventoryItems[index]?.id !==
+                            "paper"
+                        ) {
+                            return;
+                        }
+
+                        inventoryItems[index] = makeCup();
+                        renderInventory();
+
+                        showMessage(
+                            "Papírový kelímek",
+                            "Složil jsi z papíru provizorní kelímek."
+                        );
+                    }
+                }
+            ]
+        );
+
+        return;
+    }
+
+    if (item.id === "cup") {
+        const choices = [
+            {
+                label: "Prozkoumat",
+                action: () => {
+                    showMessage(
+                        "Papírový kelímek",
+                        item.contents
+                            ? "V kelímku je voda."
+                            : "Prázdný papírový kelímek."
+                    );
+                }
+            }
+        ];
+
+        if (item.contents) {
+            choices.push(
+                {
+                    label: "Napít se",
+                    action: () => drinkFromCup(index)
+                },
+                {
+                    label: "Vylít vodu",
+                    action: () => pourOutCup(index)
+                }
+            );
+        }
+
+        showChoices(
+            item.name,
+            item.contents
+                ? "Co uděláš s vodou?"
+                : "Kelímek je prázdný. Vodu nabereš klávesou E u studny nebo jezírka.",
+            choices
+        );
+    }
+}
+
+// ========================================
+// NABÍRÁNÍ VODY
+// ========================================
+
+function findCup() {
+    return inventoryItems.findIndex(
+        item => item?.id === "cup"
+    );
+}
+
+function nearWell() {
+    if (!wellElement) return false;
+
+    const collision = getWellCollision();
+
+    return Math.hypot(
+        player.x - collision.x,
+        player.y - collision.y
+    ) < WELL_USE_RADIUS;
+}
+
+function nearLake() {
+    return Math.hypot(
+        player.x - LAKE_SHORE.x,
+        player.y - LAKE_SHORE.y
+    ) < LAKE_SHORE.radius;
+}
+
+function fillCup(source) {
+    if (isDead) return;
+
+    if (source === "well" && !nearWell()) {
+        showMessage(
+            "Studna",
+            "Musíš přijít blíž ke studni."
+        );
+        return;
+    }
+
+    if (source === "lake" && !nearLake()) {
+        showMessage(
+            "Jezírko",
+            "Musíš přijít blíž k jezírku."
+        );
+        return;
+    }
+
+    const index = findCup();
+
+    if (index < 0) {
+        showMessage(
+            source === "well" ? "Studna" : "Jezírko",
+            "Potřebuješ kelímek na vodu."
+        );
+        return;
+    }
+
+    const cup = inventoryItems[index];
+
+    if (cup.contents) {
+        showMessage(
+            "Plný kelímek",
+            "Nejdřív vodu vypij nebo vylij."
+        );
+        return;
+    }
+
+    cup.uses += 1;
+
+    // ČTVRTÉ NABRÁNÍ = ROZPAD KELÍMKU
+    if (cup.uses >= 4) {
+        inventoryItems[index] = null;
+        renderInventory();
+
+        showMessage(
+            "Rozmočený kelímek",
+            "Papír nasákl vodou. Kelímek se ti rozpadl přímo v rukou."
+        );
+
+        return;
+    }
+
+    cup.contents = source;
+    cup.name = "Kelímek s vodou";
+    cup.image = ITEM_IMAGES.full;
+
+    renderInventory();
+
+    showMessage(
+        source === "well" ? "Studna" : "Jezírko",
+        source === "well"
+            ? "Nabral jsi čistou vodu."
+            : "Nabral jsi kalnou vodu z jezírka."
+    );
+}
+
+function emptyCup(index) {
+    const cup = inventoryItems[index];
+
+    if (!cup || cup.id !== "cup") return;
+
+    cup.contents = null;
+    cup.name = "Papírový kelímek";
+    cup.image = ITEM_IMAGES.cup;
+
+    renderInventory();
+}
+
+function pourOutCup(index) {
+    const cup = inventoryItems[index];
+
+    if (
+        !cup ||
+        cup.id !== "cup" ||
+        !cup.contents
+    ) {
+        return;
+    }
+
+    emptyCup(index);
+
+    showMessage(
+        "Vylít vodu",
+        "Vylil jsi vodu. Kelímek je zase prázdný."
+    );
+}
+
+// ========================================
+// ZMĚNA H2O - BAREVNÝ TEXT
+// ========================================
+
+let waterFeedbackTimer = null;
+
+function showWaterFeedback(change) {
+    const indicator =
+        document.getElementById("water-feedback");
+
+    if (!indicator) return;
+
+    clearTimeout(waterFeedbackTimer);
+
+    const rounded = Math.round(change);
+
+    indicator.textContent =
+        `${rounded > 0 ? "+" : ""}${rounded} H2O`;
+
+    indicator.className =
+        rounded < 0
+            ? "negative visible"
+            : "positive visible";
+
+    waterFeedbackTimer = setTimeout(() => {
+        indicator.className = "";
+    }, 1800);
+}
+
+function drinkFromCup(index) {
+    const cup = inventoryItems[index];
+
+    if (
+        !cup ||
+        cup.id !== "cup" ||
+        !cup.contents ||
+        isDead
+    ) {
+        return;
+    }
+
+    const source = cup.contents;
+    const before = water;
+
+    if (source === "well") {
+        drinkWater(MAX_WATER);
+    } else {
+        loseWater(25);
+    }
+
+    const change = water - before;
+
+    emptyCup(index);
+    showWaterFeedback(change);
+
+    showMessage(
+        source === "well"
+            ? "Čistá voda"
+            : "Špinavá voda",
+        source === "well"
+            ? "Napil ses ze studny. H2O je doplněné."
+            : "Voda z jezírka ti neudělala dobře. −25 H2O."
+    );
+}
+
+// ========================================
+// INTERAKCE VE SVĚTĚ
+// ========================================
+
+const objects = [
+    {
+        name: "Vchod do domu",
+        x: 960,
+        y: 580,
+        radius: 65,
+        action: () => {
+            showMessage(
+                "Vítej doma.",
+                "Interiér teprve postavíme. Tohle místo bude růst podle tebe."
+            );
+        }
+    },
+    {
+        name: "Starý strom",
+        x: 360,
+        y: 700,
+        radius: 55,
+        action: () => {
+            showMessage(
+                "Pod stromem",
+                "Kořeny nadzvedávají staré kameny. Jeden z nich vypadá, že jde odsunout."
+            );
+        }
+    }
+];
+
+function resolveNearbyObject() {
+    if (
+        paperAvailable &&
+        Math.hypot(
+            player.x - PAPER_LOCATION.x,
+            player.y - PAPER_LOCATION.y
+        ) < PAPER_LOCATION.radius
+    ) {
+        return {
+            name: "List papíru",
+            action: pickupPaper,
+            hint: "List papíru · Stiskni E pro sebrání"
+        };
+    }
+
+    if (nearLake()) {
+        return {
+            name: "Jezírko",
+            action: () => fillCup("lake")
+        };
+    }
+
+    if (nearWell()) {
+        return {
+            name: "Studna",
+            action: () => fillCup("well")
+        };
+    }
+
+    return objects.find(
+        object =>
+            Math.hypot(
+                player.x - object.x,
+                player.y - object.y
+            ) < object.radius
+    ) || null;
+}
+
+// ========================================
+// INVENTÁŘ - 5 SLOTŮ
 // ========================================
 
 const INVENTORY_SIZE = 5;
@@ -806,9 +1477,7 @@ let inventoryElement =
     document.getElementById("inventory");
 
 if (!inventoryElement) {
-    inventoryElement =
-        document.createElement("div");
-
+    inventoryElement = document.createElement("div");
     inventoryElement.id = "inventory";
 
     document
@@ -820,8 +1489,7 @@ function renderInventory() {
     inventoryElement.replaceChildren();
 
     inventoryItems.forEach((item, index) => {
-        const slot =
-            document.createElement("button");
+        const slot = document.createElement("button");
 
         slot.type = "button";
 
@@ -837,37 +1505,30 @@ function renderInventory() {
             ? item.name
             : `Prázdný slot ${index + 1}`;
 
-        const number =
-            document.createElement("span");
-
+        const number = document.createElement("span");
         number.className = "slot-number";
         number.textContent = String(index + 1);
 
-        const icon =
-            document.createElement("span");
-
+        const icon = document.createElement("span");
         icon.className = "slot-item";
 
-        if (item && item.image) {
-            const image =
-                document.createElement("img");
+        if (item?.image) {
+            const image = document.createElement("img");
 
             image.src = item.image;
             image.alt = item.name;
+            image.className = "inventory-item-image";
 
-            // VĚTŠÍ IKONKY
-            image.style.width = "39px";
-            image.style.height = "39px";
-            image.style.maxWidth = "100%";
-            image.style.maxHeight = "100%";
+            // Větší ikonky bez úpravy CSS.
+            image.style.width = "80%";
+            image.style.height = "80%";
             image.style.objectFit = "contain";
             image.style.imageRendering = "pixelated";
 
             icon.appendChild(image);
         } else {
-            icon.textContent = item
-                ? (item.icon || "📦")
-                : "";
+            icon.textContent =
+                item ? (item.icon || "📦") : "";
         }
 
         slot.append(number, icon);
@@ -877,18 +1538,14 @@ function renderInventory() {
 
             resumeAudio();
 
-            if (!dialog.hidden) return;
-
-            selectedInventorySlot = index;
-            renderInventory();
-
-            const currentItem = inventoryItems[index];
-
-            if (
-                currentItem &&
-                typeof currentItem.use === "function"
-            ) {
-                currentItem.use(index);
+            if (selectedInventorySlot === index && item) {
+                if (typeof item.use === "function") {
+                    item.use();
+                } else {
+                    openInventoryItem(index);
+                }
+            } else {
+                selectInventorySlot(index);
             }
         });
 
@@ -918,18 +1575,13 @@ function addInventoryItem(item) {
         return false;
     }
 
-    const emptyIndex =
-        inventoryItems.findIndex(
-            slot => slot === null
-        );
+    const emptyIndex = inventoryItems.findIndex(
+        slot => slot === null
+    );
 
-    if (emptyIndex === -1) {
-        return false;
-    }
+    if (emptyIndex === -1) return false;
 
-    inventoryItems[emptyIndex] = {
-        ...item
-    };
+    inventoryItems[emptyIndex] = { ...item };
 
     renderInventory();
     return true;
@@ -948,7 +1600,6 @@ function removeInventoryItem(
     const item = inventoryItems[index];
 
     inventoryItems[index] = null;
-
     renderInventory();
 
     return item;
@@ -963,721 +1614,11 @@ function useSelectedInventoryItem() {
 
     const item = getSelectedInventoryItem();
 
-    if (
-        item &&
-        typeof item.use === "function"
-    ) {
-        item.use(selectedInventorySlot);
+    if (item && typeof item.use === "function") {
+        item.use();
+    } else if (item) {
+        openInventoryItem(selectedInventorySlot);
     }
-}
-
-// ========================================
-// DIALOGY
-// ========================================
-
-function showMessage(title, message) {
-    dialog.hidden = false;
-    dialog.replaceChildren();
-
-    const heading =
-        document.createElement("strong");
-
-    heading.textContent = title;
-
-    const paragraph =
-        document.createElement("p");
-
-    paragraph.textContent = message;
-
-    const button =
-        document.createElement("button");
-
-    button.type = "button";
-    button.textContent = "Zavřít [Esc]";
-
-    button.addEventListener("click", () => {
-        dialog.hidden = true;
-    });
-
-    dialog.append(
-        heading,
-        paragraph,
-        button
-    );
-}
-
-function showOptions(title, message, options) {
-    dialog.hidden = false;
-    dialog.replaceChildren();
-
-    const heading =
-        document.createElement("strong");
-
-    heading.textContent = title;
-
-    const paragraph =
-        document.createElement("p");
-
-    paragraph.textContent = message;
-
-    dialog.append(heading, paragraph);
-
-    options.forEach(option => {
-        const button =
-            document.createElement("button");
-
-        button.type = "button";
-        button.textContent = option.label;
-
-        button.addEventListener("click", () => {
-            option.action();
-        });
-
-        dialog.appendChild(button);
-    });
-
-    const closeButton =
-        document.createElement("button");
-
-    closeButton.type = "button";
-    closeButton.textContent = "Zavřít [Esc]";
-
-    closeButton.addEventListener("click", () => {
-        dialog.hidden = true;
-    });
-
-    dialog.appendChild(closeButton);
-}
-
-// ========================================
-// PAPÍR A KELÍMKY
-// ========================================
-
-const ITEM_IMAGES = {
-    paper: "papir.png",
-    cup: "kelimek.png",
-    fullCup: "plnykelimek.png"
-};
-
-const CUP_MAX_FILLS = 4;
-
-// ========================================
-// PAPÍR NA ZEMI — U BOUDY
-// ========================================
-
-const PAPER_POSITION = {
-    x: 660,
-    y: 580,
-    radius: 48
-};
-
-let paperOnGround = true;
-
-const paperElement =
-    document.createElement("img");
-
-paperElement.id = "ground-paper";
-paperElement.src = ITEM_IMAGES.paper;
-paperElement.alt = "List papíru";
-paperElement.draggable = false;
-
-paperElement.style.position = "absolute";
-paperElement.style.left =
-    `${PAPER_POSITION.x}px`;
-
-paperElement.style.top =
-    `${PAPER_POSITION.y}px`;
-
-paperElement.style.width = "24px";
-paperElement.style.height = "24px";
-paperElement.style.objectFit = "contain";
-paperElement.style.transform =
-    "translate(-50%, -50%)";
-
-paperElement.style.imageRendering = "pixelated";
-paperElement.style.pointerEvents = "none";
-paperElement.style.zIndex = "11";
-
-scene.appendChild(paperElement);
-
-function updatePaperVisibility() {
-    paperElement.style.display =
-        paperOnGround ? "block" : "none";
-}
-
-function isNearPaper() {
-    if (!paperOnGround) return false;
-
-    return Math.hypot(
-        player.x - PAPER_POSITION.x,
-        player.y - PAPER_POSITION.y
-    ) < PAPER_POSITION.radius;
-}
-
-function createPaperItem() {
-    return {
-        id: "paper",
-        name: "List papíru",
-        image: ITEM_IMAGES.paper,
-
-        use: index => {
-            openPaperMenu(index);
-        }
-    };
-}
-
-function pickupPaper() {
-    if (isDead || !isNearPaper()) return;
-
-    const added =
-        addInventoryItem(createPaperItem());
-
-    if (!added) {
-        showMessage(
-            "Inventář je plný",
-            "Nemáš místo na list papíru."
-        );
-
-        return;
-    }
-
-    paperOnGround = false;
-    updatePaperVisibility();
-
-    showMessage(
-        "List papíru",
-        "Sebrals ze země list papíru."
-    );
-}
-
-// ========================================
-// MENU PAPÍRU
-// ========================================
-
-function openPaperMenu(index) {
-    const item = inventoryItems[index];
-
-    if (
-        isDead ||
-        !item ||
-        item.id !== "paper"
-    ) {
-        return;
-    }
-
-    showOptions(
-        "List papíru",
-        "Co chceš s papírem udělat?",
-        [
-            {
-                label: "Prozkoumat",
-
-                action: () => {
-                    showMessage(
-                        "List papíru",
-                        "Obyčejný list papíru."
-                    );
-                }
-            },
-            {
-                label: "Vyrobit kelímek",
-
-                action: () => {
-                    craftPaperCup(index);
-                }
-            }
-        ]
-    );
-}
-
-// ========================================
-// VÝROBA KELÍMKU
-// ========================================
-
-function createCupItem(uses = 0, contents = null) {
-    return {
-        id: "paper_cup",
-
-        name: contents
-            ? "Papírový kelímek s vodou"
-            : "Papírový kelímek",
-
-        image: contents
-            ? ITEM_IMAGES.fullCup
-            : ITEM_IMAGES.cup,
-
-        uses,
-        contents,
-
-        use: index => {
-            openCupMenu(index);
-        }
-    };
-}
-
-function craftPaperCup(index) {
-    if (isDead) return;
-
-    const item = inventoryItems[index];
-
-    if (!item || item.id !== "paper") return;
-
-    inventoryItems[index] =
-        createCupItem();
-
-    renderInventory();
-
-    showMessage(
-        "Papírovej kelímek",
-        "Složil jsi papír do tvaru malého kelímku."
-    );
-}
-
-// ========================================
-// JEZÍRKO — ŠPINAVÁ VODA
-// ========================================
-
-const POND = {
-    x: 745,
-    y: 820,
-    radius: 45
-};
-
-function isNearPond() {
-    return Math.hypot(
-        player.x - POND.x,
-        player.y - POND.y
-    ) < POND.radius;
-}
-
-// ========================================
-// STUDNA — ČISTÁ VODA
-// ========================================
-
-const WELL_INTERACTION_RADIUS = 55;
-
-function isNearWell() {
-    if (!wellElement) return false;
-
-    const collision = getWellCollision();
-
-    return Math.hypot(
-        player.x - collision.x,
-        player.y - collision.y
-    ) < WELL_INTERACTION_RADIUS;
-}
-
-// ========================================
-// HLEDÁNÍ KELÍMKU
-// ========================================
-
-function findPaperCup() {
-    const index =
-        inventoryItems.findIndex(
-            item =>
-                item &&
-                item.id === "paper_cup"
-        );
-
-    return {
-        index,
-        item: index >= 0
-            ? inventoryItems[index]
-            : null
-    };
-}
-
-// ========================================
-// NABÍRÁNÍ VODY
-// ========================================
-
-function fillPaperCup(source) {
-    if (isDead) return;
-
-    if (
-        source === "pond" &&
-        !isNearPond()
-    ) {
-        showMessage(
-            "Jezírko",
-            "Musíš přijít blíž k jezírku."
-        );
-
-        return;
-    }
-
-    if (
-        source === "well" &&
-        !isNearWell()
-    ) {
-        showMessage(
-            "Studna",
-            "Musíš přijít blíž ke studni."
-        );
-
-        return;
-    }
-
-    const result = findPaperCup();
-
-    if (!result.item) {
-        showMessage(
-            "Voda",
-            "Nemáš do čeho nabrat vodu."
-        );
-
-        return;
-    }
-
-    if (result.item.contents) {
-        showMessage(
-            "Kelímek je plný",
-            "Nejdřív se napij nebo vodu vylij."
-        );
-
-        return;
-    }
-
-    // Každé nabrání se počítá.
-    result.item.uses++;
-
-    // ČTVRTÉ NABRÁNÍ — ROZPAD KELÍMKU
-    if (result.item.uses >= CUP_MAX_FILLS) {
-        inventoryItems[result.index] = null;
-
-        renderInventory();
-
-        showMessage(
-            "Kelímek se rozpadl",
-            "Papír nasákl vodou a kelímek se ti v rukách proměnil na MR**U..."
-        );
-
-        return;
-    }
-
-    // ÚSPĚŠNÉ NABRÁNÍ
-    result.item.contents = source;
-
-    result.item.name =
-        "Papírový kelímek s vodou";
-
-    result.item.image =
-        ITEM_IMAGES.fullCup;
-
-    renderInventory();
-
-    if (source === "well") {
-        showMessage(
-            "Studna",
-            "Nabrals čistou vodu ze studny."
-        );
-    } else {
-        showMessage(
-            "Jezírko",
-            "Nabrals vodu z jezírka. Nevypadá příliš čistě."
-        );
-    }
-}
-
-// ========================================
-// PITÍ VODY
-// ========================================
-
-function drinkFromCup(index) {
-    if (isDead) return;
-
-    const item = inventoryItems[index];
-
-    if (
-        !item ||
-        item.id !== "paper_cup" ||
-        !item.contents
-    ) {
-        return;
-    }
-
-    const source = item.contents;
-    const previousWater = water;
-
-    if (source === "well") {
-        // Studna doplní H2O na 100.
-        setWater(MAX_WATER);
-
-        if (water > 0) {
-            lastDehydrationDamage = null;
-        }
-    } else {
-        // Jezírko ubere 25 H2O.
-        loseWater(25);
-    }
-
-    const difference =
-        water - previousWater;
-
-    // Kelímek zůstane, ale bude prázdný.
-    item.contents = null;
-    item.name = "Papírový kelímek";
-    item.image = ITEM_IMAGES.cup;
-
-    renderInventory();
-    showWaterChange(difference);
-
-    if (source === "well") {
-        showMessage(
-            "Čistá voda",
-            "Napil ses čisté vody ze studny."
-        );
-    } else {
-        showMessage(
-            "Špinavá voda",
-            "Voda z jezírka ti neudělala dobře."
-        );
-    }
-}
-
-// ========================================
-// VYLITÍ VODY
-// ========================================
-
-function pourOutCup(index) {
-    if (isDead) return;
-
-    const item = inventoryItems[index];
-
-    if (
-        !item ||
-        item.id !== "paper_cup" ||
-        !item.contents
-    ) {
-        return;
-    }
-
-    // Vylití nemění H2O hráče.
-    // Počet použití kelímku se neresetuje.
-    item.contents = null;
-    item.name = "Papírový kelímek";
-    item.image = ITEM_IMAGES.cup;
-
-    renderInventory();
-
-    showMessage(
-        "Vylil jsi vodu",
-        "Vylil jsi vodu na zem. Kelímek je zase prázdný."
-    );
-}
-
-// ========================================
-// MENU KELÍMKU
-// ========================================
-
-function openCupMenu(index) {
-    if (isDead) return;
-
-    const item = inventoryItems[index];
-
-    if (
-        !item ||
-        item.id !== "paper_cup"
-    ) {
-        return;
-    }
-
-    const options = [
-        {
-            label: "Prozkoumat",
-
-            action: () => {
-                const current =
-                    inventoryItems[index];
-
-                if (
-                    !current ||
-                    current.id !== "paper_cup"
-                ) {
-                    dialog.hidden = true;
-                    return;
-                }
-
-                if (current.contents === "well") {
-                    showMessage(
-                        "Papírový kelímek",
-                        "Uvnitř je čistá, studeňoučká voda ze studny."
-                    );
-
-                } else if (current.contents === "pond") {
-                    showMessage(
-                        "Papírový kelímek",
-                        "Uvnitř je zakalená voda z jezírka."
-                    );
-
-                } else {
-                    showMessage(
-                        "Papírový kelímek",
-                        "Prázdný kelímek složený z papíru."
-                    );
-                }
-            }
-        }
-    ];
-
-    if (item.contents) {
-        options.push({
-            label: "Napít se",
-
-            action: () => {
-                drinkFromCup(index);
-            }
-        });
-
-        options.push({
-            label: "Vylít vodu",
-
-            action: () => {
-                pourOutCup(index);
-            }
-        });
-    }
-
-    showOptions(
-        item.name,
-        item.contents
-            ? "Co chceš udělat s vodou?"
-            : "Prázdný papírový kelímek.",
-        options
-    );
-}
-
-// ========================================
-// ZMĚNA H2O — BAREVNÝ TEXT
-// ========================================
-
-const waterChangeElement =
-    document.createElement("div");
-
-waterChangeElement.id = "water-change";
-
-waterChangeElement.style.position = "fixed";
-waterChangeElement.style.left = "18px";
-waterChangeElement.style.bottom = "205px";
-waterChangeElement.style.zIndex = "9999";
-
-waterChangeElement.style.fontSize = "18px";
-waterChangeElement.style.fontWeight = "bold";
-waterChangeElement.style.fontFamily = "Consolas, monospace";
-
-waterChangeElement.style.textShadow =
-    "1px 2px 3px black";
-
-waterChangeElement.style.pointerEvents = "none";
-waterChangeElement.style.opacity = "0";
-waterChangeElement.style.transition = "opacity 0.3s";
-
-document.body.appendChild(waterChangeElement);
-
-let waterChangeTimeout = null;
-
-function showWaterChange(amount) {
-    clearTimeout(waterChangeTimeout);
-
-    const rounded = Math.round(amount);
-
-    waterChangeElement.textContent =
-        rounded >= 0
-            ? `+${rounded} H2O`
-            : `${rounded} H2O`;
-
-    waterChangeElement.style.color =
-        rounded >= 0
-            ? "#45ff75"
-            : "#ff5555";
-
-    waterChangeElement.style.opacity = "1";
-
-    waterChangeTimeout = setTimeout(() => {
-        waterChangeElement.style.opacity = "0";
-    }, 1800);
-}
-
-// ========================================
-// INTERAKCE S JEZÍRKEM
-// ========================================
-
-function interactWithPond() {
-    if (!isNearPond()) return;
-
-    const cup = findPaperCup();
-
-    if (!cup.item) {
-        showMessage(
-            "Jezírko",
-            "Voda v jezírku je trochu zakalená."
-        );
-
-        return;
-    }
-
-    fillPaperCup("pond");
-}
-
-// ========================================
-// INTERAKCE SE STUDNOU
-// ========================================
-
-function interactWithWell() {
-    if (!isNearWell()) return;
-
-    const cup = findPaperCup();
-
-    if (!cup.item) {
-        showMessage(
-            "Studna",
-            "Ve studni je čistá voda, ale nemáš ju čím nabrat!"
-        );
-
-        return;
-    }
-
-    fillPaperCup("well");
-}
-
-// ========================================
-// VYHLEDÁNÍ INTERAKCE
-// ========================================
-
-function findNearbyObject() {
-    if (isDead) return null;
-
-    // 1. Papír na zemi.
-    if (isNearPaper()) {
-        return {
-            name: "List papíru",
-            hint: "List papíru · Stiskni E pro sebrání",
-            action: pickupPaper
-        };
-    }
-
-    // 2. Studna.
-    if (isNearWell()) {
-        return {
-            name: "Studna",
-            hint: "Studna · Stiskni E pro nabrání vody ze studny",
-            action: interactWithWell
-        };
-    }
-
-    // 3. Jezírko.
-    if (isNearPond()) {
-        return {
-            name: "Jezírko",
-            hint: "Jezírko · Stiskni E pro nabrání vody",
-            action: interactWithPond
-        };
-    }
-
-    // OPRAVA:
-    // Žádné staré objects.find().
-    // Proměnná objects už neexistuje.
-    return null;
 }
 
 // ========================================
@@ -1688,11 +1629,8 @@ function updateCamera() {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    const scaledWidth =
-        WORLD_WIDTH * CAMERA_ZOOM;
-
-    const scaledHeight =
-        WORLD_HEIGHT * CAMERA_ZOOM;
+    const scaledWidth = WORLD_WIDTH * CAMERA_ZOOM;
+    const scaledHeight = WORLD_HEIGHT * CAMERA_ZOOM;
 
     let cameraX =
         viewportWidth / 2 -
@@ -1759,14 +1697,6 @@ window.addEventListener("keydown", event => {
 
     resumeAudio();
 
-    // ESC zavře dialog.
-    if (key === "escape") {
-        dialog.hidden = true;
-        keys.delete(key);
-        return;
-    }
-
-    // Inventář 1–5.
     if (
         /^[1-5]$/.test(event.key) &&
         !event.repeat &&
@@ -1783,17 +1713,17 @@ window.addEventListener("keydown", event => {
 
     keys.add(key);
 
-    // Interakce pouze klávesou E.
+    if (key === "escape") {
+        dialog.hidden = true;
+    }
+
     if (
         key === "e" &&
         !event.repeat &&
+        nearbyObject &&
         dialog.hidden
     ) {
-        const target = findNearbyObject();
-
-        if (target) {
-            target.action();
-        }
+        nearbyObject.action();
     }
 });
 
@@ -1819,6 +1749,9 @@ function die() {
 
     dialog.hidden = true;
     deathScreen.hidden = false;
+
+    // Ztlumíme prostorový zvuk ohně.
+    campfireSound.volume = 0;
 }
 
 // ========================================
@@ -1836,6 +1769,7 @@ function restartGame() {
 
     lastFireDamage = -Infinity;
     lastFootstep = 0;
+    lastWaterStep = -Infinity;
 
     dialog.hidden = true;
     deathScreen.hidden = true;
@@ -1853,11 +1787,13 @@ function restartGame() {
     inventoryItems.fill(null);
     selectedInventorySlot = 0;
 
-    paperOnGround = true;
-    updatePaperVisibility();
+    paperAvailable = true;
+    refreshGroundPaper();
 
-    clearTimeout(waterChangeTimeout);
-    waterChangeElement.style.opacity = "0";
+    const indicator =
+        document.getElementById("water-feedback");
+
+    if (indicator) indicator.className = "";
 
     renderInventory();
     resetPlayerAppearance();
@@ -1867,6 +1803,8 @@ function restartGame() {
 
     updateDepthSorting();
     updateCamera();
+
+    resumeAudio();
 }
 
 restartButton.addEventListener(
@@ -1885,58 +1823,38 @@ function update() {
     let dx = 0;
     let dy = 0;
 
-    // POHYB
-    if (
-        keys.has("w") ||
-        keys.has("arrowup")
-    ) {
+    if (keys.has("w") || keys.has("arrowup")) {
         dy--;
     }
 
-    if (
-        keys.has("s") ||
-        keys.has("arrowdown")
-    ) {
+    if (keys.has("s") || keys.has("arrowdown")) {
         dy++;
     }
 
-    if (
-        keys.has("a") ||
-        keys.has("arrowleft")
-    ) {
+    if (keys.has("a") || keys.has("arrowleft")) {
         dx--;
     }
 
-    if (
-        keys.has("d") ||
-        keys.has("arrowright")
-    ) {
+    if (keys.has("d") || keys.has("arrowright")) {
         dx++;
     }
 
-    // SMĚR POSTAVIČKY
+    // POSTAVIČKA - 8 SMĚRŮ
     if (!isDead && dialog.hidden) {
         if (dy < 0 && dx < 0) {
             setPlayerDirection("upLeft");
-
         } else if (dy < 0 && dx > 0) {
             setPlayerDirection("upRight");
-
         } else if (dy > 0 && dx < 0) {
             setPlayerDirection("downLeft");
-
         } else if (dy > 0 && dx > 0) {
             setPlayerDirection("downRight");
-
         } else if (dy < 0) {
             setPlayerDirection("up");
-
         } else if (dy > 0) {
             setPlayerDirection("down");
-
         } else if (dx < 0) {
             setPlayerDirection("left");
-
         } else if (dx > 0) {
             setPlayerDirection("right");
         }
@@ -1948,7 +1866,7 @@ function update() {
         dy *= Math.SQRT1_2;
     }
 
-    // POHYB A KOLIZE
+    // POHYB A PŮVODNÍ KOLIZE
     if (dialog.hidden && !isDead) {
         const nextX =
             player.x + dx * player.speed;
@@ -1959,7 +1877,6 @@ function update() {
         if (canMoveTo(nextX, nextY)) {
             player.x = nextX;
             player.y = nextY;
-
         } else {
             if (
                 dx !== 0 &&
@@ -1977,12 +1894,12 @@ function update() {
         }
     }
 
-    // DAMAGE Z OHNĚ
+    // OHEŇ A DAMAGE
     if (!isDead) {
         checkFireDamage();
     }
 
-    // ZVUK KROKŮ
+    // ZJISTÍME, JESTLI SE HRÁČ POHNUL
     const isMoving =
         !isDead &&
         dialog.hidden &&
@@ -1991,9 +1908,11 @@ function update() {
             player.y !== previousY
         );
 
-    updateFootsteps(isMoving);
+    // NOVÉ ZVUKY
+    updateWalkingAudio(isMoving);
+    updateFireAudio();
 
-    // POZICE HRÁČE
+    // POZICE POSTAVIČKY
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
@@ -2001,20 +1920,17 @@ function update() {
     updateCamera();
 
     // INTERAKCE
-    nearbyObject = findNearbyObject();
+    nearbyObject = resolveNearbyObject();
 
     // NÁPOVĚDA
     if (isDead) {
-        hint.textContent = "YOU DIED";
-
+        hint.textContent = "CHCIPNULS!";
     } else if (!dialog.hidden) {
         hint.textContent = "ESC · Zavřít";
-
     } else if (nearbyObject) {
         hint.textContent =
             nearbyObject.hint ||
             `${nearbyObject.name} · Stiskni E`;
-
     } else {
         hint.textContent =
             "WASD / šipky · Pohyb | E · Interakce | 1–5 · Inventář";
@@ -2029,7 +1945,7 @@ function update() {
 
 updateWellPosition();
 updateLogPosition();
-updatePaperVisibility();
+refreshGroundPaper();
 
 resetPlayerAppearance();
 
