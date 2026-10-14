@@ -1671,7 +1671,7 @@ function interactWithPond() {
     if (!cup.item) {
         showMessage(
             "Jezírko",
-            "Voda v jezírku je zakalená. Potřebuješ něco, do čeho ji nabereš."
+            "Voda v jezírku je trochu zakalená."
         );
 
         return;
@@ -1692,7 +1692,7 @@ function interactWithWell() {
     if (!cup.item) {
         showMessage(
             "Studna",
-            "Ve studni je čistá voda. Potřebuješ nádobu."
+            "Ve studni je čistá voda, ale nemáš ju čím nabrat!"
         );
 
         return;
@@ -1754,7 +1754,7 @@ function findNearbyObject() {
     if (isNearWell()) {
         return {
             name: "Studna",
-            hint: "Studna · Stiskni E pro nabrání vody",
+            hint: "Studna · Stiskni E pro nabrání vody ze studny",
             action: interactWithWell
         };
     }
