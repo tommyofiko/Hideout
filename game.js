@@ -1113,7 +1113,7 @@ function makeCup(uses = 0, contents = null) {
         id: "cup",
         name: contents
             ? "Kelímek s vodou"
-            : "Papírový kelímek",
+            : "Papírovovej kelímek",
         image: contents
             ? ITEM_IMAGES.full
             : ITEM_IMAGES.cup,
@@ -1208,7 +1208,7 @@ function pickupPaper() {
     if (!addInventoryItem(makePaper())) {
         showMessage(
             "Inventář je plný",
-            "Na papír nemáš volný slot."
+            "Na papír nemáš místo."
         );
         return;
     }
@@ -1218,7 +1218,7 @@ function pickupPaper() {
 
     showMessage(
         "List papíru",
-        "Sebral jsi list papíru."
+        "Sebrals list papíru."
     );
 }
 
@@ -1243,12 +1243,12 @@ function openInventoryItem(index) {
                     action: () => {
                         showMessage(
                             "List papíru",
-                            "Obyčejný list papíru."
+                            "Obyčejná stránka ze sešitu."
                         );
                     }
                 },
                 {
-                    label: "Vyrobit kelímek",
+                    label: "Vyrobit..?",
                     action: () => {
                         if (
                             inventoryItems[index]?.id !==
@@ -1263,7 +1263,7 @@ function openInventoryItem(index) {
 
                         showMessage(
                             "Papírový kelímek",
-                            "Složil jsi z papíru provizorní kelímek."
+                            "Složil sis z papíru provizorní kelímek."
                         );
                     }
                 }
@@ -1305,7 +1305,7 @@ function openInventoryItem(index) {
             item.name,
             item.contents
                 ? "Co uděláš s vodou?"
-                : "Kelímek je prázdný. Vodu nabereš klávesou E u studny nebo jezírka.",
+                : "Kelímek je prázdný.",
             choices
         );
     }
@@ -1352,7 +1352,7 @@ function fillCup(source) {
             source === "well"
                 ? "Studna"
                 : "Jezírko",
-            "Potřebuješ kelímek na vodu."
+            "Nemáš dočeho nabrat vodu."
         );
         return;
     }
@@ -1362,7 +1362,7 @@ function fillCup(source) {
     if (cup.contents) {
         showMessage(
             "Plný kelímek",
-            "Nejdřív vodu vypij nebo vylij."
+            "Nejdřív vodu vypij nebo ju vylej."
         );
         return;
     }
@@ -1393,7 +1393,7 @@ function fillCup(source) {
             ? "Studna"
             : "Jezírko",
         source === "well"
-            ? "Nabral jsi čistou vodu."
+            ? "Nabral jsi čistou, studenou vodu."
             : "Nabral jsi kalnou vodu z jezírka."
     );
 }
@@ -1489,8 +1489,8 @@ function drinkFromCup(index) {
             ? "Čistá voda"
             : "Špinavá voda",
         source === "well"
-            ? "Napil ses ze studny. H2O je doplněné."
-            : "Voda z jezírka ti neudělala dobře. −25 H2O."
+            ? "Napil ses čisté vody. Je ti nejlíp."
+            : "Voda z jezírka ti neudělala dobře."
     );
 }
 
@@ -2052,7 +2052,7 @@ function update() {
     // ====================================
 
     if (isDead) {
-        hint.textContent = "YOU DIED";
+        hint.textContent = "CHCIPNULS...";
     } else if (!dialog.hidden) {
         hint.textContent = "ESC · Zavřít";
     } else if (nearbyObject) {
