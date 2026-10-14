@@ -36,6 +36,8 @@ rabbitSprite.alt = "Divoký králík";
 rabbitSprite.draggable = false;
 
 rabbitSprite.style.position = "absolute";
+
+ 
 rabbitSprite.style.left = `${rabbit.x}px`;
 rabbitSprite.style.top = `${rabbit.y}px`;
 rabbitSprite.style.width = "23px";
@@ -45,18 +47,9 @@ rabbitSprite.style.imageRendering = "pixelated";
 rabbitSprite.style.transform = "translate(-50%, -50%)";
 rabbitSprite.style.pointerEvents = "none";
 rabbitSprite.style.zIndex = "12";
+
 scene.appendChild(rabbitSprite);
 
-
-const healthFill = document.getElementById("health-fill");
-const healthText = document.getElementById("health-text");
-const waterFill = document.getElementById("water-fill");
-const waterText = document.getElementById("water-text");
-const hungerFill = document.getElementById("hunger-fill");
-const hungerText = document.getElementById("hunger-text");
-
-const deathScreen = document.getElementById("death-screen");
-const restartButton = document.getElementById("restart-button");
 
 // ========================================
 // SVĚT
@@ -2160,17 +2153,28 @@ function updateRabbit() {
         }
     }
 
-    // POZICE NA MAPĚ
-    rabbitSprite.style.left = `${rabbit.x}px`;
-    rabbitSprite.style.top = `${rabbit.y - jumpHeight}px`;
+    
+// ========================================
+// POZICE A OTÁČENÍ KRÁLÍKA
+// ========================================
 
-    rabbitSprite.style.transform =
-        "translate(-50%, -50%)";
-
-    // SPRÁVNÉ VRSTVENÍ
-    rabbitSprite.style.zIndex =
-        rabbit.y < player.y ? "9" : "21";
+if (rabbit.hopping) {
+    if (rabbit.hopToX < rabbit.hopFromX) {
+        rabbitSprite.style.transform =
+            "translate(-50%, -50%) scaleX(-1)";
+    } else if (rabbit.hopToX > rabbit.hopFromX) {
+        rabbitSprite.style.transform =
+            "translate(-50%, -50%) scaleX(1)";
+    }
 }
+
+rabbitSprite.style.left = `${rabbit.x}px`;
+rabbitSprite.style.top = `${rabbit.y - jumpHeight}px`;
+
+rabbitSprite.style.zIndex =
+    rabbit.y < player.y ? "9" : "21";
+}
+
 
 
 
