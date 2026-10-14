@@ -2114,7 +2114,7 @@ function updateRabbit() {
     rabbit.nextDecision = now + 250;
     rabbit.moving = true;
 }
-
+}
     let jumpHeight = 0;
 
     // PRŮBĚH SKOKU
