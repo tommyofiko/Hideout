@@ -470,37 +470,42 @@ function updateDepthSorting() {
 // HRANICE OSTROVA - NEMĚNĚNÉ
 // ========================================
 
-const WALKABLE_AREA = [
-    [1320, 597],
-    [1259, 528],
-    [1203, 550],
-    [1007, 418],
-    [1096, 301],
-    [1017, 238],
-    [983, 254],
-    [971, 215],
-    [918, 249],
-    [946, 250],
-    [946, 289],
-    [898, 319],
-    [950, 363],
-    [926, 397],
-    [894, 380],
-    [624, 494],
-    [516, 429],
-    [332, 404],
-    [207, 488],
-    [82, 559],
-    [92, 595],
-    [231, 706],
-    [355, 661],
-    [302, 751],
-    [312, 824],
-    [535, 1003],
-    [657, 1045],
-    [860, 997],
-    [1130, 726]
-];
+
+const MAP_X = WORLD_WIDTH / 1648;
+const MAP_Y = WORLD_HEIGHT / 928;
+
+const mapPolygon = points =>
+    points.map(([x, y]) => [
+        x * MAP_X,
+        y * MAP_Y
+    ]);
+
+// HRANICE OSTROVA PODLE MODRÉ ČÁRY
+const WALKABLE_AREA = mapPolygon([
+    [270,385], [310,350], [355,350],
+    [403,375], [475,402], [532,433],
+    [579,386], [630,369], [676,377],
+    [714,349], [751,346], [783,313],
+    [801,324], [827,353], [880,388],
+    [940,414], [1004,473], [1066,490],
+    [1138,466], [1202,470], [1211,481],
+    [1080,532], [987,603], [876,706],
+    [753,798], [653,849], [533,851],
+    [460,820], [332,708], [257,648],
+    [258,624], [336,591], [325,557],
+    [295,545], [210,596], [185,587],
+    [177,572], [150,541], [112,510],
+    [118,474], [169,432], [222,407]
+]);
+
+// SCHODY A VERANDA
+const STAIRS_AREA = mapPolygon([
+    [772,316], [786,280], [817,264],
+    [865,237], [899,249], [945,273],
+    [913,301], [942,325], [918,349],
+    [854,315], [830,365], [802,348]
+]);
+
 
 // ========================================
 // GEOMETRIE
@@ -538,26 +543,31 @@ function pointInPolygon(x, y, polygon) {
 // KOLIZE - PŮVODNÍ
 // ========================================
 
+
+function insideWalkable(x, y) {
+    return (
+        pointInPolygon(x, y, WALKABLE_AREA) ||
+        pointInPolygon(x, y, STAIRS_AREA)
+    );
+}
+
 function isBlocked(x, y) {
-    if (!pointInPolygon(x, y, WALKABLE_AREA)) {
+    const r = 5;
+
+    const checks = [
+        [0, 0],
+        [r, 0],
+        [-r, 0],
+        [0, r],
+        [0, -r]
+    ];
+
+    if (
+        checks.some(([dx, dy]) =>
+            !insideWalkable(x + dx, y + dy)
+        )
+    ) {
         return true;
-    }
-
-    for (let i = 0; i < WALKABLE_AREA.length; i++) {
-        const [ax, ay] = WALKABLE_AREA[i];
-
-        const [bx, by] =
-            WALKABLE_AREA[
-                (i + 1) % WALKABLE_AREA.length
-            ];
-
-        if (
-            distanceToSegment(
-                x, y, ax, ay, bx, by
-            ) < player.radius
-        ) {
-            return true;
-        }
     }
 
     return (
@@ -565,6 +575,7 @@ function isBlocked(x, y) {
         isTouchingLog(x, y)
     );
 }
+
 
 function canMoveTo(x, y) {
     return (
@@ -863,17 +874,22 @@ function updateFireAudio() {
 // Jde o úzkou oblast u pravého břehu
 // jezírka, ne o celou okolní trávu.
 
-const SHALLOW_WATER_AREA = [
-    [710, 855],
-    [737, 845],
-    [765, 856],
-    [781, 880],
-    [777, 906],
-    [752, 923],
-    [724, 920],
-    [704, 902],
-    [700, 875]
-];
+
+const SHALLOW_WATER_AREA = mapPolygon([
+    [488,709],
+    [511,695],
+    [544,685],
+    [583,687],
+    [623,703],
+    [642,720],
+    [639,744],
+    [617,759],
+    [583,772],
+    [547,778],
+    [517,760],
+    [495,737]
+]);
+
 
 function isWalkingInShallowWater() {
     return pointInPolygon(
