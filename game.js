@@ -2044,6 +2044,23 @@ restartButton.addEventListener(
  // ========================================
 
 
+rabbit.direction = Math.random() * Math.PI * 2;
+rabbit.nextDecision = 0;
+rabbit.moving = true;
+
+rabbit.hopStart = 0;
+rabbit.hopDuration = 420;
+rabbit.hopDistance = 17;
+rabbit.hopHeight = 9;
+rabbit.hopCooldown = 180;
+rabbit.lastHopEnd = 0;
+
+rabbit.hopFromX = rabbit.x;
+rabbit.hopFromY = rabbit.y;
+rabbit.hopToX = rabbit.x;
+rabbit.hopToY = rabbit.y;
+rabbit.hopping = false;
+
 function updateRabbit() {
     if (!rabbit.alive) {
         rabbitSprite.style.display = "none";
