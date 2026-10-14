@@ -590,6 +590,7 @@ function insideWalkable(x, y) {
 
 
 
+
 function isBlocked(x, y) {
     const r = 5;
 
@@ -601,20 +602,9 @@ function isBlocked(x, y) {
         [0, -r]
     ];
 
-    // Hranice ostrova a schodů
+    // Hranice ostrova, schodů a verandy
     if (checks.some(([dx, dy]) =>
         !insideWalkable(x + dx, y + dy)
-    )) {
-        return true;
-    }
-
-    // Bouda - zákaz vstupu na střechu a skrz stěny
-    if (checks.some(([dx, dy]) =>
-        pointInPolygon(
-            x + dx,
-            y + dy,
-            SHED_BLOCKED_AREA
-        )
     )) {
         return true;
     }
@@ -625,6 +615,7 @@ function isBlocked(x, y) {
         isTouchingLog(x, y)
     );
 }
+
 
 
 
