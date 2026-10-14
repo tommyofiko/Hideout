@@ -50,6 +50,18 @@ rabbitSprite.style.zIndex = "12";
 
 scene.appendChild(rabbitSprite);
 
+// ========================================
+// UKAZATELE A RESTART HRY
+// ========================================
+const healthFill = document.getElementById("health-fill");
+const healthText = document.getElementById("health-text");
+const waterFill = document.getElementById("water-fill");
+const waterText = document.getElementById("water-text");
+const hungerFill = document.getElementById("hunger-fill");
+const hungerText = document.getElementById("hunger-text");
+const deathScreen = document.getElementById("death-screen");
+const restartButton = document.getElementById("restart-button");
+
 
 // ========================================
 // SVĚT
@@ -266,9 +278,10 @@ function updateWater() {
     }
 }
 
-// ========================================
-// HLAD - 30 MINUT
-// ========================================
+
+ // ========================================
+ // HLAD - 30 MINUT
+ // ========================================
 
 const MAX_HUNGER = 100;
 const HUNGER_DURATION = 30 * 60 * 1000;
@@ -619,9 +632,9 @@ const PORCH_AREA = mapPolygon([
     [823,333], [811,324]
 ]);
 
-// ========================================
-// GEOMETRIE
-// ========================================
+ // ========================================
+ // GEOMETRIE
+ // ========================================
 
 function pointInPolygon(x, y, polygon) {
     let inside = false;
@@ -1005,18 +1018,19 @@ function updateFireAudio() {
     );
 }
 
-// ========================================
-// MĚLKÁ VODA
-// ========================================
 
-// Pouze zvuková oblast.
-// NEMĚNÍ kolize ostrova.
-//
-// Body jsou orientační a bude možné
-// je doladit podle skutečné mapy.
-//
-// Jde o úzkou oblast u pravého břehu
-// jezírka, ne o celou okolní trávu.
+ // ========================================
+ // MĚLKÁ VODA
+ // ========================================
+
+ // Pouze zvuková oblast.
+ // NEMĚNÍ kolize ostrova.
+ //
+ // Body jsou orientační a bude možné
+ // je doladit podle skutečné mapy.
+ //
+ // Jde o úzkou oblast u pravého břehu
+ // jezírka, ne o celou okolní trávu.
 
 const SHALLOW_WATER_AREA = mapPolygon([
     [488,709],
@@ -1100,9 +1114,9 @@ function playWaterStep() {
 }
 
 
- // ========================================
- // KROKY PO TRÁVĚ
- // ========================================
+// ========================================
+// KROKY PO TRÁVĚ
+// ========================================
 
 let lastFootstep = 0;
 
@@ -1295,9 +1309,10 @@ function showMessage(title, message) {
     dialog.append(heading, paragraph, button);
 }
 
-// ========================================
-// SEBRÁNÍ PAPÍRU
-// ========================================
+
+ // ========================================
+ // SEBRÁNÍ PAPÍRU
+ // ========================================
 
 function pickupPaper() {
     if (isDead || !paperAvailable) return;
@@ -1601,6 +1616,7 @@ function drinkFromCup(index) {
     );
 }
 
+
 // ========================================
 // INTERAKCE VE SVĚTĚ
 // ========================================
@@ -1812,6 +1828,7 @@ function removeInventoryItem(
     return item;
 }
 
+
 function getSelectedInventoryItem() {
     return inventoryItems[selectedInventorySlot];
 }
@@ -1828,10 +1845,9 @@ function useSelectedInventoryItem() {
     }
 }
 
-
- // ========================================
- // KAMERA
- // ========================================
+// ========================================
+// KAMERA
+// ========================================
 
 function updateCamera() {
     const viewportWidth = window.innerWidth;
@@ -2031,11 +2047,9 @@ restartButton.addEventListener(
 // HLAVNÍ HERNÍ SMYČKA
 // ========================================
 
-
- // ========================================
- // KRÁLÍK - NÁHODNÝ POHYB
- // ========================================
-
+// ========================================
+// KRÁLÍK - NÁHODNÝ POHYB
+// ========================================
 
 rabbit.direction = Math.random() * Math.PI * 2;
 rabbit.nextDecision = 0;
@@ -2120,11 +2134,12 @@ function updateRabbit() {
             rabbit.hopToX = nextX;
             rabbit.hopToY = nextY;
         } else {
-    rabbit.direction = Math.random() * Math.PI * 2;
-    rabbit.nextDecision = now + 250;
-    rabbit.moving = true;
-}
-}
+            rabbit.direction = Math.random() * Math.PI * 2;
+            rabbit.nextDecision = now + 250;
+            rabbit.moving = true;
+        }
+    }
+
     let jumpHeight = 0;
 
     // PRŮBĚH SKOKU
@@ -2153,30 +2168,31 @@ function updateRabbit() {
         }
     }
 
-    
-// ========================================
-// POZICE A OTÁČENÍ KRÁLÍKA
-// ========================================
+    // ========================================
+    // POZICE A OTÁČENÍ KRÁLÍKA
+    // ========================================
 
-if (rabbit.hopping) {
-    if (rabbit.hopToX < rabbit.hopFromX) {
-        rabbitSprite.style.transform =
-            "translate(-50%, -50%) scaleX(-1)";
-    } else if (rabbit.hopToX > rabbit.hopFromX) {
-        rabbitSprite.style.transform =
-            "translate(-50%, -50%) scaleX(1)";
+    if (rabbit.hopping) {
+        if (rabbit.hopToX < rabbit.hopFromX) {
+            rabbitSprite.style.transform =
+                "translate(-50%, -50%) scaleX(-1)";
+        } else if (rabbit.hopToX > rabbit.hopFromX) {
+            rabbitSprite.style.transform =
+                "translate(-50%, -50%) scaleX(1)";
+        }
     }
+
+    rabbitSprite.style.left = `${rabbit.x}px`;
+    rabbitSprite.style.top = `${rabbit.y - jumpHeight}px`;
+
+    rabbitSprite.style.zIndex =
+        rabbit.y < player.y ? "9" : "21";
 }
 
-rabbitSprite.style.left = `${rabbit.x}px`;
-rabbitSprite.style.top = `${rabbit.y - jumpHeight}px`;
 
-rabbitSprite.style.zIndex =
-    rabbit.y < player.y ? "9" : "21";
-}
-}
-
-
+ // ========================================
+ // HLAVNÍ HERNÍ SMYČKA
+ // ========================================
 
 function update() {
     const previousX = player.x;
@@ -2184,6 +2200,10 @@ function update() {
 
     let dx = 0;
     let dy = 0;
+
+    // ====================================
+    // OVLÁDÁNÍ POSTAVY
+    // ====================================
 
     if (keys.has("w") || keys.has("arrowup")) {
         dy--;
@@ -2202,91 +2222,57 @@ function update() {
     }
 
     // ====================================
-    // OTÁČENÍ POSTAVIČKY
+    // POHYB
     // ====================================
 
     if (!isDead && dialog.hidden) {
-        if (dy < 0 && dx < 0) {
-            setPlayerDirection("upLeft");
-        } else if (dy < 0 && dx > 0) {
-            setPlayerDirection("upRight");
-        } else if (dy > 0 && dx < 0) {
-            setPlayerDirection("downLeft");
-        } else if (dy > 0 && dx > 0) {
-            setPlayerDirection("downRight");
-        } else if (dy < 0) {
-            setPlayerDirection("up");
-        } else if (dy > 0) {
-            setPlayerDirection("down");
-        } else if (dx < 0) {
-            setPlayerDirection("left");
-        } else if (dx > 0) {
-            setPlayerDirection("right");
-        }
-    }
+        if (dx !== 0 || dy !== 0) {
+            const length = Math.hypot(dx, dy);
 
-    // ====================================
-    // DIAGONÁLNÍ POHYB
-    // ====================================
+            dx /= length;
+            dy /= length;
 
-    if (dx !== 0 && dy !== 0) {
-        dx *= Math.SQRT1_2;
-        dy *= Math.SQRT1_2;
-    }
+            const nextX = player.x + dx * player.speed;
+            const nextY = player.y + dy * player.speed;
 
-    // ====================================
-    // POHYB A KOLIZE
-    // ====================================
+            // Samostatná kontrola os,
+            // aby šlo klouzat podél překážek.
 
-    if (dialog.hidden && !isDead) {
-        const nextX =
-            player.x + dx * player.speed;
-
-        const nextY =
-            player.y + dy * player.speed;
-
-        if (canMoveTo(nextX, nextY)) {
-            player.x = nextX;
-            player.y = nextY;
-        } else {
-            if (
-                dx !== 0 &&
-                canMoveTo(nextX, player.y)
-            ) {
+            if (canMoveTo(nextX, player.y)) {
                 player.x = nextX;
             }
 
-            if (
-                dy !== 0 &&
-                canMoveTo(player.x, nextY)
-            ) {
+            if (canMoveTo(player.x, nextY)) {
                 player.y = nextY;
             }
+
+            // ====================================
+            // SMĚR POSTAVY
+            // ====================================
+
+            let direction = "down";
+
+            if (dx < 0 && dy < 0) {
+                direction = "upLeft";
+            } else if (dx > 0 && dy < 0) {
+                direction = "upRight";
+            } else if (dx < 0 && dy > 0) {
+                direction = "downLeft";
+            } else if (dx > 0 && dy > 0) {
+                direction = "downRight";
+            } else if (dx < 0) {
+                direction = "left";
+            } else if (dx > 0) {
+                direction = "right";
+            } else if (dy < 0) {
+                direction = "up";
+            } else if (dy > 0) {
+                direction = "down";
+            }
+
+            setPlayerDirection(direction);
         }
     }
-
-    // ====================================
-    // DAMAGE OD OHNĚ
-    // ====================================
-
-    if (!isDead) {
-        checkFireDamage();
-    }
-
-    // ====================================
-    // ZVUKY
-    // ====================================
-
-    const isMoving =
-        !isDead &&
-        dialog.hidden &&
-        (
-            player.x !== previousX ||
-            player.y !== previousY
-        );
-
-    updateWalkingAudio(isMoving);
-    updateFireAudio();
 
     // ====================================
     // POZICE POSTAVY
@@ -2295,63 +2281,96 @@ function update() {
     sprite.style.left = `${player.x}px`;
     sprite.style.top = `${player.y}px`;
 
-    updateDepthSorting();
-    updateRabbit();
-    updateCamera();
+    const isMoving =
+        player.x !== previousX ||
+        player.y !== previousY;
 
     // ====================================
     // INTERAKCE
     // ====================================
 
-    nearbyObject = resolveNearbyObject();
-
-    // ====================================
-    // NÁPOVĚDA
-    // ====================================
-
-    if (isDead) {
-        hint.textContent = "CHCIPNULS...";
-    } else if (!dialog.hidden) {
-        hint.textContent = "ESC · Zavřít";
-    } else if (nearbyObject) {
-        hint.textContent =
-            nearbyObject.hint ||
-            `${nearbyObject.name} · Stiskni E`;
+    if (!isDead && dialog.hidden) {
+        nearbyObject = resolveNearbyObject();
     } else {
-        hint.textContent =
-            "WASD / šipky · Pohyb | E · Interakce | 1–5 · Inventář";
+        nearbyObject = null;
     }
+
+    if (hint) {
+        if (nearbyObject && !isDead && dialog.hidden) {
+            hint.hidden = false;
+
+            hint.textContent =
+                nearbyObject.hint ||
+                `${nearbyObject.name} · Stiskni E`;
+        } else {
+            hint.hidden = true;
+        }
+    }
+
+    // ====================================
+    // AKTUALIZACE SVĚTA
+    // ====================================
+
+    updateDepthSorting();
+    updateRabbit();
+    updateCamera();
+
+    updateWater();
+    updateHunger();
+
+    checkFireDamage();
+    updateFireAudio();
+
+    updateWalkingAudio(isMoving);
 
     requestAnimationFrame(update);
 }
 
 // ========================================
-// START HRY
+// SPUŠTĚNÍ HRY
 // ========================================
 
-updateWellPosition();
-updateLogPosition();
-refreshGroundPaper();
+function initializeGame() {
+    // Počáteční pozice hráče.
+    player.x = PLAYER_START.x;
+    player.y = PLAYER_START.y;
 
-resetPlayerAppearance();
+    // Vzhled postavy.
+    resetPlayerAppearance();
 
-setHealth(MAX_HEALTH);
-setWater(MAX_WATER);
-setHunger(MAX_HUNGER);
+    // Zdraví, žízeň a hlad.
+    setHealth(MAX_HEALTH);
+    setWater(MAX_WATER);
+    setHunger(MAX_HUNGER);
 
-renderInventory();
+    // Objekty.
+    updateWellPosition();
+    updateLogPosition();
+    refreshGroundPaper();
 
-lastWaterUpdate = performance.now();
-lastHungerUpdate = performance.now();
+    // Inventář.
+    renderInventory();
 
-setInterval(updateWater, 100);
-setInterval(updateHunger, 100);
+    // Dialog a obrazovka smrti.
+    dialog.hidden = true;
+    deathScreen.hidden = true;
 
-update();
+    // Počáteční pozice sprite.
+    sprite.style.left = `${player.x}px`;
+    sprite.style.top = `${player.y}px`;
 
+    // Kamera a vrstvení.
+    updateDepthSorting();
+    updateCamera();
 
+    // Spuštění hlavní smyčky.
+    requestAnimationFrame(update);
+}
 
+// ========================================
+// START HIDEOUT
+// ========================================
 
-
+initializeGame();
 
 
