@@ -3,6 +3,7 @@
 
 // ======================================
 // HIDEOUT - GAME.JS
+// 8 SMĚRŮ POSTAVIČKY
 // ======================================
 
 // ELEMENTY
@@ -59,7 +60,7 @@ const keys = new Set();
 let nearbyObject = null;
 
 // ======================================
-// POSTAVIČKA - 6 SMĚRŮ
+// POSTAVIČKA - 8 SMĚRŮ
 // ======================================
 
 const PLAYER_IMAGES = {
@@ -68,8 +69,10 @@ const PLAYER_IMAGES = {
     up: "idle13.png",
     right: "idle14.png",
 
-    downRight: "idle1.png",
-    downLeft: "idle2.png"
+    upLeft: "idle15.png",
+    upRight: "idle16.png",
+    downLeft: "idle17.png",
+    downRight: "idle18.png"
 };
 
 let playerDirection = "down";
@@ -1252,34 +1255,42 @@ function update() {
     }
 
     // ======================================
-    // OTÁČENÍ POSTAVIČKY - 6 SMĚRŮ
+    // OTÁČENÍ POSTAVIČKY - 8 SMĚRŮ
     // ======================================
 
     if (!isDead && dialog.hidden) {
 
-        if (dy > 0 && dx > 0) {
-            // S + D
-            setPlayerDirection("downRight");
+        if (dy < 0 && dx < 0) {
+            // W + A
+            setPlayerDirection("upLeft");
+
+        } else if (dy < 0 && dx > 0) {
+            // W + D
+            setPlayerDirection("upRight");
 
         } else if (dy > 0 && dx < 0) {
             // S + A
             setPlayerDirection("downLeft");
 
-        } else if (dy > 0) {
-            // S
-            setPlayerDirection("down");
+        } else if (dy > 0 && dx > 0) {
+            // S + D
+            setPlayerDirection("downRight");
 
         } else if (dy < 0) {
             // W
             setPlayerDirection("up");
 
-        } else if (dx > 0) {
-            // D
-            setPlayerDirection("right");
+        } else if (dy > 0) {
+            // S
+            setPlayerDirection("down");
 
         } else if (dx < 0) {
             // A
             setPlayerDirection("left");
+
+        } else if (dx > 0) {
+            // D
+            setPlayerDirection("right");
         }
     }
 
