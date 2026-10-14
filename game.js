@@ -128,15 +128,34 @@ function setHealth(value) {
     }
 }
 
+
+ // ========================================
+ // ČERVENÉ BLIKNUTÍ PŘI DAMAGE
+ // ========================================
+
+let damageFlashTimer = null;
+
+function flashPlayerRed() {
+    clearTimeout(damageFlashTimer);
+
+    sprite.style.filter =
+        "brightness(0) saturate(100%) invert(18%) sepia(100%) saturate(7000%) hue-rotate(0deg)";
+
+    damageFlashTimer = setTimeout(() => {
+        sprite.style.filter = "";
+        damageFlashTimer = null;
+    }, 150);
+}
+
+
+
 function takeDamage(amount) {
     if (isDead) return;
+
+    flashPlayerRed();
     setHealth(health - amount);
 }
 
-function healPlayer(amount) {
-    if (isDead) return;
-    setHealth(health + amount);
-}
 
 // ========================================
 // ŽÍZEŇ - 20 MINUT
@@ -1923,6 +1942,8 @@ function die() {
 
 function restartGame() {
     isDead = false;
+    clearTimeout(damageFlashTimer);
+    sprite.style.filter = "";
 
     player.x = PLAYER_START.x;
     player.y = PLAYER_START.y;
