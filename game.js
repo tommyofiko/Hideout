@@ -38,8 +38,8 @@ rabbitSprite.draggable = false;
 rabbitSprite.style.position = "absolute";
 rabbitSprite.style.left = `${rabbit.x}px`;
 rabbitSprite.style.top = `${rabbit.y}px`;
-rabbitSprite.style.width = "38px";
-rabbitSprite.style.height = "38px";
+rabbitSprite.style.width = "23px";
+rabbitSprite.style.height = "23px";
 rabbitSprite.style.objectFit = "contain";
 rabbitSprite.style.imageRendering = "pixelated";
 rabbitSprite.style.transform = "translate(-50%, -50%)";
@@ -2043,9 +2043,6 @@ restartButton.addEventListener(
  // KRÁLÍK - NÁHODNÝ POHYB
  // ========================================
 
-rabbit.direction = Math.random() * Math.PI * 2;
-rabbit.nextDecision = 0;
-rabbit.moving = false;
 
 function updateRabbit() {
     if (!rabbit.alive) {
@@ -2055,45 +2052,112 @@ function updateRabbit() {
 
     rabbitSprite.style.display = "block";
 
+    const now = performance.now();
+
+    // KRÁLÍK V RUCE
     if (rabbit.caught) {
+        rabbit.hopping = false;
         rabbitSprite.style.left = `${player.x + 18}px`;
         rabbitSprite.style.top = `${player.y - 18}px`;
+        rabbitSprite.style.transform =
+            "translate(-50%, -50%)";
         rabbitSprite.style.zIndex = "21";
         return;
     }
 
-    const now = performance.now();
-
-    // Občas změní směr nebo se zastaví.
-    if (now >= rabbit.nextDecision) {
+    // NÁHODNÉ ROZHODOVÁNÍ
+    if (!rabbit.hopping && now >= rabbit.nextDecision) {
         rabbit.direction = Math.random() * Math.PI * 2;
-        rabbit.moving = Math.random() > 0.3;
-        rabbit.nextDecision = now + 600 + Math.random() * 1800;
+        rabbit.moving = Math.random() > 0.25;
+
+        rabbit.nextDecision =
+            now + 700 + Math.random() * 1600;
     }
 
-    if (rabbit.moving) {
+    // ZAČÁTEK SKOKU
+    if (
+        rabbit.moving &&
+        !rabbit.hopping &&
+        now - rabbit.lastHopEnd >= rabbit.hopCooldown
+    ) {
         const nextX =
-            rabbit.x + Math.cos(rabbit.direction) * rabbit.speed;
+            rabbit.x +
+            Math.cos(rabbit.direction) * rabbit.hopDistance;
 
         const nextY =
-            rabbit.y + Math.sin(rabbit.direction) * rabbit.speed;
+            rabbit.y +
+            Math.sin(rabbit.direction) * rabbit.hopDistance;
 
-        // Stejné kolize jako hráč.
-        if (canMoveTo(nextX, nextY)) {
-            rabbit.x = nextX;
-            rabbit.y = nextY;
+        // Kontrola celé dráhy skoku
+        let pathClear = true;
+
+        for (let i = 1; i <= 6; i++) {
+            const t = i / 6;
+
+            if (!canMoveTo(
+                rabbit.x + (nextX - rabbit.x) * t,
+                rabbit.y + (nextY - rabbit.y) * t
+            )) {
+                pathClear = false;
+                break;
+            }
+        }
+
+        if (pathClear) {
+            rabbit.hopping = true;
+            rabbit.hopStart = now;
+            rabbit.hopFromX = rabbit.x;
+            rabbit.hopFromY = rabbit.y;
+            rabbit.hopToX = nextX;
+            rabbit.hopToY = nextY;
         } else {
             rabbit.direction = Math.random() * Math.PI * 2;
-            rabbit.nextDecision = now + 300;
+            rabbit.nextDecision = now + 250;
+            rabbit.moving = false;
         }
     }
 
-    rabbitSprite.style.left = `${rabbit.x}px`;
-    rabbitSprite.style.top = `${rabbit.y}px`;
+    let jumpHeight = 0;
 
+    // PRŮBĚH SKOKU
+    if (rabbit.hopping) {
+        const progress = Math.min(
+            1,
+            (now - rabbit.hopStart) / rabbit.hopDuration
+        );
+
+        rabbit.x =
+            rabbit.hopFromX +
+            (rabbit.hopToX - rabbit.hopFromX) * progress;
+
+        rabbit.y =
+            rabbit.hopFromY +
+            (rabbit.hopToY - rabbit.hopFromY) * progress;
+
+        // Oblouk skoku
+        jumpHeight =
+            Math.sin(progress * Math.PI) * rabbit.hopHeight;
+
+        if (progress >= 1) {
+            rabbit.hopping = false;
+            rabbit.lastHopEnd = now;
+            jumpHeight = 0;
+        }
+    }
+
+    // POZICE NA MAPĚ
+    rabbitSprite.style.left = `${rabbit.x}px`;
+    rabbitSprite.style.top = `${rabbit.y - jumpHeight}px`;
+
+    rabbitSprite.style.transform =
+        "translate(-50%, -50%)";
+
+    // SPRÁVNÉ VRSTVENÍ
     rabbitSprite.style.zIndex =
         rabbit.y < player.y ? "9" : "21";
 }
+
+
 
 function update() {
     const previousX = player.x;
